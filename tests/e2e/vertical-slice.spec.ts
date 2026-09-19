@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import fs from 'node:fs';
+import path from 'node:path';
 
 test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification Suite', () => {
   test('1. Vertical Slice Core Flow: Cover -> Library -> Book I -> P1.S0 -> P1.S1 -> Backtrack -> Blackout -> Library', async ({ page }) => {
@@ -298,6 +300,23 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
   });
 
   test('8. Visual Proof Screenshot Generator (1920x1080 & 1366x768)', async ({ page }) => {
+    test.setTimeout(120000);
+    const screenshotDir = path.resolve('artifacts/screenshots/phase-2.1');
+    const reviewDir = path.resolve('review-phase-2.1');
+    const downloadsDir = 'C:/Users/admin/Downloads';
+
+    fs.mkdirSync(screenshotDir, { recursive: true });
+    fs.mkdirSync(reviewDir, { recursive: true });
+
+    const saveScreenshot = async (filename: string) => {
+      const mainPath = path.join(screenshotDir, filename);
+      await page.screenshot({ path: mainPath });
+      fs.copyFileSync(mainPath, path.join(reviewDir, filename));
+      if (fs.existsSync(downloadsDir)) {
+        fs.copyFileSync(mainPath, path.join(downloadsDir, filename));
+      }
+    };
+
     // 1920x1080 Viewport
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/?tier=high');
@@ -306,60 +325,72 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
     await page.keyboard.press('Digit1');
     await page.waitForTimeout(500);
 
-    // P1.S2 final beat (beat 4)
-    for (let i = 0; i < 6; i++) await page.keyboard.press('Space');
+    // 1. P1.S2 Beat 4
+    for (let i = 0; i < 9; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(60);
+    }
+    await expect(page.getByRole('heading', { name: /Cơ cấu xã hội – giai cấp là gì\?/i })).toBeVisible();
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s2-final-beat-1080p.png' });
+    await saveScreenshot('p1-s2-beat4.png');
 
-    // P1.S3 reciprocal interaction beat (beat 3)
-    for (let i = 0; i < 4; i++) await page.keyboard.press('Space');
+    // 2. P1.S3 Beat 4
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(60);
+    }
+    await expect(page.getByRole('heading', { name: /Vị trí của cơ cấu xã hội – giai cấp/i })).toBeVisible();
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s3-reciprocal-1080p.png' });
+    await saveScreenshot('p1-s3-beat4.png');
 
-    // P1.S4 mid-flow beat (beat 2)
-    for (let i = 0; i < 4; i++) await page.keyboard.press('Space');
+    // 3. P1.S4 Beat 4
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(60);
+    }
+    await expect(page.getByRole('heading', { name: /Gắn liền và bị quy định bởi cơ cấu kinh tế/i })).toBeVisible();
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s4-midflow-1080p.png' });
+    await saveScreenshot('p1-s4-beat4.png');
 
-    // P1.S5 diversified beat (beat 3)
-    for (let i = 0; i < 4; i++) await page.keyboard.press('Space');
+    // 4. P1.S5 Beat 4
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(60);
+    }
+    await expect(page.getByRole('heading', { name: /Biến đổi phức tạp, đa dạng và xuất hiện tầng lớp mới/i })).toBeVisible();
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s5-diversified-1080p.png' });
+    await saveScreenshot('p1-s5-beat4.png');
 
-    // P1.S6 convergence beat (beat 4)
-    for (let i = 0; i < 4; i++) await page.keyboard.press('Space');
+    // 5. P1.S6 Beat 5
+    for (let i = 0; i < 6; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(60);
+    }
+    await expect(page.getByRole('heading', { name: /Vừa đấu tranh vừa liên minh, từng bước xích lại gần nhau/i })).toBeVisible();
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s6-convergence-1080p.png' });
+    await saveScreenshot('p1-s6-beat5.png');
 
-    // P1.S7 Book II tease (beat 4)
-    for (let i = 0; i < 6; i++) await page.keyboard.press('Space');
+    // 6. P1.S7 Beat 5
+    for (let i = 0; i < 6; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(60);
+    }
+    await expect(page.getByRole('heading', { name: /Cầu nối sang Liên minh giai cấp, tầng lớp/i })).toBeVisible();
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s7-book2-tease-1080p.png' });
+    await saveScreenshot('p1-s7-beat5.png');
 
-    // 1366x768 Viewport
-    await page.setViewportSize({ width: 1366, height: 768 });
-    await page.keyboard.press('KeyO');
-    await page.waitForTimeout(300);
-    await page.keyboard.press('Digit1');
-
-    // S3 on 1366x768
-    for (let i = 0; i < 10; i++) await page.keyboard.press('Space');
-    await page.waitForTimeout(500);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s3-1366x768.png' });
-
-    // S4 on 1366x768
-    for (let i = 0; i < 5; i++) await page.keyboard.press('Space');
-    await page.waitForTimeout(500);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s4-1366x768.png' });
-
-    // S6 on 1366x768
-    for (let i = 0; i < 7; i++) await page.keyboard.press('Space');
-    await page.waitForTimeout(500);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s6-1366x768.png' });
-
-    // S7 on 1366x768
-    for (let i = 0; i < 6; i++) await page.keyboard.press('Space');
-    await page.waitForTimeout(500);
-    await page.screenshot({ path: 'artifacts/screenshots/phase-2.1/p1-s7-1366x768.png' });
+    // Copy patch and diff to downloads and review folders if present
+    if (fs.existsSync('phase-2.1.patch')) {
+      fs.copyFileSync('phase-2.1.patch', path.join(reviewDir, 'phase-2.1.patch'));
+      if (fs.existsSync(downloadsDir)) {
+        fs.copyFileSync('phase-2.1.patch', path.join(downloadsDir, 'phase-2.1.patch'));
+      }
+    }
+    if (fs.existsSync('phase-2.1.diff')) {
+      fs.copyFileSync('phase-2.1.diff', path.join(reviewDir, 'phase-2.1.diff'));
+      if (fs.existsSync(downloadsDir)) {
+        fs.copyFileSync('phase-2.1.diff', path.join(downloadsDir, 'phase-2.1.diff'));
+      }
+    }
   });
 });
