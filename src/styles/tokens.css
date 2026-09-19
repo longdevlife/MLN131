@@ -1,0 +1,13 @@
+:root {
+  --color-ink: #0B0D10;
+  --color-walnut: #3A2118;
+  --color-parchment: #EDE4D6;
+  --color-warm-white: #F5F0E8;
+  --color-bronze: #C87046;
+  --color-muted-gold: #C8A86A;
+  --color-desaturated-blue: #24344A;
+
+  --font-serif: "Newsreader", "Playfair Display", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-sans: "Onest", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Fragment Mono", "SF Mono", Menlo, Consolas, monospace;
+}
