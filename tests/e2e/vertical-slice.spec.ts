@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('MLN Chapter 5 Presentation - Vertical Slice', () => {
+test.describe('MLN Chapter 5 Presentation - Vertical Slice Hardened Suite', () => {
   test('Complete vertical slice flow: Cover -> Library -> Book I -> P1.S0 -> P1.S1 (beats) -> Backtrack -> Blackout -> Library', async ({ page }) => {
-    // 1. Load application at root (safe mode flag to ensure consistent headless WebGL testing)
+    // 1. Load application at root with safe mode
     await page.goto('/?safe=1');
 
     // 2. Verify Cover screen with "MỞ GIÁO TRÌNH" button
@@ -60,6 +60,17 @@ test.describe('MLN Chapter 5 Presentation - Vertical Slice', () => {
       page.getByText(/Cộng đồng người \+ các mối quan hệ xã hội giữa các cộng đồng ấy/i)
     ).toBeVisible();
 
+    // Test Source Drawer interaction
+    const sourceChip = page.getByRole('button', { name: /Nguồn:/i });
+    await expect(sourceChip).toBeVisible();
+    await sourceChip.click();
+    await expect(page.getByText(/Tài liệu tham khảo & Trích dẫn/i)).toBeVisible();
+    await expect(page.getByText(/V.I.Lênin: Toàn tập/i)).toBeVisible();
+
+    // Close Source Drawer with Esc
+    await page.keyboard.press('Escape');
+    await expect(page.getByText(/Tài liệu tham khảo & Trích dẫn/i)).not.toBeVisible();
+
     // 8. Backtrack via Left Arrow
     await page.keyboard.press('ArrowLeft'); // beat 2 -> 1
     await page.keyboard.press('ArrowLeft'); // beat 1 -> 0
@@ -101,4 +112,127 @@ test.describe('MLN Chapter 5 Presentation - Vertical Slice', () => {
     await audiencePage.close();
     await presenterPage.close();
   });
+
+  test('Preflight Screen diagnostic verification', async ({ page }) => {
+    await page.goto('/?preflight=1');
+
+    await expect(page.getByText(/Kiểm tra tiền trạm phòng học/i)).toBeVisible();
+    // Wait for benchmark to finish
+    await expect(page.getByText(/Khởi động 3D chuẩn/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/Khởi động 2D Safe Mode/i)).toBeVisible();
+    await expect(page.getByText(/Chi tiết bộ điều khiển đồ họa/i)).toBeVisible();
+  });
+
+  test('Soak Stress Test - Repeated Rapid Navigation (20 cycles)', async ({ page }) => {
+    await page.goto('/?safe=1');
+    await page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i }).click();
+    await expect(page.getByText(/Thư viện Giáo trình/i)).toBeVisible();
+
+    // Rapidly cycle through Chapter 1 and Library 20 times
+    for (let i = 0; i < 20; i++) {
+      // Enter Book I
+      await page.keyboard.press('Digit1');
+      await expect(page.getByRole('heading', { name: /Khái luận về cơ cấu xã hội – giai cấp/i })).toBeVisible();
+
+      // Advance to P1.S1
+      await page.keyboard.press('Space');
+      await page.keyboard.press('Space');
+      await expect(page.getByRole('heading', { name: /Cơ cấu xã hội là gì\?/i })).toBeVisible();
+
+      // Return to Library
+      await page.keyboard.press('KeyO');
+      await expect(page.getByText(/Thư viện Giáo trình/i)).toBeVisible();
+    }
+
+    // Final assertion: state remains completely responsive and clean
+    await page.keyboard.press('Digit1');
+    await expect(page.getByRole('heading', { name: /Khái luận về cơ cấu xã hội – giai cấp/i })).toBeVisible();
+  });
+
+  test('Real WebGL 3D Lifecycle & Context Longevity (repeat 3 cycles)', async ({ page }) => {
+    test.setTimeout(90000);
+    const pageErrors: Error[] = [];
+    page.on('pageerror', (err) => pageErrors.push(err));
+
+    // 1. Load application at root with REAL 3D WebGL (no ?safe=1)
+    await page.goto('/?tier=high');
+
+    // 2. Open presentation from Cover Screen -> enters Library 3D
+    const openButton = page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i });
+    await expect(openButton).toBeVisible();
+    await openButton.click();
+
+    // 3. Verify Bookshelf 3D canvas is mounted and ready
+    const bookshelfCanvas = page.locator('canvas.bookshelf__canvas');
+    await expect(bookshelfCanvas).toBeVisible({ timeout: 10000 });
+
+    // Verify exactly 1 canvas exists
+    expect(await page.locator('canvas').count()).toBe(1);
+
+    // Initial lifecycle counter verification
+    let createdCount = await page.evaluate(() => (window as any).bookshelfRendererCreated || 0);
+    let disposedCount = await page.evaluate(() => (window as any).bookshelfRendererDisposed || 0);
+    expect(createdCount).toBe(1);
+    expect(disposedCount).toBe(0);
+
+    // 4. Volume browsing without WebGL re-creation: I -> II -> III -> IV -> I
+    for (let targetVol = 1; targetVol <= 3; targetVol++) {
+      await page.evaluate((idx) => {
+        (window as any).__store?.setState({ chapterIndex: idx });
+      }, targetVol);
+      await page.waitForTimeout(100);
+
+      // Verify lifecycle counters remain invariant during volume browsing
+      createdCount = await page.evaluate(() => (window as any).bookshelfRendererCreated || 0);
+      disposedCount = await page.evaluate(() => (window as any).bookshelfRendererDisposed || 0);
+      expect(createdCount).toBe(1);
+      expect(disposedCount).toBe(0);
+    }
+
+    // Return to Book I
+    await page.evaluate(() => {
+      (window as any).__store?.setState({ chapterIndex: 0 });
+    });
+    await page.waitForTimeout(100);
+    createdCount = await page.evaluate(() => (window as any).bookshelfRendererCreated || 0);
+    disposedCount = await page.evaluate(() => (window as any).bookshelfRendererDisposed || 0);
+    expect(createdCount).toBe(1);
+    expect(disposedCount).toBe(0);
+
+    // 5. Repeat 3 cycles of: Open Book I -> P1.S0 3D -> P1.S1 3D -> Back to Library
+    for (let cycle = 1; cycle <= 3; cycle++) {
+      await page.waitForTimeout(200);
+      // Open Book I via Digit1
+      await page.keyboard.press('Digit1');
+      await expect(page.getByRole('heading', { name: /Khái luận về cơ cấu xã hội – giai cấp/i })).toBeVisible();
+
+      // Only 1 canvas must remain active (R3F Canvas)
+      expect(await page.locator('canvas').count()).toBe(1);
+
+      // Advance to P1.S1 (beats)
+      await page.keyboard.press('Space'); // beat 1 of P1.S0
+      await page.keyboard.press('Space'); // enters P1.S1
+      await expect(page.getByRole('heading', { name: /Cơ cấu xã hội là gì\?/i })).toBeVisible();
+
+      // Ensure single active canvas
+      expect(await page.locator('canvas').count()).toBe(1);
+
+      // Return to Library with KeyO
+      await page.keyboard.press('KeyO');
+      await expect(bookshelfCanvas).toBeVisible({ timeout: 10000 });
+
+      // Exactly 1 canvas active
+      expect(await page.locator('canvas').count()).toBe(1);
+
+      // Verify lifecycle increment: created = cycle + 1, disposed = cycle
+      createdCount = await page.evaluate(() => (window as any).bookshelfRendererCreated || 0);
+      disposedCount = await page.evaluate(() => (window as any).bookshelfRendererDisposed || 0);
+      expect(createdCount).toBe(cycle + 1);
+      expect(disposedCount).toBe(cycle);
+    }
+
+    // Final checks: Zero page errors, zero context loss
+    expect(pageErrors.length).toBe(0);
+  });
 });
+

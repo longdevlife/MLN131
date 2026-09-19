@@ -50,7 +50,7 @@ export const R3FStage: React.FC<R3FStageProps> = ({
         <Suspense fallback={null}>
           {scene.visual.id === 'paper' && <PaperScene beatIndex={beatIndex} />}
           {scene.visual.id === 'constellation' && (
-            <SocialNetworkScene beatIndex={beatIndex} />
+            <SocialNetworkScene beatIndex={beatIndex} qualityTier={qualityTier} />
           )}
 
           {scene.visual.id !== 'paper' && scene.visual.id !== 'constellation' && (

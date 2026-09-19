@@ -19,7 +19,6 @@ export function useKeyboardNavigation() {
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
         return;
       }
-
       switch (e.code) {
         case 'Space':
         case 'ArrowRight':
@@ -87,6 +86,10 @@ export function useKeyboardNavigation() {
 
         case 'Escape':
           e.preventDefault();
+          if (usePresentationStore.getState().isSourceDrawerOpen) {
+            usePresentationStore.getState().closeSourceDrawer();
+            return;
+          }
           if (viewMode === 'chapter') {
             openLibrary();
           } else if (viewMode === 'library') {

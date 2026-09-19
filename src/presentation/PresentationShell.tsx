@@ -9,9 +9,11 @@ import { KeyboardController } from './KeyboardController';
 import { BlackoutLayer } from './BlackoutLayer';
 import { PresentationChannel } from '../presenter/broadcast';
 import type { PresentationSyncMessage } from '../presenter/broadcast';
+import { usePerformanceTier } from '../hooks/usePerformanceTier';
 
 export const PresentationShell: React.FC = () => {
   const viewMode = usePresentationStore((state) => state.viewMode);
+  usePerformanceTier();
 
   // Synchronize from presenter console via BroadcastChannel
   const channel = useMemo(() => {

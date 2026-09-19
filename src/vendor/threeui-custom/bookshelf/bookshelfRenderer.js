@@ -1326,10 +1326,16 @@ function fa(Nr, m, He = {}) {
     const c = new l.RectAreaLight(16775143, 2.15, 1.15, 3.8);
     c.name = "page-edge-rake", c.position.set(4.2, 4.8, 3.1), c.lookAt(0.65, 1.55, 0), R.add(c), I.pageRake = c;
   }
+  const _markerListeners = [];
   function Xn() {
     S.forEach((e, o) => {
       const t = document.createElement("button");
-      t.className = "marker", t.type = "button", t.role = "tab", t.setAttribute("aria-label", `Select volume ${o + 1}: ${e.title}`), t.setAttribute("aria-current", o === 0 ? "true" : "false"), t.setAttribute("aria-selected", o === 0 ? "true" : "false"), t.addEventListener("click", () => ar(o, t)), Xt.append(t);
+      const isInit = o === (typeof He.initialIndex === "number" ? We(He.initialIndex, S.length) : 0);
+      t.className = "marker", t.type = "button", t.role = "tab", t.setAttribute("aria-label", `Select volume ${o + 1}: ${e.title}`), t.setAttribute("aria-current", isInit ? "true" : "false"), t.setAttribute("aria-selected", isInit ? "true" : "false");
+      const clickHandler = () => ar(o, t);
+      t.addEventListener("click", clickHandler);
+      _markerListeners.push({ el: t, handler: clickHandler });
+      Xt.append(t);
     });
   }
   function nr() {
@@ -1948,7 +1954,19 @@ function fa(Nr, m, He = {}) {
     e.preventDefault(), Ke(), Te(), Ae = !0, ee && cancelAnimationFrame(ee), ee = 0, lo("The 3D view paused after losing its graphics context. The complete static catalog remains available; reload to restore inspection.");
   }
   function _n() {
-    jt = !0, Ae = !0, Ke(), Te(), ee && cancelAnimationFrame(ee), ee = 0, m.removeEventListener("pointermove", mr), m.removeEventListener("pointerleave", br), m.removeEventListener("click", yr), m.removeEventListener("pointerdown", dr, !0), m.removeEventListener("pointermove", fr, !0), m.removeEventListener("pointerup", ke, !0), m.removeEventListener("pointercancel", ke, !0), m.removeEventListener("lostpointercapture", ke, !0), m.removeEventListener("pointerdown", hr, !0), m.removeEventListener("pointermove", gr, !0), m.removeEventListener("pointerup", Me, !0), m.removeEventListener("pointercancel", Me, !0), m.removeEventListener("lostpointercapture", Me, !0), window.removeEventListener("pointerup", bt), window.removeEventListener("pointercancel", bt), y.removeEventListener("wheel", vr), m.removeEventListener("webglcontextlost", Ir), window.removeEventListener("resize", yt), y.removeEventListener("keydown", Tr), window.removeEventListener("blur", Pr), document.removeEventListener("visibilitychange", Sr), Zt.removeEventListener("change", zr), z?.dispose(), R?.traverse((e) => {
+    jt = !0, Ae = !0, Ke(), Te(), ee && cancelAnimationFrame(ee), ee = 0, m.removeEventListener("pointermove", mr), m.removeEventListener("pointerleave", br), m.removeEventListener("click", yr), m.removeEventListener("pointerdown", dr, !0), m.removeEventListener("pointermove", fr, !0), m.removeEventListener("pointerup", ke, !0), m.removeEventListener("pointercancel", ke, !0), m.removeEventListener("lostpointercapture", ke, !0), m.removeEventListener("pointerdown", hr, !0), m.removeEventListener("pointermove", gr, !0), m.removeEventListener("pointerup", Me, !0), m.removeEventListener("pointercancel", Me, !0), m.removeEventListener("lostpointercapture", Me, !0), window.removeEventListener("pointerup", bt), window.removeEventListener("pointercancel", bt), y.removeEventListener("wheel", vr), m.removeEventListener("webglcontextlost", Ir), window.removeEventListener("resize", yt), y.removeEventListener("keydown", Tr), window.removeEventListener("blur", Pr), document.removeEventListener("visibilitychange", Sr), Zt.removeEventListener("change", zr),
+    Io?.removeEventListener("click", onPrevClick),
+    Do?.removeEventListener("click", onNextClick),
+    ie?.removeEventListener("click", onInspectClick),
+    Ut?.removeEventListener("click", onCloseDetailClick),
+    it?.removeEventListener("click", onToggleBookClick),
+    st?.removeEventListener("click", onPrevPageClick),
+    lt?.removeEventListener("click", onNextPageClick),
+    Ko?.removeEventListener("click", onResetViewClick),
+    z?.removeEventListener("change", U),
+    _markerListeners.forEach(({ el, handler }) => el.removeEventListener("click", handler)),
+    _markerListeners.length = 0,
+    z?.dispose(), R?.traverse((e) => {
       e.geometry?.dispose(), (Array.isArray(e.material) ? e.material : [e.material]).filter(Boolean).forEach((t) => {
         Object.values(t).forEach((r) => {
           r?.isTexture && r.dispose();
@@ -1956,6 +1974,7 @@ function fa(Nr, m, He = {}) {
       });
     }), Wt?.dispose(), D?.dispose();
   }
+  let onPrevClick, onNextClick, onInspectClick, onCloseDetailClick, onToggleBookClick, onPrevPageClick, onNextPageClick, onResetViewClick;
   async function ea() {
     const e = at.decode().then(
       () => !0,
@@ -1987,7 +2006,13 @@ function fa(Nr, m, He = {}) {
     Wt = o.fromScene(new aa(), 0.04), R.environment = Wt.texture, R.environmentIntensity = 0.72, o.dispose(), L = new l.PerspectiveCamera(32, 1, 0.1, 60), W = new l.Group(), W.name = "continuous-shelf-stage", R.add(W), or(), L.position.copy(Le), L.lookAt(le), z = new na(L, m), z.enabled = !1, z.enableDamping = !X, z.dampingFactor = 0.075, z.enablePan = !0, z.screenSpacePanning = !0, z.minDistance = 2.8, z.maxDistance = 7.2, z.minPolarAngle = Math.PI * 0.24, z.maxPolarAngle = Math.PI * 0.76, z.target.copy(le), z.addEventListener("change", U), ia.init(), Rn(), Hn(), Xn(), pt = S.map((t, r) => {
       const a = En(t, r);
       return W.add(a.root), a;
-    }), mt(0, !0), yt(), m.addEventListener("pointermove", mr), m.addEventListener("pointerleave", br), m.addEventListener("click", yr), m.addEventListener("pointerdown", dr, { capture: !0 }), m.addEventListener("pointermove", fr, { capture: !0 }), m.addEventListener("pointerup", ke, { capture: !0 }), m.addEventListener("pointercancel", ke, { capture: !0 }), m.addEventListener("lostpointercapture", ke, { capture: !0 }), m.addEventListener("pointerdown", hr, { capture: !0 }), m.addEventListener("pointermove", gr, { capture: !0 }), m.addEventListener("pointerup", Me, { capture: !0 }), m.addEventListener("pointercancel", Me, { capture: !0 }), m.addEventListener("lostpointercapture", Me, { capture: !0 }), window.addEventListener("pointerup", bt), window.addEventListener("pointercancel", bt), y.addEventListener("wheel", vr, { passive: !1 }), m.addEventListener("webglcontextlost", Ir), window.addEventListener("resize", yt), y.addEventListener("keydown", Tr), window.addEventListener("blur", Pr), document.addEventListener("visibilitychange", Sr), Zt.addEventListener("change", zr), Io.addEventListener("click", () => Ie(-1, Io)), Do.addEventListener("click", () => Ie(1, Do)), ie.addEventListener("click", () => xe(ie)), Ut.addEventListener("click", so), it.addEventListener("click", () => ve(!K)), st.addEventListener("click", () => ze(-1)), lt.addEventListener("click", () => ze(1)), Ko.addEventListener("click", Lr), D.render(R, L), Ht.hidden = !0, y.classList.add("webgl-ready"), U(), He.onReady?.(), e.then((t) => {
+    });
+    const _initialVol = typeof He.initialIndex === "number" ? We(He.initialIndex, S.length) : 0;
+    V = _initialVol;
+    oe = _initialVol;
+    mt(_initialVol, !0);
+    yt();
+    m.addEventListener("pointermove", mr), m.addEventListener("pointerleave", br), m.addEventListener("click", yr), m.addEventListener("pointerdown", dr, { capture: !0 }), m.addEventListener("pointermove", fr, { capture: !0 }), m.addEventListener("pointerup", ke, { capture: !0 }), m.addEventListener("pointercancel", ke, { capture: !0 }), m.addEventListener("lostpointercapture", ke, { capture: !0 }), m.addEventListener("pointerdown", hr, { capture: !0 }), m.addEventListener("pointermove", gr, { capture: !0 }), m.addEventListener("pointerup", Me, { capture: !0 }), m.addEventListener("pointercancel", Me, { capture: !0 }), m.addEventListener("lostpointercapture", Me, { capture: !0 }), window.addEventListener("pointerup", bt), window.addEventListener("pointercancel", bt), y.addEventListener("wheel", vr, { passive: !1 }), m.addEventListener("webglcontextlost", Ir), window.addEventListener("resize", yt), y.addEventListener("keydown", Tr), window.addEventListener("blur", Pr), document.addEventListener("visibilitychange", Sr), Zt.addEventListener("change", zr), onPrevClick = () => Ie(-1, Io), onNextClick = () => Ie(1, Do), onInspectClick = () => xe(ie), onCloseDetailClick = so, onToggleBookClick = () => ve(!K), onPrevPageClick = () => ze(-1), onNextPageClick = () => ze(1), onResetViewClick = Lr, Io.addEventListener("click", onPrevClick), Do.addEventListener("click", onNextClick), ie.addEventListener("click", onInspectClick), Ut.addEventListener("click", onCloseDetailClick), it.addEventListener("click", onToggleBookClick), st.addEventListener("click", onPrevPageClick), lt.addEventListener("click", onNextPageClick), Ko.addEventListener("click", onResetViewClick), D.render(R, L), Ht.hidden = !0, y.classList.add("webgl-ready"), U(), He.onReady?.(), e.then((t) => {
       !t || Ae || !D || (Rt = !0, qn());
     });
   }
@@ -2022,7 +2047,20 @@ function fa(Nr, m, He = {}) {
     nextPage: () => {
       D && (b === "hero" ? xe(m) : b === "detail" && !K ? ve(!0) : b === "detail" && ze(1));
     },
-    dispose: _n
+    dispose: _n,
+    selectVolume: (index, immediate = false) => {
+      if (!D || jt) return;
+      const targetIdx = We(index, S.length);
+      if (immediate) {
+        V = targetIdx;
+        oe = targetIdx;
+        mt(targetIdx, !0);
+        U();
+      } else {
+        ar(targetIdx);
+      }
+    },
+    getSelectedVolume: () => O
   };
 }
 export {

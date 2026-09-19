@@ -34,6 +34,30 @@ export const PresenterConsole: React.FC = () => {
 
   // Timer
   const [secondsElapsed, setSecondsElapsed] = useState(0);
+  const [clearingCache, setClearingCache] = useState(false);
+
+  const handleClearOfflineCache = async () => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa toàn bộ bộ nhớ đệm offline và làm mới ứng dụng?')) {
+      return;
+    }
+    setClearingCache(true);
+    try {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((r) => r.unregister()));
+      }
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.reload();
+    } catch (err) {
+      console.error('Failed to clear cache:', err);
+      window.location.reload();
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -395,6 +419,72 @@ export const PresenterConsole: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Footer bar with Build Info and Cache Clear */}
+      <footer
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '8px 24px',
+          background: '#0B0D10',
+          borderTop: '1px solid #241814',
+          fontSize: '0.75rem',
+          color: '#7F8C9B',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span>
+            Phiên bản:{' '}
+            <strong style={{ color: '#C8A86A' }}>
+              v{typeof __BUILD_VERSION__ !== 'undefined' ? __BUILD_VERSION__ : '1.1.0'}
+            </strong>
+          </span>
+          <span>
+            Commit:{' '}
+            <code
+              style={{
+                color: '#9FB3C9',
+                background: '#171A24',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                fontFamily: 'monospace',
+              }}
+            >
+              {typeof __BUILD_COMMIT__ !== 'undefined' ? __BUILD_COMMIT__ : 'dev'}
+            </code>
+          </span>
+          <span>
+            Build:{' '}
+            {typeof __BUILD_TIME__ !== 'undefined'
+              ? new Date(__BUILD_TIME__).toLocaleString('vi-VN')
+              : 'vừa xong'}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleClearOfflineCache}
+          disabled={clearingCache}
+          title="Xóa Service Worker, Cache Storage và làm mới trang"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'rgba(155, 27, 48, 0.15)',
+            border: '1px solid rgba(155, 27, 48, 0.5)',
+            color: '#E06D75',
+            padding: '5px 12px',
+            borderRadius: '4px',
+            cursor: clearingCache ? 'not-allowed' : 'pointer',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            letterSpacing: '0.02em',
+          }}
+        >
+          {clearingCache ? 'ĐANG XÓA BỘ NHỚ ĐỆM...' : 'XÓA BỘ NHỚ ĐỆM OFFLINE & TẢI LẠI'}
+        </button>
+      </footer>
     </div>
   );
 };

@@ -17,6 +17,10 @@ export interface PresentationState {
   qualityTier: QualityTier;
   presenterStartedAt: number;
 
+  isSourceDrawerOpen: boolean;
+  openSourceDrawer: () => void;
+  closeSourceDrawer: () => void;
+  toggleSourceDrawer: () => void;
   // Navigation actions
   startPresentation: () => void;
   openCover: () => void;
@@ -58,6 +62,11 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     : false,
   qualityTier: getInitialSafeMode(),
   presenterStartedAt: Date.now(),
+  isSourceDrawerOpen: false,
+
+  openSourceDrawer: () => set({ isSourceDrawerOpen: true }),
+  closeSourceDrawer: () => set({ isSourceDrawerOpen: false }),
+  toggleSourceDrawer: () => set((state) => ({ isSourceDrawerOpen: !state.isSourceDrawerOpen })),
 
   startPresentation: () => {
     set({ viewMode: 'library', direction: 1 });
@@ -217,3 +226,8 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   setReducedMotion: (value: boolean) => set({ reducedMotion: value }),
   setTransitioning: (value: boolean) => set({ isTransitioning: value }),
 }));
+
+if (typeof window !== 'undefined') {
+  (window as any).__store = usePresentationStore;
+}
+

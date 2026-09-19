@@ -2,6 +2,13 @@ import React, { useRef, useState, useEffect } from 'react';
 // @ts-expect-error - vendored ThreeUI renderer
 import { createBookshelfRenderer } from './bookshelfRenderer.js';
 
+declare global {
+  interface Window {
+    bookshelfRendererCreated?: number;
+    bookshelfRendererDisposed?: number;
+  }
+}
+
 export interface BookRecord {
   id: string;
   title: string;
@@ -32,20 +39,36 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rendererRef = useRef<any>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Stable callbacks using refs to prevent renderer recreation
+  const onSelectBookRef = useRef(onSelectBook);
+  onSelectBookRef.current = onSelectBook;
+  const onOpenBookRef = useRef(onOpenBook);
+  onOpenBookRef.current = onOpenBook;
+
+  // Track initial index without triggering renderer re-creation
+  const initialIndexRef = useRef(initialIndex);
+  const isFirstMount = useRef(true);
+
+  // Initialize renderer exactly once per mount
   useEffect(() => {
     const container = containerRef.current;
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
     let disposed = false;
-    let rendererInstance: any = null;
+
+    // Track lifecycle counters
+    if (typeof window !== 'undefined') {
+      window.bookshelfRendererCreated = (window.bookshelfRendererCreated || 0) + 1;
+    }
 
     try {
-      rendererInstance = createBookshelfRenderer(container, canvas, {
-        initialIndex,
+      const renderer = createBookshelfRenderer(container, canvas, {
+        initialIndex: initialIndexRef.current,
         onReady: () => {
           if (!disposed) setStatus('ready');
         },
@@ -56,18 +79,20 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
           }
         },
         onSelectionChange: (info: { index: number; total: number; title: string }) => {
-          if (!disposed && onSelectBook) {
-            onSelectBook(info.index, info as any);
+          if (!disposed && onSelectBookRef.current) {
+            onSelectBookRef.current(info.index, info as any);
           }
         },
         onOpenBook: (index: number, book: any) => {
-          if (!disposed && onOpenBook) {
-            onOpenBook(index, book);
+          if (!disposed && onOpenBookRef.current) {
+            onOpenBookRef.current(index, book);
           }
         },
       });
 
-      rendererInstance.ready?.catch((err: any) => {
+      rendererRef.current = renderer;
+
+      renderer.ready?.catch((err: any) => {
         if (!disposed) {
           setErrorMessage(err instanceof Error ? err.message : 'Unknown renderer error');
           setStatus('unavailable');
@@ -80,20 +105,35 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
     }
 
     const resizeObserver = new ResizeObserver(() => {
-      rendererInstance?.resize?.();
+      rendererRef.current?.resize?.();
     });
     resizeObserver.observe(container);
 
     return () => {
       disposed = true;
+      if (typeof window !== 'undefined') {
+        window.bookshelfRendererDisposed = (window.bookshelfRendererDisposed || 0) + 1;
+      }
       resizeObserver.disconnect();
       try {
-        rendererInstance?.dispose?.();
+        rendererRef.current?.dispose?.();
+        rendererRef.current = null;
       } catch (disposeErr) {
         console.warn('Error during BookshelfRenderer disposal:', disposeErr);
       }
     };
-  }, [initialIndex, onOpenBook, onSelectBook]);
+  }, []); // Run ONCE on mount
+
+  // Sync volume change without re-creating WebGL renderer
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (rendererRef.current?.selectVolume) {
+      rendererRef.current.selectVolume(initialIndex, false);
+    }
+  }, [initialIndex]);
 
   return (
     <div
@@ -112,7 +152,7 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
       <canvas
         ref={canvasRef}
         className={`bookshelf__canvas ${status === 'ready' ? 'is-ready' : ''}`}
-        aria-label="Thư viện 3D Giáo trình Triết học Mác - Lênin Chương 5"
+        aria-label="Thư viện 3D Giáo trình Chủ nghĩa xã hội khoa học Chương 5"
         style={{
           display: 'block',
           width: '100%',

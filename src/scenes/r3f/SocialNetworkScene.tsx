@@ -5,6 +5,7 @@ import * as THREE from 'three';
 
 interface SocialNetworkSceneProps {
   beatIndex?: number;
+  qualityTier?: 'high' | 'medium' | 'safe';
 }
 
 interface NodeData {
@@ -36,7 +37,10 @@ const EDGES: [number, number][] = [
   [3, 4], // Dân tộc <-> Tôn giáo
 ];
 
-export const SocialNetworkScene: React.FC<SocialNetworkSceneProps> = ({ beatIndex = 0 }) => {
+export const SocialNetworkScene: React.FC<SocialNetworkSceneProps> = ({
+  beatIndex = 0,
+  qualityTier = 'high',
+}) => {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
@@ -148,27 +152,32 @@ export const SocialNetworkScene: React.FC<SocialNetworkSceneProps> = ({ beatInde
         );
       })}
 
-      {/* Floating particles background for depth */}
-      <points>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[
-              new Float32Array(
-                Array.from({ length: 180 }, () => (Math.random() - 0.5) * 10)
-              ),
-              3,
-            ]}
+      {/* Floating particles background for depth (dynamically reduced when FPS degrades) */}
+      {qualityTier !== 'safe' && (
+        <points>
+          <bufferGeometry>
+            <bufferAttribute
+              attach="attributes-position"
+              args={[
+                new Float32Array(
+                  Array.from(
+                    { length: (qualityTier === 'medium' ? 50 : 160) * 3 },
+                    () => (Math.random() - 0.5) * 10
+                  )
+                ),
+                3,
+              ]}
+            />
+          </bufferGeometry>
+          <pointsMaterial
+            size={0.03}
+            color="#C8A86A"
+            transparent
+            opacity={qualityTier === 'medium' ? 0.2 : 0.35}
+            sizeAttenuation
           />
-        </bufferGeometry>
-        <pointsMaterial
-          size={0.03}
-          color="#C8A86A"
-          transparent
-          opacity={0.3}
-          sizeAttenuation
-        />
-      </points>
+        </points>
+      )}
 
       {/* Scene illumination */}
       <ambientLight intensity={0.6} />
