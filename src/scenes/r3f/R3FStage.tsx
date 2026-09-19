@@ -3,6 +3,11 @@ import { Canvas } from '@react-three/fiber';
 import type { PresentationScene } from '../../content/types';
 import { PaperScene } from './PaperScene';
 import { SocialNetworkScene } from './SocialNetworkScene';
+import { ClassRelationsScene } from './ClassRelationsScene';
+import { OrbitalCentralityScene } from './OrbitalCentralityScene';
+import { StructureFlowScene } from './StructureFlowScene';
+import { DiversificationScene } from './DiversificationScene';
+import { ConvergenceScene } from './ConvergenceScene';
 
 interface R3FStageProps {
   scene: PresentationScene;
@@ -49,11 +54,41 @@ export const R3FStage: React.FC<R3FStageProps> = ({
       >
         <Suspense fallback={null}>
           {scene.visual.id === 'paper' && <PaperScene beatIndex={beatIndex} />}
+
           {scene.visual.id === 'constellation' && (
             <SocialNetworkScene beatIndex={beatIndex} qualityTier={qualityTier} />
           )}
 
-          {scene.visual.id !== 'paper' && scene.visual.id !== 'constellation' && (
+          {scene.visual.id === 'class-relations' && (
+            <ClassRelationsScene beatIndex={beatIndex} qualityTier={qualityTier} />
+          )}
+
+          {scene.visual.id === 'orbital-centrality' && (
+            <OrbitalCentralityScene beatIndex={beatIndex} qualityTier={qualityTier} />
+          )}
+
+          {scene.visual.id === 'structure-flow' && (
+            <StructureFlowScene beatIndex={beatIndex} qualityTier={qualityTier} />
+          )}
+
+          {scene.visual.id === 'diversification' && (
+            <DiversificationScene beatIndex={beatIndex} qualityTier={qualityTier} />
+          )}
+
+          {scene.visual.id === 'convergence' && (
+            <ConvergenceScene beatIndex={beatIndex} qualityTier={qualityTier} />
+          )}
+
+          {/* Fallback for unconfigured visuals */}
+          {![
+            'paper',
+            'constellation',
+            'class-relations',
+            'orbital-centrality',
+            'structure-flow',
+            'diversification',
+            'convergence',
+          ].includes(scene.visual.id) && (
             <group position={[0, 0, 0]}>
               <mesh>
                 <sphereGeometry args={[0.8, 32, 32]} />

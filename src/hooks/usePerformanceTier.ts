@@ -6,10 +6,11 @@ export function usePerformanceTier() {
   const setQualityTier = usePresentationStore((state) => state.setQualityTier);
 
   const frameCountRef = useRef(0);
-  const lastTimeRef = useRef(performance.now());
+  const lastTimeRef = useRef(0);
   const lowFpsCountRef = useRef(0);
 
   useEffect(() => {
+    lastTimeRef.current = performance.now();
     // If already in safe mode, no need to monitor
     if (qualityTier === 'safe') return;
 

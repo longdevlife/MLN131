@@ -6,38 +6,46 @@ interface PaperSceneProps {
   beatIndex?: number;
 }
 
+// Procedural subtle paper texture generator
+function createPaperTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#EDE4D6';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Deterministic pseudo-random parchment grain
+    let seed = 12345;
+    const nextRand = () => {
+      seed = (seed * 16807) % 2147483647;
+      return seed / 2147483647;
+    };
+
+    for (let i = 0; i < 4000; i++) {
+      const x = nextRand() * 512;
+      const y = nextRand() * 512;
+      ctx.fillStyle = nextRand() > 0.5 ? 'rgba(0,0,0,0.015)' : 'rgba(255,255,255,0.025)';
+      ctx.fillRect(x, y, 1.5, 1.5);
+    }
+
+    // Elegant inner border
+    ctx.strokeStyle = 'rgba(200, 168, 106, 0.35)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(24, 24, 464, 464);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.generateMipmaps = true;
+  return texture;
+}
+
 export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const leftPageRef = useRef<THREE.Group>(null);
   const rightPageRef = useRef<THREE.Group>(null);
 
-  // Procedural subtle paper texture
-  const paperTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = '#EDE4D6';
-      ctx.fillRect(0, 0, 512, 512);
-
-      // Subtle parchment grain
-      for (let i = 0; i < 4000; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 512;
-        ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.015)' : 'rgba(255,255,255,0.025)';
-        ctx.fillRect(x, y, 1.5, 1.5);
-      }
-
-      // Elegant inner border
-      ctx.strokeStyle = 'rgba(200, 168, 106, 0.35)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(24, 24, 464, 464);
-    }
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.generateMipmaps = true;
-    return texture;
-  }, []);
+  const paperTexture = useMemo(() => createPaperTexture(), []);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();

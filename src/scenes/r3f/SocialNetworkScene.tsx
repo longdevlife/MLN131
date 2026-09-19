@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
@@ -37,11 +37,27 @@ const EDGES: [number, number][] = [
   [3, 4], // Dân tộc <-> Tôn giáo
 ];
 
+// Deterministic pseudo-random generator for background particles
+function createDeterministicParticles(count: number): Float32Array {
+  const arr = new Float32Array(count * 3);
+  let seed = 42;
+  for (let i = 0; i < count * 3; i++) {
+    seed = (seed * 9301 + 49297) % 233280;
+    arr[i] = (seed / 233280 - 0.5) * 10;
+  }
+  return arr;
+}
+
 export const SocialNetworkScene: React.FC<SocialNetworkSceneProps> = ({
   beatIndex = 0,
   qualityTier = 'high',
 }) => {
   const groupRef = useRef<THREE.Group>(null);
+
+  const particlePositions = useMemo(() => {
+    const count = qualityTier === 'medium' ? 50 : 160;
+    return createDeterministicParticles(count);
+  }, [qualityTier]);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -158,15 +174,7 @@ export const SocialNetworkScene: React.FC<SocialNetworkSceneProps> = ({
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
-              args={[
-                new Float32Array(
-                  Array.from(
-                    { length: (qualityTier === 'medium' ? 50 : 160) * 3 },
-                    () => (Math.random() - 0.5) * 10
-                  )
-                ),
-                3,
-              ]}
+              args={[particlePositions, 3]}
             />
           </bufferGeometry>
           <pointsMaterial

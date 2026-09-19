@@ -131,13 +131,22 @@ npm run test:e2e
 
 ### 🎯 Tiêu chuẩn Nghiệm thu Kỹ thuật (QA Pass Criteria)
 - ✅ `tsc -b`: 0 lỗi biên dịch kiểu TypeScript.
-- ✅ `oxlint`: 0 cảnh báo linting.
-- ✅ `playwright test`: 5/5 kịch bản E2E kiểm thử tự động đạt 100% (bao gồm bài kiểm tra độ bền WebGL qua nhiều chu trình chuyển đổi, kiểm tra đồng bộ BroadcastChannel, và kiểm tra giao diện tiền trạm Preflight).
-- ✅ Lifecycle ThreeUI: Duyệt qua các tập sách I -> II -> III -> IV -> I trong thư viện đảm bảo `created = 1`, `disposed = 0` (không tạo/hủy WebGL context ngoài ý muốn).
+- ✅ `oxlint`: 0 cảnh báo linting (loại trừ vendor library được cô lập, 0 warnings trong mã nguồn ứng dụng).
+- ✅ `playwright test`: 6/6 kịch bản E2E kiểm thử tự động đạt 100% (bao gồm kiểm thử hoàn chỉnh toàn bộ Part 1 từ P1.S0 đến P1.S7, bài kiểm tra độ bền WebGL qua nhiều chu trình chuyển đổi, kiểm tra đồng bộ BroadcastChannel, và kiểm tra giao diện tiền trạm Preflight).
+- ✅ Lifecycle ThreeUI: Không ghi nhận renderer recreation hoặc WebGL context loss trong test lifecycle hiện tại (duyệt qua các tập sách I -> II -> III -> IV -> I trong thư viện giữ nguyên `created = 1`, `disposed = 0`).
 
 ---
 
-## 📜 6. Giấy phép & Ghi công (License & Attributions)
+## ⚠️ 6. Giới hạn đã biết (Known Limitations)
+
+1. **Kích thước Bundle JS (~1.96 MB):**  
+   Do tích hợp đồng thời Three.js r170, React Three Fiber, Drei và ThreeUI Bookshelf tùy biến, bundle chính hiện xấp xỉ 1.96 MB (chưa gzip). Đối với ứng dụng trình chiếu hội trường chạy local hoặc PWA offline, tốc độ nạp là tức thì và hoạt động hoàn toàn mượt mà. Trong các phase mở rộng tiếp theo (Part II - IV), giải pháp dynamic import (`React.lazy`) theo từng chương sẽ được áp dụng để chia nhỏ chunk.
+2. **Kiểm chứng bộ nhớ WebGL:**  
+   Chỉ số `created = 1`, `disposed = 0` chứng minh renderer không bị tái tạo ngoài ý muốn khi chuyển đổi sách. Tuy nhiên, việc loại trừ rò rỉ bộ nhớ GPU tuyệt đối ở quy mô dài hạn cần tiếp tục được quan sát thông qua Chrome Memory & Heap Profiler trong điều kiện tải liên tục.
+
+---
+
+## 📜 7. Giấy phép & Ghi công (License & Attributions)
 
 - **Nội dung lý luận & Trích dẫn:** Giáo trình *Chủ nghĩa xã hội khoa học* (Dành cho bậc đại học hệ không chuyên lý luận chính trị), Bộ Giáo dục và Đào tạo, NXB Chính trị quốc gia Sự thật, Hà Nội, 2021.
 - **ThreeUI Bookshelf Module:** Dựa trên thiết kế và mã nguồn nền tảng của ThreeUI, được tinh chỉnh, tối ưu hóa lifecycle và bản địa hóa 100% tiếng Việt học thuật bởi nhóm phát triển.

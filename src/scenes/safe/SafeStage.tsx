@@ -2,6 +2,11 @@ import React from 'react';
 import type { PresentationScene } from '../../content/types';
 import { SafePaperScene } from './SafePaperScene';
 import { SafeSocialNetworkScene } from './SafeSocialNetworkScene';
+import { SafeClassRelationsScene } from './SafeClassRelationsScene';
+import { SafeOrbitalCentralityScene } from './SafeOrbitalCentralityScene';
+import { SafeStructureFlowScene } from './SafeStructureFlowScene';
+import { SafeDiversificationScene } from './SafeDiversificationScene';
+import { SafeConvergenceScene } from './SafeConvergenceScene';
 
 interface SafeStageProps {
   scene: PresentationScene;
@@ -30,7 +35,35 @@ export const SafeStage: React.FC<SafeStageProps> = ({ scene, beatIndex }) => {
         <SafeSocialNetworkScene beatIndex={beatIndex} />
       )}
 
-      {scene.visual.id !== 'paper' && scene.visual.id !== 'constellation' && (
+      {scene.visual.id === 'class-relations' && (
+        <SafeClassRelationsScene beatIndex={beatIndex} />
+      )}
+
+      {scene.visual.id === 'orbital-centrality' && (
+        <SafeOrbitalCentralityScene beatIndex={beatIndex} />
+      )}
+
+      {scene.visual.id === 'structure-flow' && (
+        <SafeStructureFlowScene beatIndex={beatIndex} />
+      )}
+
+      {scene.visual.id === 'diversification' && (
+        <SafeDiversificationScene beatIndex={beatIndex} />
+      )}
+
+      {scene.visual.id === 'convergence' && (
+        <SafeConvergenceScene beatIndex={beatIndex} />
+      )}
+
+      {![
+        'paper',
+        'constellation',
+        'class-relations',
+        'orbital-centrality',
+        'structure-flow',
+        'diversification',
+        'convergence',
+      ].includes(scene.visual.id) && (
         <div
           style={{
             background: 'rgba(23, 26, 36, 0.9)',

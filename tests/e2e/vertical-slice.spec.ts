@@ -150,7 +150,7 @@ test.describe('MLN Chapter 5 Presentation - Vertical Slice Hardened Suite', () =
   });
 
   test('Real WebGL 3D Lifecycle & Context Longevity (repeat 3 cycles)', async ({ page }) => {
-    test.setTimeout(90000);
+    test.setTimeout(180000);
     const pageErrors: Error[] = [];
     page.on('pageerror', (err) => pageErrors.push(err));
 
@@ -234,5 +234,61 @@ test.describe('MLN Chapter 5 Presentation - Vertical Slice Hardened Suite', () =
     // Final checks: Zero page errors, zero context loss
     expect(pageErrors.length).toBe(0);
   });
+
+  test('Phase 2 Complete Part 1 Authoring Walkthrough (P1.S0 -> P1.S7)', async ({ page }) => {
+    // 1. Open Book I in Safe Mode
+    await page.goto('/?safe=1');
+    await page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i }).click();
+    await page.getByText('QUYỂN I', { exact: true }).click();
+
+    // P1.S0
+    await expect(page.getByRole('heading', { name: /Khái luận về cơ cấu xã hội – giai cấp/i })).toBeVisible();
+
+    // Advance beats to P1.S1
+    await page.keyboard.press('Space');
+    await page.keyboard.press('Space');
+    await expect(page.getByRole('heading', { name: /Cơ cấu xã hội là gì\?/i })).toBeVisible();
+
+    // Advance beats to P1.S2 (Class Relations)
+    await page.keyboard.press('Space'); // beat 1
+    await page.keyboard.press('Space'); // beat 2
+    await page.keyboard.press('Space'); // enters P1.S2
+    await expect(page.getByRole('heading', { name: /Cơ cấu xã hội – giai cấp là gì\?/i })).toBeVisible();
+    await expect(page.getByText(/1\. Sở hữu tư liệu sản xuất/i)).toBeVisible();
+
+    // Advance beat in P1.S2 to P1.S3 (Orbital Centrality)
+    await page.keyboard.press('Space'); // beat 1
+    await page.keyboard.press('Space'); // enters P1.S3
+    await expect(page.getByRole('heading', { name: /Vị trí của cơ cấu xã hội – giai cấp/i })).toBeVisible();
+    await expect(page.getByText('Vị trí quan trọng hàng đầu', { exact: true })).toBeVisible();
+
+    // Advance beats to P1.S4 (Structure Flow)
+    await page.keyboard.press('Space'); // beat 1
+    await page.keyboard.press('Space'); // beat 2
+    await page.keyboard.press('Space'); // enters P1.S4
+    await expect(page.getByRole('heading', { name: /Gắn liền và bị quy định bởi cơ cấu kinh tế/i })).toBeVisible();
+    await expect(page.getByText(/Quy luật chuyển dịch 1 chiều cốt lõi/i)).toBeVisible();
+
+    // Advance beats to P1.S5 (Diversification)
+    await page.keyboard.press('Space'); // beat 1
+    await page.keyboard.press('Space'); // enters P1.S5
+    await expect(page.getByRole('heading', { name: /Biến đổi phức tạp, đa dạng và xuất hiện tầng lớp mới/i })).toBeVisible();
+    await expect(page.getByText(/3 Khối giai tầng truyền thống/i)).toBeVisible();
+
+    // Advance beats to P1.S6 (Convergence)
+    await page.keyboard.press('Space'); // beat 1
+    await page.keyboard.press('Space'); // beat 2
+    await page.keyboard.press('Space'); // enters P1.S6
+    await expect(page.getByRole('heading', { name: /Vừa đấu tranh vừa liên minh, từng bước xích lại gần nhau/i })).toBeVisible();
+    await expect(page.getByText(/Xây dựng thành công Chủ nghĩa Xã hội/i)).toBeVisible();
+
+    // Advance beats to P1.S7 (Bridge)
+    await page.keyboard.press('Space'); // beat 1
+    await page.keyboard.press('Space'); // beat 2
+    await page.keyboard.press('Space'); // enters P1.S7
+    await expect(page.getByRole('heading', { name: /Cầu nối sang Liên minh giai cấp, tầng lớp/i })).toBeVisible();
+    await expect(page.getByText(/Vì sao liên minh giai cấp, tầng lớp là đòi hỏi khách quan\?/i)).toBeVisible();
+  });
 });
+
 

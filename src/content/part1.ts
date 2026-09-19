@@ -128,7 +128,8 @@ export const part1Scenes: PresentationScene[] = [
     },
     beats: [
       { id: 'p1-s3-b0', label: 'Hạt nhân trung tâm hàng đầu' },
-      { id: 'p1-s3-b1', label: 'Tác động biện chứng hai chiều' },
+      { id: 'p1-s3-b1', label: '4 Vệ tinh cộng đồng xoay quanh' },
+      { id: 'p1-s3-b2', label: 'Tác động biện chứng hai chiều' },
     ],
     speakerNotes: [
       'Nhấn mạnh nguyên lý biện chứng: Cơ cấu xã hội - giai cấp giữ vị trí trọng yếu hàng đầu nhưng tồn tại trong mối tác động qua lại với các cơ cấu khác.',
@@ -172,8 +173,9 @@ export const part1Scenes: PresentationScene[] = [
       id: 'diversification',
     },
     beats: [
-      { id: 'p1-s5-b0', label: 'Phân hóa từ các giai cấp truyền thống' },
-      { id: 'p1-s5-b1', label: 'Hình thành và phát triển các tầng lớp xã hội mới' },
+      { id: 'p1-s5-b0', label: '3 Khối giai tầng truyền thống (Công - Nông - Trí)' },
+      { id: 'p1-s5-b1', label: 'Xuất hiện các tầng lớp mới (Doanh nhân, Tiểu chủ)' },
+      { id: 'p1-s5-b2', label: 'Phân hóa nội bộ về ngành nghề, trình độ và thu nhập' },
     ],
     speakerNotes: [
       'Xu hướng 2: Sự tồn tại của nhiều thành phần kinh tế tất yếu dẫn đến sự phân hóa và xuất hiện các tầng lớp mới.',
@@ -194,8 +196,9 @@ export const part1Scenes: PresentationScene[] = [
       id: 'convergence',
     },
     beats: [
-      { id: 'p1-s6-b0', label: 'Giải quyết khác biệt lợi ích thông qua đấu tranh và đồng thuận' },
-      { id: 'p1-s6-b1', label: 'Liên minh chặt chẽ và xích lại gần nhau vì mục tiêu CNXH' },
+      { id: 'p1-s6-b0', label: 'Khác biệt lợi ích kinh tế giữa các giai tầng' },
+      { id: 'p1-s6-b1', label: 'Hình thành các sợi liên kết hợp tác & liên minh' },
+      { id: 'p1-s6-b2', label: 'Xích lại gần nhau và hội tụ quanh mục tiêu CNXH' },
     ],
     speakerNotes: [
       'Xu hướng 3: Đấu tranh để khắc phục tiêu cực, phân hóa bất bình đẳng; liên minh để phát huy sức mạnh tổng hợp xây dựng CNXH.',
