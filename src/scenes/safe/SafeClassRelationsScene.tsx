@@ -1,39 +1,22 @@
 import React from 'react';
+import type { PresentationScene } from '../../content/types';
 
 interface SafeClassRelationsSceneProps {
+  scene?: PresentationScene;
   beatIndex?: number;
 }
 
 export const SafeClassRelationsScene: React.FC<SafeClassRelationsSceneProps> = ({
+  scene,
   beatIndex = 0,
 }) => {
-  const showAxes = beatIndex >= 1;
+  const isVisible = beatIndex >= 1;
 
-  const axes = [
-    {
-      title: '1. Sở hữu tư liệu sản xuất',
-      sub: 'Quyết định địa vị thống trị hoặc bình đẳng kinh tế',
-      color: '#C8A86A',
-      icon: '🏭',
-    },
-    {
-      title: '2. Tổ chức quản lý sản xuất',
-      sub: 'Phân công lao động xã hội, điều hành và thực thi',
-      color: '#9FB3C9',
-      icon: '⚙️',
-    },
-    {
-      title: '3. Địa vị chính trị – xã hội',
-      sub: 'Quyền lực và mức độ ảnh hưởng trong xã hội',
-      color: '#76A394',
-      icon: '⚖️',
-    },
-    {
-      title: '4. Phân phối lợi ích & thu nhập',
-      sub: 'Phương thức và quy mô thụ hưởng của cải làm ra',
-      color: '#BD7880',
-      icon: '📈',
-    },
+  const defaultAxes = [
+    { id: 'TLSX', activeBeat: 2, title: '1. Quan hệ sở hữu TLSX', sub: 'Quyết định trực tiếp địa vị giai cấp', color: '#C8A86A', icon: '🏭' },
+    { id: 'QUAN_LY', activeBeat: 2, title: '2. Tổ chức quản lý', sub: 'Phân công lao động xã hội và điều hành', color: '#9FB3C9', icon: '⚙️' },
+    { id: 'DIA_VI', activeBeat: 3, title: '3. Địa vị chính trị – XH', sub: 'Quy định quyền lực và vai trò xã hội', color: '#76A394', icon: '⚖️' },
+    { id: 'PHAN_PHOI', activeBeat: 3, title: '4. Phân phối thu nhập', sub: 'Phương thức và quy mô thụ hưởng của cải', color: '#BD7880', icon: '📈' },
   ];
 
   return (
@@ -78,35 +61,58 @@ export const SafeClassRelationsScene: React.FC<SafeClassRelationsSceneProps> = (
           gridTemplateColumns: 'repeat(2, 1fr)',
           gap: '1rem',
           width: '100%',
-          opacity: showAxes ? 1 : 0.45,
+          opacity: isVisible ? 1 : 0.45,
           transition: 'opacity 0.4s ease',
         }}
       >
-        {axes.map((axis, i) => (
-          <div
-            key={i}
-            style={{
-              background: 'rgba(23, 26, 36, 0.85)',
-              border: `1px solid ${axis.color}`,
-              borderRadius: '8px',
-              padding: '1rem',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '0.75rem',
-              boxShadow: `0 4px 16px ${axis.color}22`,
-            }}
-          >
-            <span style={{ fontSize: '1.5rem' }}>{axis.icon}</span>
-            <div>
-              <div style={{ fontWeight: 700, color: axis.color, fontSize: '1rem' }}>
-                {axis.title}
-              </div>
-              <div style={{ fontSize: '0.85rem', color: '#C8D3DC', marginTop: '0.25rem' }}>
-                {axis.sub}
+        {defaultAxes.map((axis) => {
+          const canonical = scene?.visualLabels?.find((l) => l.id === axis.id);
+          const title = canonical?.text ? `${axis.title.slice(0, 3)} ${canonical.text}` : axis.title;
+          const sub = canonical?.sub || axis.sub;
+          const role = canonical?.role;
+          const isHighlighted = beatIndex >= axis.activeBeat;
+
+          return (
+            <div
+              key={axis.id}
+              style={{
+                background: isHighlighted ? 'rgba(23, 26, 36, 0.95)' : 'rgba(23, 26, 36, 0.65)',
+                border: `1.5px solid ${isHighlighted ? axis.color : `${axis.color}44`}`,
+                borderRadius: '8px',
+                padding: '1rem',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem',
+                boxShadow: isHighlighted ? `0 4px 16px ${axis.color}25` : 'none',
+                transition: 'all 0.35s ease',
+              }}
+            >
+              <span style={{ fontSize: '1.5rem' }}>{axis.icon}</span>
+              <div>
+                <div style={{ fontWeight: 700, color: axis.color, fontSize: '1rem' }}>
+                  {title}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#C8D3DC', marginTop: '0.25rem' }}>
+                  {sub}
+                </div>
+                {isHighlighted && role && (
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      color: '#B0BEC5',
+                      marginTop: '0.35rem',
+                      paddingTop: '0.25rem',
+                      borderTop: '1px solid rgba(255,255,255,0.1)',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {role}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

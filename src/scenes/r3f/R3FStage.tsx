@@ -1,13 +1,17 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import type { PresentationScene } from '../../content/types';
-import { PaperScene } from './PaperScene';
-import { SocialNetworkScene } from './SocialNetworkScene';
-import { ClassRelationsScene } from './ClassRelationsScene';
-import { OrbitalCentralityScene } from './OrbitalCentralityScene';
-import { StructureFlowScene } from './StructureFlowScene';
-import { DiversificationScene } from './DiversificationScene';
-import { ConvergenceScene } from './ConvergenceScene';
+import { SceneCameraRig } from './camera/SceneCameraRig';
+import {
+  PaperSceneLazy,
+  SocialNetworkSceneLazy,
+  ClassRelationsSceneLazy,
+  OrbitalCentralitySceneLazy,
+  StructureFlowSceneLazy,
+  DiversificationSceneLazy,
+  ConvergenceSceneLazy,
+  Part1BridgeSceneLazy,
+} from './sceneRegistry';
 
 interface R3FStageProps {
   scene: PresentationScene;
@@ -41,10 +45,10 @@ export const R3FStage: React.FC<R3FStageProps> = ({
           alpha: true,
         }}
         camera={{
-          fov: 42,
+          fov: 45,
           near: 0.1,
           far: 100,
-          position: [0, 0, 6.5],
+          position: [0, 0, 10],
         }}
         style={{
           width: '100%',
@@ -52,34 +56,42 @@ export const R3FStage: React.FC<R3FStageProps> = ({
           background: 'transparent',
         }}
       >
+        {/* Unified Cinematic Camera Choreography Rig */}
+        <SceneCameraRig sceneId={scene.id} beatIndex={beatIndex} />
+
         <Suspense fallback={null}>
-          {scene.visual.id === 'paper' && <PaperScene beatIndex={beatIndex} />}
+          {scene.visual.id === 'paper' && (
+            <PaperSceneLazy sceneId={scene.id} beatIndex={beatIndex} />
+          )}
 
           {scene.visual.id === 'constellation' && (
-            <SocialNetworkScene beatIndex={beatIndex} qualityTier={qualityTier} />
+            <SocialNetworkSceneLazy beatIndex={beatIndex} qualityTier={qualityTier} />
           )}
 
           {scene.visual.id === 'class-relations' && (
-            <ClassRelationsScene beatIndex={beatIndex} qualityTier={qualityTier} />
+            <ClassRelationsSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
           )}
 
           {scene.visual.id === 'orbital-centrality' && (
-            <OrbitalCentralityScene beatIndex={beatIndex} qualityTier={qualityTier} />
+            <OrbitalCentralitySceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
           )}
 
           {scene.visual.id === 'structure-flow' && (
-            <StructureFlowScene beatIndex={beatIndex} qualityTier={qualityTier} />
+            <StructureFlowSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
           )}
 
           {scene.visual.id === 'diversification' && (
-            <DiversificationScene beatIndex={beatIndex} qualityTier={qualityTier} />
+            <DiversificationSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
           )}
 
           {scene.visual.id === 'convergence' && (
-            <ConvergenceScene beatIndex={beatIndex} qualityTier={qualityTier} />
+            <ConvergenceSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
           )}
 
-          {/* Fallback for unconfigured visuals */}
+          {scene.visual.id === 'part1-bridge' && (
+            <Part1BridgeSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
+          )}
+
           {![
             'paper',
             'constellation',
@@ -88,6 +100,7 @@ export const R3FStage: React.FC<R3FStageProps> = ({
             'structure-flow',
             'diversification',
             'convergence',
+            'part1-bridge',
           ].includes(scene.visual.id) && (
             <group position={[0, 0, 0]}>
               <mesh>

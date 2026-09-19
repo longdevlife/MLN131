@@ -1,21 +1,29 @@
 import React from 'react';
+import type { PresentationScene } from '../../content/types';
 
 interface SafeConvergenceSceneProps {
+  scene?: PresentationScene;
   beatIndex?: number;
 }
 
 export const SafeConvergenceScene: React.FC<SafeConvergenceSceneProps> = ({
+  scene,
   beatIndex = 0,
 }) => {
-  const showAlliance = beatIndex >= 1;
-  const isConverged = beatIndex >= 2;
+  const showTension = beatIndex === 1;
+  const showSharedField = beatIndex >= 2;
+  const showAlliance = beatIndex >= 3;
+  const isMovingCloser = beatIndex >= 4;
+  const showFinalPhrase = beatIndex >= 5;
 
   const clusters = [
-    { name: 'Giai cấp Công nhân', role: 'Nòng cốt lãnh đạo sự nghiệp xây dựng CNXH', color: '#C87046' },
-    { name: 'Giai cấp Nông dân', role: 'Cơ sở giai tầng to lớn bảo đảm lương thực & xã hội', color: '#76A394' },
-    { name: 'Đội ngũ Trí thức', role: 'Động lực phát triển kinh tế tri thức và công nghệ', color: '#9FB3C9' },
-    { name: 'Đội ngũ Doanh nhân', role: 'Động lực phát triển sản xuất kinh doanh thị trường', color: '#C8A86A' },
+    { id: 'CLUSTER_A', name: 'Giai tầng A', color: '#C87046' },
+    { id: 'CLUSTER_B', name: 'Giai tầng B', color: '#76A394' },
+    { id: 'CLUSTER_C', name: 'Giai tầng C', color: '#9FB3C9' },
+    { id: 'CLUSTER_D', name: 'Giai tầng D', color: '#C8A86A' },
   ];
+
+  const sharedFieldLabel = scene?.visualLabels?.find((l) => l.id === 'SHARED_FIELD');
 
   return (
     <div
@@ -32,38 +40,41 @@ export const SafeConvergenceScene: React.FC<SafeConvergenceSceneProps> = ({
     >
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '0.85rem', color: '#C8A86A', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 700 }}>
-          Quy luật biến đổi 3
+          Sự biến đổi có tính quy luật — Xu hướng 3
         </div>
-        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#F5F0E8', marginTop: '0.25rem' }}>
+        <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#F5F0E8', marginTop: '0.25rem' }}>
           Vừa đấu tranh vừa liên minh, từng bước xích lại gần nhau
         </div>
       </div>
 
-      {/* Central Goal Convergence Target */}
-      <div
-        style={{
-          background: isConverged
-            ? 'radial-gradient(circle, rgba(200, 168, 106, 0.45) 0%, rgba(11, 13, 16, 0.95) 100%)'
-            : 'rgba(23, 26, 36, 0.85)',
-          border: '2px solid #C8A86A',
-          borderRadius: '12px',
-          padding: '1.25rem 2rem',
-          textAlign: 'center',
-          boxShadow: isConverged ? '0 8px 32px rgba(200, 168, 106, 0.4)' : 'none',
-          transition: 'all 0.5s ease',
-          maxWidth: '560px',
-        }}
-      >
-        <div style={{ fontSize: '0.8rem', color: '#C8A86A', fontWeight: 700, textTransform: 'uppercase' }}>
-          {isConverged ? '✦ Điểm giao thoa lợi ích cao nhất ✦' : 'Mục tiêu chung'}
+      {/* Central Goal Convergence Target at Beat 2+ */}
+      {showSharedField && (
+        <div
+          style={{
+            background: isMovingCloser
+              ? 'radial-gradient(circle, rgba(200, 168, 106, 0.45) 0%, rgba(11, 13, 16, 0.95) 100%)'
+              : 'rgba(23, 26, 36, 0.85)',
+            border: '2px solid #C8A86A',
+            borderRadius: '12px',
+            padding: '1.25rem 2rem',
+            textAlign: 'center',
+            boxShadow: isMovingCloser ? '0 8px 32px rgba(200, 168, 106, 0.4)' : 'none',
+            transition: 'all 0.5s ease',
+            maxWidth: '560px',
+            width: '100%',
+          }}
+        >
+          <div style={{ fontSize: '0.8rem', color: '#C8A86A', fontWeight: 700, textTransform: 'uppercase' }}>
+            {isMovingCloser ? '✦ Giao thoa hội tụ mục tiêu ✦' : 'Trường lực quy tụ'}
+          </div>
+          <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#FFFFFF', marginTop: '0.25rem' }}>
+            {sharedFieldLabel?.text || 'Lợi ích chung'}
+          </div>
+          <div style={{ fontSize: '0.85rem', color: '#C8D3DC', marginTop: '0.25rem' }}>
+            {sharedFieldLabel?.sub || 'Mục tiêu xây dựng Chủ nghĩa xã hội'}
+          </div>
         </div>
-        <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#FFFFFF', marginTop: '0.25rem' }}>
-          Xây dựng thành công Chủ nghĩa Xã hội
-        </div>
-        <div style={{ fontSize: '0.9rem', color: '#C8D3DC', marginTop: '0.25rem' }}>
-          Dân giàu, nước mạnh, dân chủ, công bằng, văn minh
-        </div>
-      </div>
+      )}
 
       {/* 4 Clusters */}
       <div
@@ -72,13 +83,13 @@ export const SafeConvergenceScene: React.FC<SafeConvergenceSceneProps> = ({
           gridTemplateColumns: 'repeat(2, 1fr)',
           gap: '1rem',
           width: '100%',
-          maxWidth: isConverged ? '650px' : '820px',
-          transition: 'max-width 0.5s ease',
+          maxWidth: isMovingCloser ? '620px' : '780px',
+          transition: 'max-width 0.4s ease',
         }}
       >
-        {clusters.map((c, i) => (
+        {clusters.map((c) => (
           <div
-            key={i}
+            key={c.id}
             style={{
               background: 'rgba(23, 26, 36, 0.9)',
               border: `1px solid ${c.color}`,
@@ -94,36 +105,36 @@ export const SafeConvergenceScene: React.FC<SafeConvergenceSceneProps> = ({
               {showAlliance ? '🤝 ' : ''}
               {c.name}
             </div>
-            <div style={{ fontSize: '0.85rem', color: '#C8D3DC' }}>{c.role}</div>
+            <div style={{ fontSize: '0.82rem', color: '#9FB3C9' }}>
+              {showAlliance
+                ? 'Hợp tác và liên minh trên nền tảng lợi ích chung'
+                : showTension
+                ? '⚡ Tồn tại khác biệt và mâu thuẫn về lợi ích'
+                : 'Mang các điều kiện và lợi ích kinh tế riêng'}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Dialectical Explanation Note */}
-      <div
-        style={{
-          background: 'rgba(200, 112, 70, 0.12)',
-          borderLeft: '4px solid #C87046',
-          padding: '0.75rem 1.25rem',
-          color: '#F5F0E8',
-          fontSize: '0.85rem',
-          maxWidth: '750px',
-        }}
-      >
-        {isConverged ? (
-          <span>
-            <strong>Hội tụ và xích lại gần nhau:</strong> Sự xích lại gần nhau giữa các giai cấp diễn ra trên nền tảng lợi ích cơ bản thống nhất, thu hẹp dần khoảng cách về kinh tế, văn hóa và trình độ phát triển.
-          </span>
-        ) : showAlliance ? (
-          <span>
-            <strong>Liên minh hợp tác:</strong> Các giai cấp tìm thấy tiếng nói chung và lợi ích tương đồng, củng cố khối đại đoàn kết toàn dân tộc.
-          </span>
-        ) : (
-          <span>
-            <strong>Đấu tranh biện chứng:</strong> Tồn tại những khác biệt về phương thức sản xuất và lợi ích cục bộ đòi hỏi sự điều hòa và định hướng của Nhà nước XHCN.
-          </span>
-        )}
-      </div>
+      {/* Synthesis phrase at Beat 5 */}
+      {showFinalPhrase && (
+        <div
+          style={{
+            background: 'rgba(200, 168, 106, 0.15)',
+            border: '1.5px solid #C8A86A',
+            borderRadius: '8px',
+            padding: '1rem 1.5rem',
+            color: '#F5F0E8',
+            fontWeight: 700,
+            fontSize: '1rem',
+            textAlign: 'center',
+            maxWidth: '680px',
+            width: '100%',
+          }}
+        >
+          Vừa đấu tranh, vừa liên minh, từng bước xích lại gần nhau.
+        </div>
+      )}
     </div>
   );
 };

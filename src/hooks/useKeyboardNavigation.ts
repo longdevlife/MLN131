@@ -19,6 +19,25 @@ export function useKeyboardNavigation() {
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
         return;
       }
+      if (viewMode === 'library') {
+        if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
+          e.preventDefault();
+          usePresentationStore.setState((s) => ({ chapterIndex: Math.min(s.chapterIndex + 1, 3) }));
+          return;
+        }
+        if (e.code === 'ArrowLeft' || e.code === 'ArrowUp') {
+          e.preventDefault();
+          usePresentationStore.setState((s) => ({ chapterIndex: Math.max(s.chapterIndex - 1, 0) }));
+          return;
+        }
+        if (e.code === 'Space' || e.code === 'Enter') {
+          e.preventDefault();
+          const curIndex = usePresentationStore.getState().chapterIndex;
+          usePresentationStore.getState().openChapter(curIndex);
+          return;
+        }
+      }
+
       switch (e.code) {
         case 'Space':
         case 'ArrowRight':

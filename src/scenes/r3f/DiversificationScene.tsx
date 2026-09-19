@@ -1,107 +1,138 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
+import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
+import type { PresentationScene } from '../../content/types';
 
 interface DiversificationSceneProps {
+  scene?: PresentationScene;
   beatIndex?: number;
   qualityTier?: 'high' | 'medium' | 'safe';
 }
 
-interface GroupNode {
+interface NodeLayout {
   id: string;
-  name: string;
-  role: string;
   pos: [number, number, number];
   color: string;
   isNew?: boolean;
 }
 
-const GROUPS: GroupNode[] = [
-  // 3 Traditional Classes
-  { id: 'congnhan', name: 'G/C Công nhân', role: 'Lực lượng lãnh đạo cách mạng', pos: [-2.4, 1.4, 0], color: '#C87046' },
-  { id: 'nongdan', name: 'G/C Nông dân', role: 'Lực lượng đông đảo nhất', pos: [0, 1.8, 0], color: '#76A394' },
-  { id: 'trithuc', name: 'Đội ngũ Trí thức', role: 'Lao động sáng tạo trí óc', pos: [2.4, 1.4, 0], color: '#9FB3C9' },
-  // Newly Emerged Strata
-  { id: 'doanhnhan', name: 'Đội ngũ Doanh nhân', role: 'Quản trị sản xuất kinh doanh', pos: [-2.2, -1.2, 0], color: '#C8A86A', isNew: true },
-  { id: 'tieuchu', name: 'Tầng lớp Tiểu chủ', role: 'Kinh tế cá thể & dịch vụ', pos: [0, -1.5, 0], color: '#E5A93C', isNew: true },
-  { id: 'laodongmoi', name: 'Lao động tự do mới', role: 'Gig economy & Công nghệ', pos: [2.2, -1.2, 0], color: '#BD7880', isNew: true },
+const LAYOUTS: NodeLayout[] = [
+  // Baseline illustrative clusters (Beat 0+)
+  { id: 'GROUP_A', pos: [-2.4, 1.4, 0], color: '#C87046' },
+  { id: 'GROUP_B', pos: [0, 1.8, 0], color: '#76A394' },
+  { id: 'GROUP_C', pos: [2.4, 1.4, 0], color: '#9FB3C9' },
+  // Newly emerged illustrative groups (Beat 2+)
+  { id: 'GROUP_D', pos: [-1.6, -1.2, 0], color: '#C8A86A', isNew: true },
+  { id: 'GROUP_E', pos: [1.6, -1.2, 0], color: '#E5A93C', isNew: true },
 ];
 
 export const DiversificationScene: React.FC<DiversificationSceneProps> = ({
+  scene,
   beatIndex = 0,
   qualityTier = 'high',
 }) => {
   const groupRef = useRef<THREE.Group>(null);
 
+  // Pre-calculate line connections for Beat 3+
+  const networkLines = useMemo(() => {
+    return [
+      [LAYOUTS[0].pos, LAYOUTS[1].pos],
+      [LAYOUTS[1].pos, LAYOUTS[2].pos],
+      [LAYOUTS[0].pos, LAYOUTS[3].pos],
+      [LAYOUTS[1].pos, LAYOUTS[3].pos],
+      [LAYOUTS[1].pos, LAYOUTS[4].pos],
+      [LAYOUTS[2].pos, LAYOUTS[4].pos],
+      [LAYOUTS[3].pos, LAYOUTS[4].pos],
+    ] as [number, number, number][][];
+  }, []);
+
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(t * 0.2) * 0.08;
+      groupRef.current.rotation.y = Math.sin(t * 0.2) * 0.06;
     }
   });
 
-  const showNewStrata = beatIndex >= 1;
-  const showDifferentiation = beatIndex >= 2;
+  const showInternalDiff = beatIndex >= 1;
+  const showNewGroups = beatIndex >= 2;
+  const showConnections = beatIndex >= 3;
+  const isZoomedOut = beatIndex >= 4;
 
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
-      {GROUPS.map((g) => {
-        if (g.isNew && !showNewStrata) return null;
+      {LAYOUTS.map((layout) => {
+        if (layout.isNew && !showNewGroups) return null;
+
+        const canonical = scene?.visualLabels?.find((l) => l.id === layout.id);
+        const name = canonical?.text || layout.id;
+        const sub = canonical?.sub || '';
+        const role = canonical?.role || '';
 
         return (
-          <group key={g.id} position={g.pos}>
-            {/* Core Mesh */}
+          <group key={layout.id} position={layout.pos}>
+            {/* Core Sphere */}
             <mesh>
-              <sphereGeometry args={[g.isNew ? 0.42 : 0.5, 24, 24]} />
+              <sphereGeometry args={[layout.isNew ? 0.44 : 0.52, 24, 24]} />
               <meshStandardMaterial
-                color={g.color}
+                color={layout.color}
                 roughness={0.3}
                 metalness={0.4}
-                emissive={g.color}
-                emissiveIntensity={0.25}
+                emissive={layout.color}
+                emissiveIntensity={isZoomedOut ? 0.4 : 0.25}
               />
             </mesh>
 
-            {/* Orbiting differentiation particles for Beat 2 */}
-            {showDifferentiation && qualityTier !== 'safe' && (
+            {/* Orbiting internal differentiation satellite particles for Beat 1+ */}
+            {showInternalDiff && qualityTier !== 'safe' && (
               <group>
                 <mesh position={[0.65, 0.2, 0]} scale={0.12}>
                   <sphereGeometry args={[1, 16, 16]} />
-                  <meshStandardMaterial color={g.color} emissive={g.color} emissiveIntensity={0.6} />
+                  <meshStandardMaterial color={layout.color} emissive={layout.color} emissiveIntensity={0.6} />
                 </mesh>
                 <mesh position={[-0.6, -0.25, 0.2]} scale={0.1}>
                   <sphereGeometry args={[1, 16, 16]} />
-                  <meshStandardMaterial color={g.color} emissive={g.color} emissiveIntensity={0.6} />
+                  <meshStandardMaterial color={layout.color} emissive={layout.color} emissiveIntensity={0.6} />
                 </mesh>
               </group>
             )}
 
             {/* Label Card */}
-            <Html position={[0, -0.65, 0]} center distanceFactor={10} zIndexRange={[100, 0]}>
+            <Html position={[0, -0.68, 0]} center distanceFactor={10} zIndexRange={[100, 0]}>
               <div
                 style={{
-                  background: 'rgba(15, 18, 24, 0.92)',
-                  border: `1px solid ${g.color}`,
+                  background: 'rgba(15, 18, 24, 0.94)',
+                  border: `1.5px solid ${layout.color}`,
                   borderRadius: '6px',
-                  padding: '5px 10px',
+                  padding: '6px 12px',
                   color: '#F5F0E8',
                   textAlign: 'center',
-                  minWidth: '140px',
+                  minWidth: '160px',
                   pointerEvents: 'none',
-                  boxShadow: `0 4px 14px ${g.color}33`,
+                  boxShadow: `0 4px 14px ${layout.color}33`,
                   backdropFilter: 'blur(5px)',
                 }}
               >
-                <div style={{ fontSize: '12px', fontWeight: 800, color: g.color }}>
-                  {g.name}
+                <div style={{ fontSize: '12px', fontWeight: 800, color: layout.color }}>
+                  {name}
                 </div>
-                <div style={{ fontSize: '10px', color: '#C8D3DC', marginTop: '2px' }}>
-                  {g.role}
-                </div>
-                {showDifferentiation && (
-                  <div style={{ fontSize: '9px', color: '#C8A86A', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '4px', paddingTop: '2px' }}>
-                    Phân hóa trình độ & thu nhập
+                {sub && (
+                  <div style={{ fontSize: '10px', color: '#C8D3DC', marginTop: '1px' }}>
+                    {sub}
+                  </div>
+                )}
+                {role && (
+                  <div
+                    style={{
+                      fontSize: '8.5px',
+                      color: '#B0BEC5',
+                      marginTop: '3px',
+                      paddingTop: '2px',
+                      borderTop: '1px solid rgba(255,255,255,0.15)',
+                      lineHeight: 1.25,
+                    }}
+                  >
+                    {role}
                   </div>
                 )}
               </div>
@@ -110,34 +141,26 @@ export const DiversificationScene: React.FC<DiversificationSceneProps> = ({
         );
       })}
 
-      {/* Header Category Labels */}
-      <Html position={[0, 2.7, 0]} center distanceFactor={10} zIndexRange={[100, 0]}>
-        <div
-          style={{
-            background: 'rgba(11, 13, 16, 0.85)',
-            border: '1px solid #C87046',
-            borderRadius: '20px',
-            padding: '4px 16px',
-            color: '#C8A86A',
-            fontSize: '11px',
-            textTransform: 'uppercase',
-            letterSpacing: '1.5px',
-            fontWeight: 700,
-            pointerEvents: 'none',
-          }}
-        >
-          {showDifferentiation
-            ? 'Phân hóa nội bộ đa tầng trong từng giai cấp'
-            : showNewStrata
-            ? 'Xuất hiện các tầng lớp xã hội mới năng động'
-            : '3 Khối giai tầng truyền thống cơ bản'}
-        </div>
-      </Html>
+      {/* Network Connections multiplying at Beat 3+ */}
+      {showConnections && (
+        <group>
+          {networkLines.map((pair, idx) => (
+            <Line
+              key={idx}
+              points={pair}
+              color="#C8A86A"
+              lineWidth={isZoomedOut ? 2 : 1.4}
+              transparent
+              opacity={isZoomedOut ? 0.75 : 0.45}
+            />
+          ))}
+        </group>
+      )}
 
       {/* Illumination */}
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[0, 6, 6]} intensity={1.3} color="#F5F0E8" />
-      <pointLight position={[0, 0, 3]} intensity={2.0} color="#C8A86A" distance={8} />
+      <ambientLight intensity={0.65} color="#F5F0E8" />
+      <directionalLight position={[4, 6, 4]} intensity={1.3} color="#FFF8ED" />
+      <pointLight position={[0, 0, 2]} intensity={1.8} color="#C8A86A" distance={8} />
     </group>
   );
 };

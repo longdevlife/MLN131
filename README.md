@@ -48,8 +48,12 @@ src/
 │   ├── r3f/           # Cảnh 3D sử dụng React Three Fiber & Drei (P1.S1: Social Network)
 │   └── safe/          # Cảnh 2D Vector phẳng dự phòng khi thiết bị yếu / GPU lỗi (?safe=1)
 ├── state/             # Zustand Store quản lý trạng thái trình chiếu (Navigation State Machine)
-└── vendor/threeui-custom/bookshelf/ # Thư viện 3D Bookshelf tùy biến độc quyền (Three.js 0.170)
+└── vendor/threeui-custom/bookshelf/ # Thư viện 3D Bookshelf tùy biến (isolated Three.js 0.165-compatible runtime)
 ```
+
+### ⚙️ Môi trường thực thi đồ họa (Runtime Architecture)
+- **Application / R3F Scenes:** Three.js `0.170.0`, `@react-three/fiber` `9.7.0`, `@react-three/drei` `10.7.8`.
+- **Vendored ThreeUI Bookshelf:** isolated Three.js `0.165`-compatible runtime (forked & cô lập tại `src/vendor/threeui-custom/bookshelf/`).
 
 ---
 

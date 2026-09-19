@@ -7,7 +7,17 @@ export type VisualId =
   | 'structure-flow'
   | 'diversification'
   | 'convergence'
+  | 'part1-bridge'
   | 'none';
+
+export interface VisualLabel {
+  id: string;
+  text: string;
+  sub?: string;
+  role?: string;
+  category?: string;
+  tag?: string;
+}
 
 export interface SceneVisualConfig {
   id: VisualId;
@@ -24,6 +34,9 @@ export interface SceneBeat {
   emphasis?: string[];
   animation?: string;
   durationMs?: number;
+  displayText?: string;
+  speakerNote?: string;
+  callout?: string;
 }
 
 export interface PresentationScene {
@@ -35,6 +48,8 @@ export interface PresentationScene {
   subtitle?: string;
   body?: string[];
   labels?: Array<{ id: string; text: string; sub?: string }>;
+  visualLabels?: VisualLabel[];
+  visualCopy?: Record<string, string>;
   visual: SceneVisualConfig;
   beats: SceneBeat[];
   speakerNotes?: string[];

@@ -222,80 +222,115 @@ export const PresenterConsole: React.FC = () => {
             )}
           </div>
 
-          {/* Speaker notes section */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <span style={{ color: '#C8A86A', textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px' }}>
-              GHI CHÚ DIỄN GIẢ (SPEAKER NOTES)
-            </span>
-            <div
-              style={{
-                flex: 1,
-                background: '#171A24',
-                border: '1px solid #3A2118',
-                borderRadius: '8px',
-                padding: '16px',
-                color: '#F5F0E8',
-                lineHeight: 1.6,
-                fontSize: '1.05rem',
-              }}
-            >
-              {currentScene?.speakerNotes && currentScene.speakerNotes.length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                  {currentScene.speakerNotes.map((note, i) => (
-                    <li key={i} style={{ marginBottom: '8px' }}>{note}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p style={{ color: 'rgba(245, 240, 232, 0.4)', fontStyle: 'italic', margin: 0 }}>
-                  Không có ghi chú thêm cho cảnh này.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right column: Next slide preview & Control panel */}
-        <div
-          style={{
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px',
-            overflowY: 'auto',
-          }}
-        >
-          {/* Next Slide Preview */}
-          <div>
-            <span style={{ color: '#9FB3C9', textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
-              CẢNH TIẾP THEO (PREVIEW)
-            </span>
-            <div
-              style={{
-                background: '#10131B',
-                border: '1px solid #24344A',
-                borderRadius: '8px',
-                padding: '16px',
-              }}
-            >
-              {nextScene ? (
-                <>
-                  <div style={{ color: '#9FB3C9', fontSize: '0.8rem', marginBottom: '4px' }}>
-                    {nextScene.kicker}
+            {/* Speaker notes section */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <span style={{ color: '#C8A86A', textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 600, marginBottom: '8px' }}>
+                GHI CHÚ DIỄN GIẢ (SPEAKER NOTES)
+              </span>
+              <div
+                style={{
+                  flex: 1,
+                  background: '#171A24',
+                  border: '1px solid #3A2118',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  color: '#F5F0E8',
+                  lineHeight: 1.6,
+                  fontSize: '1.05rem',
+                }}
+              >
+                {currentBeat?.speakerNote && (
+                  <div
+                    style={{
+                      background: 'rgba(200, 168, 106, 0.12)',
+                      borderLeft: '3px solid #C8A86A',
+                      padding: '8px 12px',
+                      marginBottom: '12px',
+                      borderRadius: '0 4px 4px 0',
+                    }}
+                  >
+                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#C8A86A', fontWeight: 700 }}>
+                      Ghi chú nhịp hiện tại:
+                    </div>
+                    <div style={{ fontSize: '1rem', color: '#FFFFFF', marginTop: '2px' }}>
+                      {currentBeat.speakerNote}
+                    </div>
                   </div>
-                  <h3 style={{ margin: '0 0 6px 0', fontSize: '1.3rem', fontFamily: 'serif', color: '#EDE4D6' }}>
-                    {nextScene.title}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(237, 228, 214, 0.7)' }}>
-                    {nextScene.subtitle}
+                )}
+
+                {currentScene?.speakerNotes && currentScene.speakerNotes.length > 0 ? (
+                  <div>
+                    <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#9FB3C9', marginBottom: '6px', fontWeight: 600 }}>
+                      Ghi chú toàn cảnh:
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                      {currentScene.speakerNotes.map((note, i) => (
+                        <li key={i} style={{ marginBottom: '6px' }}>{note}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : !currentBeat?.speakerNote ? (
+                  <p style={{ color: 'rgba(245, 240, 232, 0.4)', fontStyle: 'italic', margin: 0 }}>
+                    Không có ghi chú thêm cho cảnh này.
                   </p>
-                </>
-              ) : (
-                <div style={{ color: 'rgba(245, 240, 232, 0.4)', fontStyle: 'italic' }}>
-                  [ Kết thúc bài thuyết trình ]
-                </div>
-              )}
+                ) : null}
+              </div>
             </div>
           </div>
+
+          {/* Right column: Next slide preview & Control panel */}
+          <div
+            style={{
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+              overflowY: 'auto',
+            }}
+          >
+            {/* Next Beat / Next Scene Preview */}
+            <div>
+              <span style={{ color: '#9FB3C9', textTransform: 'uppercase', fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+                BƯỚC TIẾP THEO (PREVIEW)
+              </span>
+              <div
+                style={{
+                  background: '#10131B',
+                  border: '1px solid #24344A',
+                  borderRadius: '8px',
+                  padding: '16px',
+                }}
+              >
+                {currentScene?.beats && beatIndex + 1 < currentScene.beats.length ? (
+                  <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid #24344A' }}>
+                    <div style={{ color: '#C8A86A', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>
+                      Nhịp kế tiếp (Space):
+                    </div>
+                    <div style={{ fontSize: '1.05rem', color: '#F5F0E8', fontWeight: 600, marginTop: '2px' }}>
+                      {currentScene.beats[beatIndex + 1]?.label}
+                    </div>
+                  </div>
+                ) : null}
+
+                {nextScene ? (
+                  <>
+                    <div style={{ color: '#9FB3C9', fontSize: '0.8rem', marginBottom: '4px' }}>
+                      Cảnh tiếp theo: {nextScene.kicker}
+                    </div>
+                    <h3 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', fontFamily: 'serif', color: '#EDE4D6' }}>
+                      {nextScene.title}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(237, 228, 214, 0.7)' }}>
+                      {nextScene.subtitle}
+                    </p>
+                  </>
+                ) : (
+                  <div style={{ color: 'rgba(245, 240, 232, 0.4)', fontStyle: 'italic' }}>
+                    [ Kết thúc bài thuyết trình ]
+                  </div>
+                )}
+              </div>
+            </div>
 
           {/* Quick action buttons */}
           <div>

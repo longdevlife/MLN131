@@ -103,9 +103,18 @@ export const part1Scenes: PresentationScene[] = [
     visual: {
       id: 'class-relations',
     },
+    visualLabels: [
+      { id: 'TLSX', text: 'Quan hệ sở hữu', sub: 'Tư liệu sản xuất', role: 'Quyết định trực tiếp địa vị giai cấp trong nền sản xuất' },
+      { id: 'QUAN_LY', text: 'Tổ chức quản lý', sub: 'Lao động và sản xuất', role: 'Phân công lao động xã hội và điều hành quy trình sản xuất' },
+      { id: 'DIA_VI', text: 'Địa vị chính trị - xã hội', sub: 'Trong hệ thống quan hệ', role: 'Quy định quyền lực và vai trò xã hội giữa các giai cấp' },
+      { id: 'PHAN_PHOI', text: 'Phân phối thu nhập', sub: 'Sản phẩm lao động', role: 'Phương thức và quy mô hưởng thụ thành quả lao động xã hội' },
+    ],
     beats: [
-      { id: 'p1-s2-b0', label: 'Cụm giai cấp, tầng lớp xã hội khách quan' },
-      { id: 'p1-s2-b1', label: '4 chiều kích quan hệ kinh tế - xã hội' },
+      { id: 'p1-s2-b0', label: 'Khảo sát hệ thống giai cấp, tầng lớp xã hội', durationMs: 700 },
+      { id: 'p1-s2-b1', label: 'Phân tích 4 chiều kích quan hệ sản xuất', durationMs: 800 },
+      { id: 'p1-s2-b2', label: 'Quan hệ Sở hữu TLSX & Tổ chức quản lý lao động', durationMs: 800 },
+      { id: 'p1-s2-b3', label: 'Địa vị chính trị – xã hội & Phương thức phân phối thu nhập', durationMs: 800 },
+      { id: 'p1-s2-b4', label: 'Định nghĩa khoa học hoàn chỉnh về cơ cấu xã hội – giai cấp', durationMs: 900 },
     ],
     speakerNotes: [
       'Phân tích theo định nghĩa giai cấp kinh điển của V.I.Lênin gắn liền với 4 chiều kích: (1) Quan hệ sở hữu TLSX; (2) Vai trò tổ chức quản lý lao động; (3) Địa vị chính trị - xã hội; (4) Phương thức và quy mô phân phối thu nhập.',
@@ -126,10 +135,19 @@ export const part1Scenes: PresentationScene[] = [
     visual: {
       id: 'orbital-centrality',
     },
+    visualLabels: [
+      { id: 'CENTRAL', text: 'Cơ cấu XH - Giai cấp', sub: 'Vị trí trung tâm hàng đầu', role: 'Hạt nhân trung tâm, phản ánh và tác động trực tiếp đến quan hệ sản xuất' },
+      { id: 'DANTOC', text: 'Cơ cấu Dân tộc', sub: 'Quan hệ tộc người', role: 'Tác động sâu sắc đến khối đại đoàn kết và ổn định chính trị' },
+      { id: 'TONGIAO', text: 'Cơ cấu Tôn giáo', sub: 'Đời sống tín ngưỡng', role: 'Ảnh hưởng tới tâm lý, đạo đức và khối liên minh xã hội' },
+      { id: 'DANSO', text: 'Cơ cấu Dân cư / Dân số', sub: 'Quy mô & Phân bố', role: 'Cung cấp nguồn nhân lực và nền tảng không gian sinh tồn' },
+      { id: 'NGHENGHIEP', text: 'Cơ cấu Nghề nghiệp', sub: 'Phân công lao động', role: 'Tạo cơ sở kinh tế - kỹ thuật trực tiếp hình thành giai tầng' },
+    ],
     beats: [
-      { id: 'p1-s3-b0', label: 'Hạt nhân trung tâm hàng đầu' },
-      { id: 'p1-s3-b1', label: '4 Vệ tinh cộng đồng xoay quanh' },
-      { id: 'p1-s3-b2', label: 'Tác động biện chứng hai chiều' },
+      { id: 'p1-s3-b0', label: 'Hạt nhân trung tâm quan trọng hàng đầu', durationMs: 700 },
+      { id: 'p1-s3-b1', label: 'Hệ thống 4 cơ cấu xã hội vệ tinh', durationMs: 800 },
+      { id: 'p1-s3-b2', label: 'Ảnh hưởng mạnh mẽ tới các cơ cấu xã hội khác', durationMs: 800 },
+      { id: 'p1-s3-b3', label: 'Sự tác động trở lại của dân tộc, tôn giáo, dân số, nghề nghiệp', durationMs: 900 },
+      { id: 'p1-s3-b4', label: 'Nguyên lý phương pháp luận: Không tuyệt đối hóa, không xem nhẹ', durationMs: 800 },
     ],
     speakerNotes: [
       'Nhấn mạnh nguyên lý biện chứng: Cơ cấu xã hội - giai cấp giữ vị trí trọng yếu hàng đầu nhưng tồn tại trong mối tác động qua lại với các cơ cấu khác.',
@@ -150,9 +168,19 @@ export const part1Scenes: PresentationScene[] = [
     visual: {
       id: 'structure-flow',
     },
+    visualLabels: [
+      { id: 'GATE_1', text: 'Cơ cấu kinh tế', sub: 'Nền tảng hạ tầng', role: 'Kinh tế nhiều thành phần định hướng XHCN vận động, chuyển dịch' },
+      { id: 'GATE_2', text: 'Ngành & Sở hữu', sub: 'Phương thức sản xuất', role: 'Chuyển dịch công nghiệp hóa, hiện đại hóa và đa dạng hóa sở hữu' },
+      { id: 'GATE_3', text: 'Phân công lao động', sub: 'Cơ cấu ngành nghề', role: 'Dịch chuyển lao động từ nông nghiệp sang công nghiệp và dịch vụ' },
+      { id: 'GATE_4', text: 'Địa vị & Vai trò', sub: 'Các giai tầng xã hội', role: 'Vị trí kinh tế - xã hội của từng giai cấp vận động phù hợp thể chế' },
+      { id: 'GATE_5', text: 'Cơ cấu XH - Giai cấp', sub: 'Kết quả biến đổi tất yếu', role: 'Diện mạo giai tầng mới được xác lập tương ứng với trình độ kinh tế' },
+    ],
     beats: [
-      { id: 'p1-s4-b0', label: 'Cơ cấu kinh tế nhiều thành phần chuyển dịch' },
-      { id: 'p1-s4-b1', label: 'Cơ cấu xã hội - giai cấp biến đổi tương ứng' },
+      { id: 'p1-s4-b0', label: 'Cơ cấu kinh tế nhiều thành phần chuyển dịch', durationMs: 700 },
+      { id: 'p1-s4-b1', label: 'Chuyển dịch cơ cấu ngành, thành phần kinh tế và PTSX', durationMs: 800 },
+      { id: 'p1-s4-b2', label: 'Phân công lao động và chuyển dịch cơ cấu việc làm', durationMs: 800 },
+      { id: 'p1-s4-b3', label: 'Biến đổi vị trí, vai trò của các giai cấp, tầng lớp', durationMs: 800 },
+      { id: 'p1-s4-b4', label: 'Cơ cấu xã hội – giai cấp biến đổi tương ứng', durationMs: 900 },
     ],
     speakerNotes: [
       'Xu hướng 1: Khi cơ cấu kinh tế chuyển dịch (công nghiệp hóa, hiện đại hóa, kinh tế thị trường định hướng XHCN), cơ cấu giai tầng cũng biến đổi theo.',
@@ -172,10 +200,19 @@ export const part1Scenes: PresentationScene[] = [
     visual: {
       id: 'diversification',
     },
+    visualLabels: [
+      { id: 'GROUP_A', text: 'Giai cấp công nhân', sub: 'Lực lượng tiêu biểu trong công nghiệp hóa', role: 'Vận động và phát triển trong nền kinh tế nhiều thành phần' },
+      { id: 'GROUP_B', text: 'Giai cấp nông dân', sub: 'Lực lượng tiêu biểu trong nông nghiệp', role: 'Chuyển dịch cơ cấu lao động và đa dạng hóa ngành nghề' },
+      { id: 'GROUP_C', text: 'Đội ngũ trí thức', sub: 'Lao động sáng tạo trí tuệ', role: 'Gia tăng vai trò cùng sự phát triển khoa học công nghệ' },
+      { id: 'GROUP_D', text: 'Đội ngũ doanh nhân', sub: 'Tầng lớp xã hội mới tiêu biểu', role: 'Minh họa sự xuất hiện của tầng lớp mới trong kinh tế thị trường' },
+      { id: 'GROUP_E', text: 'Tầng lớp tiểu chủ & tự do', sub: 'Khu vực kinh tế cá thể, dịch vụ', role: 'Minh họa tính đa dạng, linh hoạt của phân công lao động mới' },
+    ],
     beats: [
-      { id: 'p1-s5-b0', label: '3 Khối giai tầng truyền thống (Công - Nông - Trí)' },
-      { id: 'p1-s5-b1', label: 'Xuất hiện các tầng lớp mới (Doanh nhân, Tiểu chủ)' },
-      { id: 'p1-s5-b2', label: 'Phân hóa nội bộ về ngành nghề, trình độ và thu nhập' },
+      { id: 'p1-s5-b0', label: 'Các giai tầng tiêu biểu ban đầu trong mô hình minh họa', durationMs: 700, speakerNote: 'Bắt đầu từ các giai tầng tiêu biểu ban đầu trong mô hình xã hội công nghiệp hóa.' },
+      { id: 'p1-s5-b1', label: 'Sự phân hóa nội bộ bắt đầu diễn ra', durationMs: 800, speakerNote: 'Sự phân hóa diễn ra ngay trong lòng mỗi giai tầng về ngành nghề và mức độ thụ hưởng.' },
+      { id: 'p1-s5-b2', label: 'Xuất hiện các tầng lớp xã hội mới mang tính minh họa', durationMs: 800, speakerNote: 'Kinh tế nhiều thành phần làm nảy sinh các tầng lớp mới như doanh nhân, tiểu chủ, lao động tự do.' },
+      { id: 'p1-s5-b3', label: 'Các mối quan hệ và tương tác xã hội nhân rộng', durationMs: 800, speakerNote: 'Mối quan hệ kinh tế - xã hội đan xen, tạo thành mạng lưới tương tác đa chiều.' },
+      { id: 'p1-s5-b4', label: 'Toàn cảnh diện mạo xã hội gia tăng độ phức tạp cấu trúc', durationMs: 900, speakerNote: 'Cơ cấu xã hội - giai cấp trở nên đa dạng, phong phú, phản ánh đúng tính chất TKQĐ.' },
     ],
     speakerNotes: [
       'Xu hướng 2: Sự tồn tại của nhiều thành phần kinh tế tất yếu dẫn đến sự phân hóa và xuất hiện các tầng lớp mới.',
@@ -195,10 +232,20 @@ export const part1Scenes: PresentationScene[] = [
     visual: {
       id: 'convergence',
     },
+    visualLabels: [
+      { id: 'CLUSTER_A', text: 'Giai tầng A', sub: 'Lợi ích riêng & Khác biệt kinh tế' },
+      { id: 'CLUSTER_B', text: 'Giai tầng B', sub: 'Lợi ích riêng & Khác biệt kinh tế' },
+      { id: 'CLUSTER_C', text: 'Giai tầng C', sub: 'Lợi ích riêng & Khác biệt kinh tế' },
+      { id: 'CLUSTER_D', text: 'Giai tầng D', sub: 'Lợi ích riêng & Khác biệt kinh tế' },
+      { id: 'SHARED_FIELD', text: 'Trường lợi ích chung', sub: 'Mục tiêu xây dựng CNXH', role: 'Nền tảng khách quan quy tụ khối đại đoàn kết toàn dân' },
+    ],
     beats: [
-      { id: 'p1-s6-b0', label: 'Khác biệt lợi ích kinh tế giữa các giai tầng' },
-      { id: 'p1-s6-b1', label: 'Hình thành các sợi liên kết hợp tác & liên minh' },
-      { id: 'p1-s6-b2', label: 'Xích lại gần nhau và hội tụ quanh mục tiêu CNXH' },
+      { id: 'p1-s6-b0', label: 'Các cụm giai tầng tách biệt với vectơ lợi ích riêng', durationMs: 700, speakerNote: 'Các giai tầng ban đầu có sự khác biệt về địa vị kinh tế và lợi ích riêng.' },
+      { id: 'p1-s6-b1', label: 'Khác biệt và căng thẳng lợi ích biểu hiện rõ', durationMs: 800, speakerNote: 'Mâu thuẫn và sự khác biệt về lợi ích dẫn tới nhu cầu đấu tranh khắc phục tiêu cực.' },
+      { id: 'p1-s6-b2', label: 'Trường lực lợi ích chung xuất hiện', durationMs: 800, speakerNote: 'Trường lợi ích chung quốc gia và mục tiêu CNXH xuất hiện làm lực hút quy tụ.' },
+      { id: 'p1-s6-b3', label: 'Các sợi dây liên kết, hợp tác liên minh hình thành', durationMs: 800, speakerNote: 'Các mối quan hệ hợp tác và liên minh kinh tế - chính trị được thiết lập vững chắc.' },
+      { id: 'p1-s6-b4', label: 'Các cụm giai tầng từng bước dịch chuyển lại gần nhau', durationMs: 800, speakerNote: 'Khoảng cách giữa các giai tầng từng bước được thu hẹp trong quá trình phát triển.' },
+      { id: 'p1-s6-b5', label: 'Vừa đấu tranh, vừa liên minh, từng bước xích lại gần nhau', durationMs: 900, speakerNote: 'Khắc sâu nguyên lý: Vừa đấu tranh, vừa liên minh, từng bước xích lại gần nhau.' },
     ],
     speakerNotes: [
       'Xu hướng 3: Đấu tranh để khắc phục tiêu cực, phân hóa bất bình đẳng; liên minh để phát huy sức mạnh tổng hợp xây dựng CNXH.',
@@ -213,14 +260,23 @@ export const part1Scenes: PresentationScene[] = [
     title: 'Cầu nối sang Liên minh giai cấp, tầng lớp',
     subtitle: 'Vì sao liên minh giai cấp, tầng lớp là đòi hỏi khách quan?',
     body: [
-      'Khi các giai cấp vừa có khác biệt vừa xích lại gần nhau, vì sao liên minh công – nông – trí thức trở thành đòi hỏi khách quan quyết định thắng lợi của công cuộc xây dựng chủ nghĩa xã hội?',
+      'Nếu các giai cấp, tầng lớp vừa có lợi ích chung, vừa tồn tại những khác biệt về lợi ích, vì sao liên minh giữa họ trở thành một yêu cầu khách quan?',
     ],
     visual: {
-      id: 'paper',
+      id: 'part1-bridge',
     },
+    visualLabels: [
+      { id: 'RECAP_CHAIN', text: 'Chuỗi quy luật cốt lõi', sub: 'Tổng kết Phần thứ nhất', role: 'Cơ cấu xã hội → Cơ cấu XH-GC → Cơ cấu kinh tế biến đổi → Cơ cấu XH-GC biến đổi → Lợi ích vừa thống nhất vừa khác biệt' },
+      { id: 'CORE_QUESTION', text: 'Câu hỏi định hướng', sub: 'Đòi hỏi khách quan của Liên minh', role: 'Nếu vừa có lợi ích chung vừa có khác biệt, vì sao liên minh trở thành yêu cầu khách quan?' },
+      { id: 'BOOK2_TEASE', text: 'QUYỂN II', sub: 'TÍNH TẤT YẾU CỦA LIÊN MINH', role: 'Cơ sở lý luận và thực tiễn của liên minh giai cấp, tầng lớp' },
+    ],
     beats: [
-      { id: 'p1-s7-b0', label: 'Tổng kết 3 quy luật biến đổi' },
-      { id: 'p1-s7-b1', label: 'Mở đường sang Quyển II: Cơ sở lý luận của liên minh' },
+      { id: 'p1-s7-b0', label: 'Recap: Chuỗi quy luật phát triển của Cơ cấu XH – Giai cấp', durationMs: 800, speakerNote: 'Hệ thống hóa toàn bộ chuỗi quy luật vận động của cơ cấu xã hội - giai cấp trong Phần I.' },
+      { id: 'p1-s7-b1', label: 'Vấn đề cốt lõi: Đòi hỏi khách quan của Liên minh', durationMs: 900, speakerNote: 'Đặt câu hỏi bản lề: Vì sao liên minh giữa các giai tầng là một yêu cầu khách quan?' },
+      { id: 'p1-s7-b2', label: 'Mạng lưới tri thức thu nhỏ về dạng trang sách', durationMs: 700, speakerNote: 'Mạng lưới kiến thức hội tụ lại chuẩn bị khép lại chương.' },
+      { id: 'p1-s7-b3', label: 'Khép lại Phần thứ nhất', durationMs: 800, speakerNote: 'Hoàn tất nghiên cứu Phần thứ nhất: Khái luận về cơ cấu xã hội - giai cấp.' },
+      { id: 'p1-s7-b4', label: 'Mở đường sang Quyển II: Tính tất yếu của Liên minh', durationMs: 900, speakerNote: 'Giới thiệu Quyển II: Liên minh giai cấp, tầng lớp trong thời kỳ quá độ lên CNXH.' },
+      { id: 'p1-s7-b5', label: 'Sẵn sàng chuyển giao', durationMs: 600, speakerNote: 'Sẵn sàng chuyển tiếp sang Thư viện hoặc Quyển II.' },
     ],
     speakerNotes: ['Đúc kết Phần I và mở đường dẫn dắt sang Quyển II: Liên minh giai cấp, tầng lớp trong thời kỳ quá độ lên CNXH.'],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I',

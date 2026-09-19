@@ -1,26 +1,30 @@
 import React from 'react';
+import type { PresentationScene } from '../../content/types';
 
 interface SafeDiversificationSceneProps {
+  scene?: PresentationScene;
   beatIndex?: number;
 }
 
 export const SafeDiversificationScene: React.FC<SafeDiversificationSceneProps> = ({
+  scene,
   beatIndex = 0,
 }) => {
-  const showNewStrata = beatIndex >= 1;
-  const showDifferentiation = beatIndex >= 2;
+  const showInternalDiff = beatIndex >= 1;
+  const showNewGroups = beatIndex >= 2;
+  const showConnections = beatIndex >= 3;
+  const isZoomedOut = beatIndex >= 4;
 
-  const traditional = [
-    { name: 'Giai cấp Công nhân', role: 'Lực lượng lãnh đạo cách mạng thông qua Đảng', color: '#C87046' },
-    { name: 'Giai cấp Nông dân', role: 'Lực lượng đông đảo, cơ sở liên minh chiến lược', color: '#76A394' },
-    { name: 'Đội ngũ Trí thức', role: 'Lao động sáng tạo trí tuệ đặc biệt quan trọng', color: '#9FB3C9' },
-  ];
+  const baselineIds = ['GROUP_A', 'GROUP_B', 'GROUP_C'];
+  const newGroupIds = ['GROUP_D', 'GROUP_E'];
 
-  const newStrata = [
-    { name: 'Đội ngũ Doanh nhân', role: 'Động lực quản trị, sản xuất kinh doanh thị trường', color: '#C8A86A' },
-    { name: 'Tầng lớp Tiểu chủ', role: 'Kinh tế hộ gia đình, dịch vụ vi mô linh hoạt', color: '#E5A93C' },
-    { name: 'Lao động tự do mới', role: 'Lao động nền tảng số, kinh tế chia sẻ (Gig economy)', color: '#BD7880' },
-  ];
+  const colorMap: Record<string, string> = {
+    GROUP_A: '#C87046',
+    GROUP_B: '#76A394',
+    GROUP_C: '#9FB3C9',
+    GROUP_D: '#C8A86A',
+    GROUP_E: '#E5A93C',
+  };
 
   return (
     <div
@@ -37,62 +41,89 @@ export const SafeDiversificationScene: React.FC<SafeDiversificationSceneProps> =
     >
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '0.85rem', color: '#C8A86A', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 700 }}>
-          Quy luật biến đổi 2
+          Sự biến đổi có tính quy luật — Xu hướng 2
         </div>
-        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#F5F0E8', marginTop: '0.25rem' }}>
+        <div style={{ fontSize: '1.45rem', fontWeight: 800, color: '#F5F0E8', marginTop: '0.25rem' }}>
           Biến đổi phức tạp, đa dạng và xuất hiện các tầng lớp xã hội mới
         </div>
       </div>
 
-      {/* Traditional Section */}
+      {/* Baseline Section */}
       <div style={{ width: '100%' }}>
-        <div style={{ fontSize: '0.9rem', color: '#C8A86A', fontWeight: 700, marginBottom: '0.5rem' }}>
-          ✦ 3 Khối giai cấp, tầng lớp truyền thống:
+        <div style={{ fontSize: '0.85rem', color: '#C8A86A', fontWeight: 700, marginBottom: '0.5rem' }}>
+          ✦ Các nhóm/giai tầng tiêu biểu ban đầu trong mô hình minh họa:
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
-          {traditional.map((t, i) => (
-            <div
-              key={i}
-              style={{
-                background: 'rgba(23, 26, 36, 0.9)',
-                border: `1px solid ${t.color}`,
-                borderRadius: '8px',
-                padding: '0.9rem',
-                boxShadow: `0 4px 12px ${t.color}22`,
-              }}
-            >
-              <div style={{ fontWeight: 700, color: t.color, fontSize: '0.95rem' }}>{t.name}</div>
-              <div style={{ fontSize: '0.8rem', color: '#C8D3DC', marginTop: '0.25rem' }}>{t.role}</div>
-            </div>
-          ))}
+          {baselineIds.map((id) => {
+            const canonical = scene?.visualLabels?.find((l) => l.id === id);
+            const color = colorMap[id] || '#C87046';
+            return (
+              <div
+                key={id}
+                style={{
+                  background: 'rgba(23, 26, 36, 0.9)',
+                  border: `1px solid ${color}`,
+                  borderRadius: '8px',
+                  padding: '0.9rem',
+                  boxShadow: `0 4px 12px ${color}22`,
+                }}
+              >
+                <div style={{ fontWeight: 700, color, fontSize: '0.95rem' }}>
+                  {canonical?.text || id}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#C8D3DC', marginTop: '0.25rem' }}>
+                  {canonical?.sub}
+                </div>
+                {showInternalDiff && (
+                  <div style={{ fontSize: '0.72rem', color: '#C8A86A', marginTop: '0.35rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.25rem' }}>
+                    ⚡ Phân hóa nội bộ theo ngành & thu nhập
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       {/* Newly Emerged Section */}
-      <div style={{ width: '100%', opacity: showNewStrata ? 1 : 0.3, transition: 'opacity 0.4s ease' }}>
-        <div style={{ fontSize: '0.9rem', color: '#E5A93C', fontWeight: 700, marginBottom: '0.5rem' }}>
-          ✦ Các tầng lớp xã hội mới xuất hiện trong thời kỳ quá độ:
+      <div style={{ width: '100%', opacity: showNewGroups ? 1 : 0.35, transition: 'opacity 0.4s ease' }}>
+        <div style={{ fontSize: '0.85rem', color: '#E5A93C', fontWeight: 700, marginBottom: '0.5rem' }}>
+          ✦ Các tầng lớp xã hội mới xuất hiện mang tính minh họa:
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
-          {newStrata.map((n, i) => (
-            <div
-              key={i}
-              style={{
-                background: 'rgba(23, 26, 36, 0.9)',
-                border: `1px solid ${n.color}`,
-                borderRadius: '8px',
-                padding: '0.9rem',
-                boxShadow: `0 4px 12px ${n.color}22`,
-              }}
-            >
-              <div style={{ fontWeight: 700, color: n.color, fontSize: '0.95rem' }}>{n.name}</div>
-              <div style={{ fontSize: '0.8rem', color: '#C8D3DC', marginTop: '0.25rem' }}>{n.role}</div>
-            </div>
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+          {newGroupIds.map((id) => {
+            const canonical = scene?.visualLabels?.find((l) => l.id === id);
+            const color = colorMap[id] || '#E5A93C';
+            return (
+              <div
+                key={id}
+                style={{
+                  background: 'rgba(23, 26, 36, 0.9)',
+                  border: `1px solid ${color}`,
+                  borderRadius: '8px',
+                  padding: '0.9rem',
+                  boxShadow: `0 4px 12px ${color}22`,
+                }}
+              >
+                <div style={{ fontWeight: 700, color, fontSize: '0.95rem' }}>
+                  {canonical?.text || id}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#C8D3DC', marginTop: '0.25rem' }}>
+                  {canonical?.sub}
+                </div>
+                {canonical?.role && (
+                  <div style={{ fontSize: '0.72rem', color: '#B0BEC5', marginTop: '0.35rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '0.25rem', lineHeight: 1.25 }}>
+                    {canonical.role}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {showDifferentiation && (
+      {/* Multi-relational interconnections at Beat 3+ and Zoom-out at Beat 4 */}
+      {(showConnections || isZoomedOut) && (
         <div
           style={{
             background: 'rgba(200, 168, 106, 0.12)',
@@ -100,12 +131,15 @@ export const SafeDiversificationScene: React.FC<SafeDiversificationSceneProps> =
             borderRadius: '6px',
             padding: '0.75rem 1.25rem',
             color: '#F5F0E8',
-            fontSize: '0.85rem',
+            fontSize: '0.88rem',
+            lineHeight: 1.45,
+            width: '100%',
             textAlign: 'center',
-            maxWidth: '750px',
           }}
         >
-          <strong>Phân hóa nội bộ sâu sắc:</strong> Trong từng giai tầng diễn ra sự phân hóa theo trình độ văn hóa, năng lực công nghệ, mức thu nhập và điều kiện sống thực tế.
+          {isZoomedOut
+            ? 'Toàn cảnh diện mạo xã hội gia tăng độ phức tạp cấu trúc: Các mối liên hệ kinh tế, lao động và văn hóa đan xen đa chiều giữa các tầng lớp trong thời kỳ quá độ.'
+            : 'Các mối quan hệ và tương tác xã hội giữa các giai tầng ngày càng nhân rộng và đan xen chặt chẽ.'}
         </div>
       )}
     </div>

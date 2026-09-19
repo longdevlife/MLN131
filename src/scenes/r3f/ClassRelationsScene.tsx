@@ -2,52 +2,60 @@ import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
+import type { PresentationScene } from '../../content/types';
 
 interface ClassRelationsSceneProps {
+  scene?: PresentationScene;
   beatIndex?: number;
   qualityTier?: 'high' | 'medium' | 'safe';
 }
 
-interface AxisNode {
+interface AxisConfig {
   id: string;
-  title: string;
-  sub: string;
+  defaultTitle: string;
+  defaultSub: string;
   pos: [number, number, number];
   color: string;
+  activeBeat: number;
 }
 
-const AXES: AxisNode[] = [
+const AXIS_CONFIGS: AxisConfig[] = [
   {
-    id: 'so-huu',
-    title: '1. Sở hữu TLSX',
-    sub: 'Chế độ sở hữu tư liệu sản xuất',
-    pos: [0, 2.2, 0],
+    id: 'TLSX',
+    defaultTitle: '1. Quan hệ sở hữu',
+    defaultSub: 'Tư liệu sản xuất',
+    pos: [0, 2.3, 0],
     color: '#C8A86A',
+    activeBeat: 2,
   },
   {
-    id: 'to-chuc',
-    title: '2. Tổ chức quản lý',
-    sub: 'Phân công lao động xã hội',
-    pos: [-2.8, 0, 0],
+    id: 'QUAN_LY',
+    defaultTitle: '2. Tổ chức quản lý',
+    defaultSub: 'Lao động và sản xuất',
+    pos: [-2.9, 0, 0],
     color: '#9FB3C9',
+    activeBeat: 2,
   },
   {
-    id: 'dia-vi',
-    title: '3. Địa vị chính trị – XH',
-    sub: 'Vị thế quyền lực trong hệ thống',
-    pos: [2.8, 0, 0],
+    id: 'DIA_VI',
+    defaultTitle: '3. Địa vị chính trị – XH',
+    defaultSub: 'Trong hệ thống quan hệ',
+    pos: [2.9, 0, 0],
     color: '#76A394',
+    activeBeat: 3,
   },
   {
-    id: 'phan-phoi',
-    title: '4. Phân phối lợi ích',
-    sub: 'Hình thức & quy mô thu nhập',
-    pos: [0, -2.2, 0],
+    id: 'PHAN_PHOI',
+    defaultTitle: '4. Phân phối thu nhập',
+    defaultSub: 'Sản phẩm lao động',
+    pos: [0, -2.3, 0],
     color: '#BD7880',
+    activeBeat: 3,
   },
 ];
 
 export const ClassRelationsScene: React.FC<ClassRelationsSceneProps> = ({
+  scene,
   beatIndex = 0,
   qualityTier = 'high',
 }) => {
@@ -57,8 +65,8 @@ export const ClassRelationsScene: React.FC<ClassRelationsSceneProps> = ({
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(t * 0.25) * 0.08;
-      groupRef.current.rotation.z = Math.cos(t * 0.2) * 0.04;
+      groupRef.current.rotation.y = Math.sin(t * 0.2) * 0.06;
+      groupRef.current.rotation.z = Math.cos(t * 0.15) * 0.03;
     }
     if (centerMeshRef.current) {
       centerMeshRef.current.rotation.y = t * 0.3;
@@ -67,13 +75,11 @@ export const ClassRelationsScene: React.FC<ClassRelationsSceneProps> = ({
     }
   });
 
-  const showAxes = beatIndex >= 1;
-
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
       {/* Central core: Cơ cấu xã hội - giai cấp */}
       <mesh ref={centerMeshRef} position={[0, 0, 0]}>
-        <dodecahedronGeometry args={[0.9, 0]} />
+        <dodecahedronGeometry args={[0.95, 0]} />
         <meshStandardMaterial
           color="#C87046"
           roughness={0.25}
@@ -83,7 +89,7 @@ export const ClassRelationsScene: React.FC<ClassRelationsSceneProps> = ({
         />
       </mesh>
 
-      {/* Central Label */}
+      {/* Central Core Label */}
       <Html position={[0, 0, 0]} center distanceFactor={10} zIndexRange={[100, 0]}>
         <div
           style={{
@@ -99,67 +105,105 @@ export const ClassRelationsScene: React.FC<ClassRelationsSceneProps> = ({
             backdropFilter: 'blur(8px)',
           }}
         >
-          <div style={{ fontSize: '13px', color: '#C8A86A', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 700 }}>
+          <div style={{ fontSize: '12px', color: '#C8A86A', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 700 }}>
             Hạt nhân bản chất
           </div>
-          <div style={{ fontSize: '17px', fontWeight: 800, margin: '3px 0', color: '#FFFFFF' }}>
+          <div style={{ fontSize: '16px', fontWeight: 800, margin: '3px 0', color: '#FFFFFF' }}>
             Cơ cấu XH – Giai cấp
           </div>
-          <div style={{ fontSize: '12px', color: '#C8D3DC', opacity: 0.9 }}>
-            Hệ thống các giai cấp, tầng lớp xã hội
+          <div style={{ fontSize: '11px', color: '#C8D3DC', opacity: 0.9 }}>
+            {beatIndex >= 4 ? 'Hệ thống giai cấp thông qua 4 quan hệ cốt lõi' : 'Hệ thống các giai cấp, tầng lớp xã hội'}
           </div>
         </div>
       </Html>
 
-      {/* 4 Relational Axes */}
-      {AXES.map((axis) => {
+      {/* 4 Relational Axes with 5-beat progressive revelation */}
+      {AXIS_CONFIGS.map((cfg) => {
+        const canonical = scene?.visualLabels?.find((l) => l.id === cfg.id);
+        const title = canonical?.text || cfg.defaultTitle;
+        const sub = canonical?.sub || cfg.defaultSub;
+        const role = canonical?.role;
+
+        const isVisible = beatIndex >= 1;
+        const isFocusedInThisBeat =
+          (beatIndex === 2 && (cfg.id === 'TLSX' || cfg.id === 'QUAN_LY')) ||
+          (beatIndex === 3 && (cfg.id === 'DIA_VI' || cfg.id === 'PHAN_PHOI')) ||
+          beatIndex >= 4;
+
         return (
-          <group key={axis.id} position={axis.pos}>
+          <group key={cfg.id} position={cfg.pos}>
             {/* Connection line to center */}
             <Line
-              points={[[0, 0, 0], [-axis.pos[0], -axis.pos[1], -axis.pos[2]]]}
-              color={axis.color}
-              lineWidth={showAxes ? 2.5 : 1}
+              points={[[0, 0, 0], [-cfg.pos[0], -cfg.pos[1], -cfg.pos[2]]]}
+              color={cfg.color}
+              lineWidth={isFocusedInThisBeat ? 3 : isVisible ? 1.5 : 0.8}
               transparent
-              opacity={showAxes ? 0.85 : 0.2}
+              opacity={isFocusedInThisBeat ? 0.95 : isVisible ? 0.4 : 0.15}
             />
 
             {/* Axis Node sphere */}
-            <mesh scale={showAxes ? 0.45 : 0.3}>
+            <mesh scale={isFocusedInThisBeat ? 0.5 : isVisible ? 0.38 : 0.25}>
               <sphereGeometry args={[1, 24, 24]} />
               <meshStandardMaterial
-                color={axis.color}
+                color={cfg.color}
                 roughness={0.3}
                 metalness={0.4}
-                emissive={axis.color}
-                emissiveIntensity={showAxes ? 0.35 : 0.1}
+                emissive={cfg.color}
+                emissiveIntensity={isFocusedInThisBeat ? 0.6 : isVisible ? 0.2 : 0.05}
               />
             </mesh>
 
             {/* Axis Label */}
-            {showAxes && (
-              <Html position={[0, axis.pos[1] > 0 ? 0.55 : -0.55, 0]} center distanceFactor={10} zIndexRange={[100, 0]}>
+            {isVisible && (
+              <Html
+                position={[0, cfg.pos[1] > 0 ? 0.6 : -0.6, 0]}
+                center
+                distanceFactor={10}
+                zIndexRange={[100, 0]}
+              >
                 <div
                   style={{
-                    background: 'rgba(15, 18, 24, 0.9)',
-                    border: `1px solid ${axis.color}`,
-                    borderRadius: '6px',
-                    padding: '6px 12px',
+                    background: isFocusedInThisBeat
+                      ? 'rgba(15, 18, 24, 0.95)'
+                      : 'rgba(15, 18, 24, 0.75)',
+                    border: `1px solid ${isFocusedInThisBeat ? cfg.color : `${cfg.color}55`}`,
+                    borderRadius: '8px',
+                    padding: isFocusedInThisBeat ? '8px 14px' : '5px 10px',
                     color: '#F5F0E8',
                     textAlign: 'center',
-                    minWidth: '170px',
+                    minWidth: isFocusedInThisBeat ? '200px' : '160px',
                     pointerEvents: 'none',
-                    boxShadow: `0 4px 16px ${axis.color}33`,
+                    boxShadow: isFocusedInThisBeat ? `0 6px 20px ${cfg.color}44` : 'none',
                     backdropFilter: 'blur(6px)',
-                    transition: 'all 0.5s ease',
+                    transition: 'all 0.4s ease',
                   }}
                 >
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: axis.color }}>
-                    {axis.title}
+                  <div
+                    style={{
+                      fontSize: isFocusedInThisBeat ? '13px' : '11px',
+                      fontWeight: 700,
+                      color: cfg.color,
+                    }}
+                  >
+                    {title}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#C8D3DC', marginTop: '2px' }}>
-                    {axis.sub}
+                  <div style={{ fontSize: '10.5px', color: '#C8D3DC', marginTop: '2px' }}>
+                    {sub}
                   </div>
+                  {isFocusedInThisBeat && role && (
+                    <div
+                      style={{
+                        fontSize: '9.5px',
+                        color: '#E0E0E0',
+                        marginTop: '4px',
+                        paddingTop: '4px',
+                        borderTop: '1px solid rgba(255,255,255,0.15)',
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {role}
+                    </div>
+                  )}
                 </div>
               </Html>
             )}

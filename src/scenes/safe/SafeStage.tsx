@@ -7,6 +7,7 @@ import { SafeOrbitalCentralityScene } from './SafeOrbitalCentralityScene';
 import { SafeStructureFlowScene } from './SafeStructureFlowScene';
 import { SafeDiversificationScene } from './SafeDiversificationScene';
 import { SafeConvergenceScene } from './SafeConvergenceScene';
+import { SafePart1BridgeScene } from './SafePart1BridgeScene';
 
 interface SafeStageProps {
   scene: PresentationScene;
@@ -28,7 +29,7 @@ export const SafeStage: React.FC<SafeStageProps> = ({ scene, beatIndex }) => {
       }}
     >
       {scene.visual.id === 'paper' && (
-        <SafePaperScene beatIndex={beatIndex} />
+        <SafePaperScene beatIndex={beatIndex} sceneId={scene.id} />
       )}
 
       {scene.visual.id === 'constellation' && (
@@ -36,23 +37,27 @@ export const SafeStage: React.FC<SafeStageProps> = ({ scene, beatIndex }) => {
       )}
 
       {scene.visual.id === 'class-relations' && (
-        <SafeClassRelationsScene beatIndex={beatIndex} />
+        <SafeClassRelationsScene scene={scene} beatIndex={beatIndex} />
       )}
 
       {scene.visual.id === 'orbital-centrality' && (
-        <SafeOrbitalCentralityScene beatIndex={beatIndex} />
+        <SafeOrbitalCentralityScene scene={scene} beatIndex={beatIndex} />
       )}
 
       {scene.visual.id === 'structure-flow' && (
-        <SafeStructureFlowScene beatIndex={beatIndex} />
+        <SafeStructureFlowScene scene={scene} beatIndex={beatIndex} />
       )}
 
       {scene.visual.id === 'diversification' && (
-        <SafeDiversificationScene beatIndex={beatIndex} />
+        <SafeDiversificationScene scene={scene} beatIndex={beatIndex} />
       )}
 
       {scene.visual.id === 'convergence' && (
-        <SafeConvergenceScene beatIndex={beatIndex} />
+        <SafeConvergenceScene scene={scene} beatIndex={beatIndex} />
+      )}
+
+      {scene.visual.id === 'part1-bridge' && (
+        <SafePart1BridgeScene scene={scene} beatIndex={beatIndex} />
       )}
 
       {![
@@ -63,6 +68,7 @@ export const SafeStage: React.FC<SafeStageProps> = ({ scene, beatIndex }) => {
         'structure-flow',
         'diversification',
         'convergence',
+        'part1-bridge',
       ].includes(scene.visual.id) && (
         <div
           style={{
