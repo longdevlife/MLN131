@@ -1,11 +1,27 @@
 import { create } from 'zustand';
 import { chapters } from '../content/chapters';
+import type { MagazineViewMode } from '../experiences/magazine/magazineTypes';
+import {
+  clampMagazinePage,
+  getMagazinePageCount,
+  getMagazineVolume,
+} from '../experiences/magazine/magazineModel';
 
 export type ViewMode = 'cover' | 'library' | 'chapter';
+export type ExperienceMode =
+  | 'cover'
+  | 'library'
+  | 'magazine'
+  | 'interactive'
+  | 'museum';
 export type QualityTier = 'high' | 'medium' | 'safe';
 
 export interface PresentationState {
   viewMode: ViewMode;
+  experienceMode: ExperienceMode;
+  selectedBook: number;
+  magazinePage: number;
+  magazineViewMode: MagazineViewMode;
   chapterIndex: number;
   sceneIndex: number;
   beatIndex: number;
@@ -26,6 +42,11 @@ export interface PresentationState {
   openCover: () => void;
   openLibrary: () => void;
   openChapter: (chapterIndex: number, sceneIndex?: number) => void;
+  openBook: (index: number) => void;
+  closeMagazine: () => void;
+  setMagazinePage: (page: number) => void;
+  setMagazineViewMode: (mode: MagazineViewMode) => void;
+  toggleMagazineViewMode: () => void;
   next: () => void;
   prev: () => void;
   jumpToChapter: (index: number) => void;
@@ -50,6 +71,10 @@ const getInitialSafeMode = (): QualityTier => {
 
 export const usePresentationStore = create<PresentationState>((set, get) => ({
   viewMode: 'cover',
+  experienceMode: 'cover',
+  selectedBook: 0,
+  magazinePage: 0,
+  magazineViewMode: 'showcase',
   chapterIndex: 0,
   sceneIndex: 0,
   beatIndex: 0,
@@ -69,16 +94,71 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   toggleSourceDrawer: () => set((state) => ({ isSourceDrawerOpen: !state.isSourceDrawerOpen })),
 
   startPresentation: () => {
-    set({ viewMode: 'library', direction: 1 });
+    set({ experienceMode: 'library', viewMode: 'library', direction: 1 });
   },
 
   openCover: () => {
-    set({ viewMode: 'cover', direction: -1 });
+    set({ experienceMode: 'cover', viewMode: 'cover', direction: -1 });
   },
 
   openLibrary: () => {
-    set({ viewMode: 'library', direction: -1 });
+    set({
+      experienceMode: 'library',
+      viewMode: 'library',
+      chapterIndex: get().selectedBook,
+      direction: -1,
+    });
   },
+
+  openBook: (index: number) => {
+    const selectedBook = Math.max(0, Math.min(3, index));
+    const volume = getMagazineVolume(selectedBook);
+
+    if (!volume) {
+      set({
+        experienceMode: 'library',
+        viewMode: 'library',
+        selectedBook,
+        chapterIndex: selectedBook,
+        magazinePage: 0,
+      });
+      return;
+    }
+
+    set({
+      experienceMode: 'magazine',
+      viewMode: 'library',
+      selectedBook,
+      chapterIndex: selectedBook,
+      magazinePage: 0,
+      magazineViewMode: 'showcase',
+      direction: 1,
+    });
+  },
+
+  closeMagazine: () => {
+    set({
+      experienceMode: 'library',
+      viewMode: 'library',
+      chapterIndex: get().selectedBook,
+      magazinePage: 0,
+      direction: -1,
+    });
+  },
+
+  setMagazinePage: (page: number) => {
+    const volume = getMagazineVolume(get().selectedBook);
+    if (!volume) return;
+    const clamped = clampMagazinePage(volume, page);
+    set({ magazinePage: clamped });
+  },
+
+  setMagazineViewMode: (mode: MagazineViewMode) => set({ magazineViewMode: mode }),
+
+  toggleMagazineViewMode: () =>
+    set((state) => ({
+      magazineViewMode: state.magazineViewMode === 'showcase' ? 'reading' : 'showcase',
+    })),
 
   openChapter: (chapterIndex: number, sceneIndex = 0) => {
     const validChapterIndex = Math.max(0, Math.min(chapters.length - 1, chapterIndex));
@@ -106,6 +186,17 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     const state = get();
     if (state.isBlackout) {
       set({ isBlackout: false });
+      return;
+    }
+
+    if (state.experienceMode === 'magazine') {
+      const volume = getMagazineVolume(state.selectedBook);
+      if (volume) {
+        const maxPage = getMagazinePageCount(volume) - 1;
+        if (state.magazinePage < maxPage) {
+          set({ magazinePage: state.magazinePage + 1 });
+        }
+      }
       return;
     }
 
@@ -198,6 +289,15 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     const state = get();
     if (state.isBlackout) {
       set({ isBlackout: false });
+      return;
+    }
+
+    if (state.experienceMode === 'magazine') {
+      if (state.magazinePage > 0) {
+        set({ magazinePage: state.magazinePage - 1 });
+      } else {
+        get().closeMagazine();
+      }
       return;
     }
 

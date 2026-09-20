@@ -5,6 +5,10 @@ describe('PresentationStore Navigation Engine', () => {
   beforeEach(() => {
     usePresentationStore.setState({
       viewMode: 'cover',
+      experienceMode: 'cover',
+      selectedBook: 0,
+      magazinePage: 0,
+      magazineViewMode: 'showcase',
       chapterIndex: 0,
       sceneIndex: 0,
       beatIndex: 0,
@@ -149,6 +153,49 @@ describe('PresentationStore Navigation Engine', () => {
     expect(finalState.chapterIndex).toBe(1); // Book II is selected
     expect(finalState.sceneIndex).toBe(0);
     expect(finalState.beatIndex).toBe(0);
+  });
+
+  it('opens only available Book I into Magazine', () => {
+    usePresentationStore.getState().openLibrary();
+    usePresentationStore.getState().openBook(0);
+
+    const state = usePresentationStore.getState();
+    expect(state.experienceMode).toBe('magazine');
+    expect(state.selectedBook).toBe(0);
+    expect(state.magazinePage).toBe(0);
+    expect(state.magazineViewMode).toBe('showcase');
+  });
+
+  it('guards unavailable Books II-IV without leaving Library', () => {
+    usePresentationStore.getState().openLibrary();
+    usePresentationStore.getState().openBook(1);
+
+    const state = usePresentationStore.getState();
+    expect(state.experienceMode).toBe('library');
+    expect(state.selectedBook).toBe(1);
+  });
+
+  it('closes Magazine back to selected Book I', () => {
+    usePresentationStore.getState().openBook(0);
+    usePresentationStore.getState().setMagazinePage(2);
+    usePresentationStore.getState().closeMagazine();
+
+    const state = usePresentationStore.getState();
+    expect(state.experienceMode).toBe('library');
+    expect(state.selectedBook).toBe(0);
+    expect(state.magazinePage).toBe(0);
+  });
+
+  it('clamps Magazine pages', () => {
+    usePresentationStore.getState().openBook(0);
+    usePresentationStore.getState().setMagazinePage(99);
+    expect(usePresentationStore.getState().magazinePage).toBe(3);
+  });
+
+  it('keeps legacy viewMode valid while Magazine is active', () => {
+    usePresentationStore.getState().openLibrary();
+    usePresentationStore.getState().openBook(0);
+    expect(['cover', 'library', 'chapter']).toContain(usePresentationStore.getState().viewMode);
   });
 });
 
