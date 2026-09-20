@@ -211,7 +211,7 @@ export const part1Scenes: PresentationScene[] = [
     ],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.2',
     callout: {
-      badge: 'Quy luật khách quan 1',
+      badge: 'Sự biến đổi có tính quy luật — Xu hướng 1',
       text: 'Cơ cấu xã hội – giai cấp biến đổi gắn liền và bị quy định bởi sự biến đổi của cơ cấu kinh tế trong thời kỳ quá độ lên chủ nghĩa xã hội.',
       isExactQuote: true,
       minBeat: 1,
@@ -292,7 +292,7 @@ export const part1Scenes: PresentationScene[] = [
     ],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.2',
     callout: {
-      badge: 'Quy luật khách quan 3',
+      badge: 'Sự biến đổi có tính quy luật — Xu hướng 3',
       text: 'Cơ cấu xã hội – giai cấp biến đổi trong mối quan hệ vừa đấu tranh, vừa liên minh, từng bước dẫn đến sự xích lại gần nhau giữa các giai cấp, tầng lớp cơ bản trong xã hội.',
       isExactQuote: true,
       minBeat: 2,
@@ -314,12 +314,12 @@ export const part1Scenes: PresentationScene[] = [
       id: 'part1-bridge',
     },
     visualLabels: [
-      { id: 'RECAP_CHAIN', text: 'Chuỗi quy luật cốt lõi', sub: 'Tổng kết Phần thứ nhất', role: 'Cơ cấu xã hội → Cơ cấu XH-GC → Cơ cấu kinh tế biến đổi → Cơ cấu XH-GC biến đổi → Lợi ích vừa thống nhất vừa khác biệt' },
+      { id: 'RECAP_CHAIN', text: 'Chuỗi biến đổi có tính quy luật', sub: 'Tổng kết Phần thứ nhất', role: 'Cơ cấu xã hội → Cơ cấu XH-GC → Cơ cấu kinh tế biến đổi → Cơ cấu XH-GC biến đổi → Lợi ích vừa thống nhất vừa khác biệt' },
       { id: 'CORE_QUESTION', text: 'Câu hỏi định hướng', sub: 'Đòi hỏi khách quan của Liên minh', role: 'Nếu vừa có lợi ích chung vừa có khác biệt, vì sao liên minh trở thành yêu cầu khách quan?' },
       { id: 'BOOK2_TEASE', text: 'QUYỂN II', sub: 'TÍNH TẤT YẾU CỦA LIÊN MINH', role: 'Cơ sở lý luận và thực tiễn của liên minh giai cấp, tầng lớp' },
     ],
     beats: [
-      { id: 'p1-s7-b0', label: 'Recap: Chuỗi quy luật phát triển của Cơ cấu XH – Giai cấp', durationMs: 800, speakerNote: 'Hệ thống hóa toàn bộ chuỗi quy luật vận động của cơ cấu xã hội - giai cấp trong Phần I.' },
+      { id: 'p1-s7-b0', label: 'Recap: Chuỗi biến đổi có tính quy luật của Cơ cấu XH – Giai cấp', durationMs: 800, speakerNote: 'Hệ thống hóa toàn bộ sự biến đổi có tính quy luật của cơ cấu xã hội - giai cấp trong Phần I.' },
       { id: 'p1-s7-b1', label: 'Vấn đề cốt lõi: Đòi hỏi khách quan của Liên minh', durationMs: 900, speakerNote: 'Đặt câu hỏi bản lề: Vì sao liên minh giữa các giai tầng là một yêu cầu khách quan?' },
       { id: 'p1-s7-b2', label: 'Mạng lưới tri thức thu nhỏ về dạng trang sách', durationMs: 700, speakerNote: 'Mạng lưới kiến thức hội tụ lại chuẩn bị khép lại chương.' },
       { id: 'p1-s7-b3', label: 'Khép lại Phần thứ nhất', durationMs: 800, speakerNote: 'Hoàn tất nghiên cứu Phần thứ nhất: Khái luận về cơ cấu xã hội - giai cấp.' },

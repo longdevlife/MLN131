@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
@@ -66,6 +66,21 @@ export const OrbitalCentralityScene: React.FC<OrbitalCentralitySceneProps> = ({
       return new THREE.Line(geom, mat);
     });
   }, [rayGeometries]);
+
+  // Cleanly dispose manual Three primitives on unmount to prevent resource lifecycle leaks
+  useEffect(() => {
+    return () => {
+      rayLines.forEach((line) => {
+        line.geometry.dispose();
+        const mat = line.material;
+        if (Array.isArray(mat)) {
+          mat.forEach((m) => m.dispose());
+        } else {
+          mat.dispose();
+        }
+      });
+    };
+  }, [rayLines]);
 
   const orbits = useMemo(() => {
     const segments = qualityTier === 'high' ? 64 : 32;

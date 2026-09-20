@@ -7,10 +7,7 @@ interface SafePaperSceneProps {
 
 export const SafePaperScene: React.FC<SafePaperSceneProps> = ({
   beatIndex = 0,
-  sceneId = 'p1-s0',
 }) => {
-  const isBridge = sceneId === 'p1-s7';
-
   return (
     <div
       style={{
@@ -38,7 +35,7 @@ export const SafePaperScene: React.FC<SafePaperSceneProps> = ({
           marginBottom: '1rem',
         }}
       >
-        {isBridge ? 'TỔNG KẾT PHẦN I · CHUYỂN TIẾP QUYỂN II' : 'VĂN BẢN TRANG GIÁO TRÌNH'}
+        VĂN BẢN TRANG GIÁO TRÌNH
       </div>
 
       <p
@@ -52,12 +49,10 @@ export const SafePaperScene: React.FC<SafePaperSceneProps> = ({
           fontStyle: 'italic',
         }}
       >
-        {isBridge
-          ? '“Khi các giai cấp, tầng lớp vừa có lợi ích chung vừa có khác biệt, vì sao liên minh công – nông – trí thức trở thành đòi hỏi khách quan quyết định thắng lợi của chủ nghĩa xã hội?”'
-          : '“Cơ cấu xã hội – giai cấp giữ vị trí trung tâm hàng đầu, có mối quan hệ biện chứng và ảnh hưởng sâu sắc đến mọi quan hệ cộng đồng trong thời kỳ quá độ lên chủ nghĩa xã hội.”'}
+        “Cơ cấu xã hội – giai cấp giữ vị trí trung tâm hàng đầu, có mối quan hệ biện chứng và ảnh hưởng sâu sắc đến mọi quan hệ cộng đồng trong thời kỳ quá độ lên chủ nghĩa xã hội.”
       </p>
 
-      {beatIndex > 0 && !isBridge && (
+      {beatIndex > 0 && (
         <div
           style={{
             marginTop: '2rem',
@@ -84,26 +79,9 @@ export const SafePaperScene: React.FC<SafePaperSceneProps> = ({
           <div style={{ background: 'rgba(255,255,255,0.7)', padding: '1rem', borderRadius: '6px', borderLeft: '3px solid #76A394' }}>
             <strong style={{ color: '#C87046' }}>3. Biến đổi ra sao?</strong>
             <p style={{ margin: '0.5rem 0 0', fontSize: '0.88rem', color: '#3A2118' }}>
-              3 quy luật biến đổi khách quan trong thời kỳ quá độ.
+              3 xu hướng biến đổi có tính quy luật trong thời kỳ quá độ.
             </p>
           </div>
-        </div>
-      )}
-
-      {beatIndex > 0 && isBridge && (
-        <div
-          style={{
-            marginTop: '2rem',
-            padding: '1.25rem',
-            background: 'rgba(200, 112, 70, 0.15)',
-            border: '1px solid #C87046',
-            borderRadius: '6px',
-            color: '#7A361E',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-          }}
-        >
-          ➔ Mở đường sang Quyển II: Tính tất yếu của liên minh giai cấp, tầng lớp trong thời kỳ quá độ lên chủ nghĩa xã hội
         </div>
       )}
     </div>

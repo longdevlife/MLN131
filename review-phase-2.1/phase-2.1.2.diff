@@ -1,0 +1,632 @@
+diff --git a/README.md b/README.md
+index 9fd9a0d..bf63a8d 100644
+--- a/README.md
++++ b/README.md
+@@ -136,7 +136,7 @@ npm run test:e2e
+ ### 🎯 Tiêu chuẩn Nghiệm thu Kỹ thuật (QA Pass Criteria)
+ - ✅ `tsc -b`: 0 lỗi biên dịch kiểu TypeScript.
+ - ✅ `oxlint`: 0 cảnh báo linting (0 errors, 0 warnings trên toàn bộ 53 files mã nguồn).
+-- ✅ `vitest`: 8/8 unit tests đạt 100% (kiểm thử chặt chẽ Store State Machine, navigation determinism và ranh giới Part II handoff).
++- ✅ `vitest`: 9/9 unit tests đạt 100% (kiểm thử chặt chẽ Store State Machine, navigation determinism, Empty Chapter Guard và ranh giới Part II handoff).
+ - ✅ `playwright test`: 8/8 kịch bản E2E kiểm thử tự động đạt 100% (bao gồm core flow, đồng bộ Presenter Console, kiểm tra Preflight, kiểm thử ThreeUI Bookshelf lifecycle created=1/disposed=0, Safe Mode walkthrough & reverse, Real WebGL walkthrough với console capture, Real WebGL Soak Test >=5 chu kỳ S1->S7->S1, và kiểm thử hiển thị song song ở cả 2 độ phân giải 1920x1080 và 1366x768).
+ - ✅ Lifecycle ThreeUI: Không ghi nhận renderer recreation hoặc WebGL context loss trong test lifecycle hiện tại (duyệt qua các tập sách I -> II -> III -> IV -> I trong thư viện giữ nguyên `created = 1`, `disposed = 0`).
+ 
+@@ -147,7 +147,7 @@ npm run test:e2e
+ 1. **Phân tách Bundle JS (Lazy Splitting Architecture):**  
+    Hệ thống đã triển khai Dynamic Import (`React.lazy`) và True Scene Registry cho toàn bộ các cảnh 3D chuyên biệt (P1.S1 đến P1.S7) thành các chunk độc lập tải theo nhu cầu. Chunk chính (~1.96 MB chưa gzip / ~568 kB gzipped) đóng gói Three.js r170 runtime và thư viện ThreeUI Bookshelf dùng chung. Với ứng dụng trình chiếu hội trường chạy local hoặc PWA offline có Service Worker lưu đệm, tốc độ khởi động tức thì và hoàn toàn mượt mà.
+ 2. **Kiểm chứng bộ nhớ WebGL:**  
+-   Chỉ số `created = 1`, `disposed = 0` chứng minh renderer không bị tái tạo ngoài ý muốn khi chuyển đổi sách. Toàn bộ các cảnh R3F đã được kiểm toán triệt để, loại bỏ hoàn toàn việc cấp phát đối tượng mới (0 new allocations per frame) trong `useFrame`.
++   Chỉ số `created = 1`, `disposed = 0` chứng minh renderer không bị tái tạo ngoài ý muốn khi chuyển đổi sách. Toàn bộ các cảnh R3F đã được kiểm toán triệt để: No explicit object/array allocation or React state update remains inside authored useFrame callbacks after audit. Không tuyên bố zero-allocation bên trong nội bộ Three/R3F/Troika.
+ 
+ ---
+ 
+diff --git a/src/content/chapters.ts b/src/content/chapters.ts
+index 7593ba9..b4c568a 100644
+--- a/src/content/chapters.ts
++++ b/src/content/chapters.ts
+@@ -12,7 +12,7 @@ export const chapters: Chapter[] = [
+     title: 'Cơ cấu xã hội – giai cấp trong thời kỳ quá độ',
+     shortTitle: 'Cơ cấu xã hội – giai cấp',
+     discipline: 'Khái luận & Quy luật',
+-    description: 'Khái niệm, vị trí và các quy luật biến đổi trong TKQĐ.',
++    description: 'Khái niệm, vị trí và sự biến đổi có tính quy luật trong TKQĐ.',
+     deck: 'Khái luận về cơ cấu xã hội - giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội: vị trí trung tâm hàng đầu, tác động qua lại biện chứng với các cơ cấu xã hội khác và xu hướng biến đổi có tính quy luật.',
+     binding: 'Ultramarine cloth · copper foil',
+     theme: 'Cơ cấu xã hội – giai cấp',
+diff --git a/src/content/part1.ts b/src/content/part1.ts
+index 10e2346..9bf48e5 100644
+--- a/src/content/part1.ts
++++ b/src/content/part1.ts
+@@ -211,7 +211,7 @@ export const part1Scenes: PresentationScene[] = [
+     ],
+     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.2',
+     callout: {
+-      badge: 'Quy luật khách quan 1',
++      badge: 'Sự biến đổi có tính quy luật — Xu hướng 1',
+       text: 'Cơ cấu xã hội – giai cấp biến đổi gắn liền và bị quy định bởi sự biến đổi của cơ cấu kinh tế trong thời kỳ quá độ lên chủ nghĩa xã hội.',
+       isExactQuote: true,
+       minBeat: 1,
+@@ -292,7 +292,7 @@ export const part1Scenes: PresentationScene[] = [
+     ],
+     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.2',
+     callout: {
+-      badge: 'Quy luật khách quan 3',
++      badge: 'Sự biến đổi có tính quy luật — Xu hướng 3',
+       text: 'Cơ cấu xã hội – giai cấp biến đổi trong mối quan hệ vừa đấu tranh, vừa liên minh, từng bước dẫn đến sự xích lại gần nhau giữa các giai cấp, tầng lớp cơ bản trong xã hội.',
+       isExactQuote: true,
+       minBeat: 2,
+@@ -314,12 +314,12 @@ export const part1Scenes: PresentationScene[] = [
+       id: 'part1-bridge',
+     },
+     visualLabels: [
+-      { id: 'RECAP_CHAIN', text: 'Chuỗi quy luật cốt lõi', sub: 'Tổng kết Phần thứ nhất', role: 'Cơ cấu xã hội → Cơ cấu XH-GC → Cơ cấu kinh tế biến đổi → Cơ cấu XH-GC biến đổi → Lợi ích vừa thống nhất vừa khác biệt' },
++      { id: 'RECAP_CHAIN', text: 'Chuỗi biến đổi có tính quy luật', sub: 'Tổng kết Phần thứ nhất', role: 'Cơ cấu xã hội → Cơ cấu XH-GC → Cơ cấu kinh tế biến đổi → Cơ cấu XH-GC biến đổi → Lợi ích vừa thống nhất vừa khác biệt' },
+       { id: 'CORE_QUESTION', text: 'Câu hỏi định hướng', sub: 'Đòi hỏi khách quan của Liên minh', role: 'Nếu vừa có lợi ích chung vừa có khác biệt, vì sao liên minh trở thành yêu cầu khách quan?' },
+       { id: 'BOOK2_TEASE', text: 'QUYỂN II', sub: 'TÍNH TẤT YẾU CỦA LIÊN MINH', role: 'Cơ sở lý luận và thực tiễn của liên minh giai cấp, tầng lớp' },
+     ],
+     beats: [
+-      { id: 'p1-s7-b0', label: 'Recap: Chuỗi quy luật phát triển của Cơ cấu XH – Giai cấp', durationMs: 800, speakerNote: 'Hệ thống hóa toàn bộ chuỗi quy luật vận động của cơ cấu xã hội - giai cấp trong Phần I.' },
++      { id: 'p1-s7-b0', label: 'Recap: Chuỗi biến đổi có tính quy luật của Cơ cấu XH – Giai cấp', durationMs: 800, speakerNote: 'Hệ thống hóa toàn bộ sự biến đổi có tính quy luật của cơ cấu xã hội - giai cấp trong Phần I.' },
+       { id: 'p1-s7-b1', label: 'Vấn đề cốt lõi: Đòi hỏi khách quan của Liên minh', durationMs: 900, speakerNote: 'Đặt câu hỏi bản lề: Vì sao liên minh giữa các giai tầng là một yêu cầu khách quan?' },
+       { id: 'p1-s7-b2', label: 'Mạng lưới tri thức thu nhỏ về dạng trang sách', durationMs: 700, speakerNote: 'Mạng lưới kiến thức hội tụ lại chuẩn bị khép lại chương.' },
+       { id: 'p1-s7-b3', label: 'Khép lại Phần thứ nhất', durationMs: 800, speakerNote: 'Hoàn tất nghiên cứu Phần thứ nhất: Khái luận về cơ cấu xã hội - giai cấp.' },
+diff --git a/src/scenes/r3f/OrbitalCentralityScene.tsx b/src/scenes/r3f/OrbitalCentralityScene.tsx
+index 40423a1..8bed0f6 100644
+--- a/src/scenes/r3f/OrbitalCentralityScene.tsx
++++ b/src/scenes/r3f/OrbitalCentralityScene.tsx
+@@ -1,4 +1,4 @@
+-import React, { useRef, useMemo } from 'react';
++import React, { useRef, useMemo, useEffect } from 'react';
+ import { useFrame } from '@react-three/fiber';
+ import { Html, Line } from '@react-three/drei';
+ import * as THREE from 'three';
+@@ -67,6 +67,21 @@ export const OrbitalCentralityScene: React.FC<OrbitalCentralitySceneProps> = ({
+     });
+   }, [rayGeometries]);
+ 
++  // Cleanly dispose manual Three primitives on unmount to prevent resource lifecycle leaks
++  useEffect(() => {
++    return () => {
++      rayLines.forEach((line) => {
++        line.geometry.dispose();
++        const mat = line.material;
++        if (Array.isArray(mat)) {
++          mat.forEach((m) => m.dispose());
++        } else {
++          mat.dispose();
++        }
++      });
++    };
++  }, [rayLines]);
++
+   const orbits = useMemo(() => {
+     const segments = qualityTier === 'high' ? 64 : 32;
+     return SATELLITE_CONFIGS.map((sat) => generateOrbitPoints(sat.radius, segments));
+diff --git a/src/scenes/r3f/PaperScene.tsx b/src/scenes/r3f/PaperScene.tsx
+index 2b15bfa..72d97c8 100644
+--- a/src/scenes/r3f/PaperScene.tsx
++++ b/src/scenes/r3f/PaperScene.tsx
+@@ -1,11 +1,10 @@
+-import React, { useRef, useMemo } from 'react';
++import React, { useRef, useMemo, useEffect } from 'react';
+ import { useFrame } from '@react-three/fiber';
+ import { Html } from '@react-three/drei';
+ import * as THREE from 'three';
+ 
+ interface PaperSceneProps {
+   beatIndex?: number;
+-  sceneId?: string;
+ }
+ 
+ // Procedural subtle paper texture generator
+@@ -56,7 +55,7 @@ function createAmbientParticles(count: number): Float32Array {
+   return arr;
+ }
+ 
+-export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0, sceneId = 'p1-s0' }) => {
++export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0 }) => {
+   const meshRef = useRef<THREE.Group>(null);
+   const leftPageRef = useRef<THREE.Group>(null);
+   const rightPageRef = useRef<THREE.Group>(null);
+@@ -64,6 +63,13 @@ export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0, sceneId =
+   const paperTexture = useMemo(() => createPaperTexture(), []);
+   const dustParticles = useMemo(() => createAmbientParticles(60), []);
+ 
++  // Dispose CanvasTexture on unmount to prevent WebGL resource leaks
++  useEffect(() => {
++    return () => {
++      paperTexture.dispose();
++    };
++  }, [paperTexture]);
++
+   useFrame((state) => {
+     const t = state.clock.getElapsedTime();
+     if (meshRef.current) {
+@@ -82,8 +88,6 @@ export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0, sceneId =
+     }
+   });
+ 
+-  const isBridge = sceneId === 'p1-s7';
+-
+   return (
+     <group ref={meshRef} position={[0, 0, 0]}>
+       {/* Folio spine / center - Leather walnut finish */}
+@@ -174,38 +178,23 @@ export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0, sceneId =
+               lineHeight: 1.45,
+             }}
+           >
+-            {!isBridge ? (
+-              // P1.S0 Academic Agenda
+-              <div>
+-                <div style={{ fontSize: '11px', color: '#C87046', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
+-                  3 Câu hỏi dẫn luận cốt lõi:
+-                </div>
+-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px', fontSize: '12.5px' }}>
+-                  <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #C8A86A' }}>
+-                    <strong>1. Là gì?</strong> Bản chất cấu trúc & 4 trục quan hệ sản xuất.
+-                  </div>
+-                  <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #C87046' }}>
+-                    <strong>2. Vị trí ra sao?</strong> Trung tâm hàng đầu trong hệ thống xã hội.
+-                  </div>
+-                  <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #76A394' }}>
+-                    <strong>3. Biến đổi thế nào?</strong> 3 Quy luật vận động trong thời kỳ quá độ.
+-                  </div>
+-                </div>
++            {/* P1.S0 Academic Agenda */}
++            <div>
++              <div style={{ fontSize: '11px', color: '#C87046', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
++                3 Câu hỏi dẫn luận cốt lõi:
+               </div>
+-            ) : (
+-              // P1.S7 Bridge to Part II
+-              <div>
+-                <div style={{ fontSize: '11px', color: '#C87046', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
+-                  Khép lại Phần I · Mở ra Quyển II:
++              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px', fontSize: '12.5px' }}>
++                <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #C8A86A' }}>
++                  <strong>1. Là gì?</strong> Bản chất cấu trúc & 4 trục quan hệ sản xuất.
+                 </div>
+-                <div style={{ marginTop: '8px', fontSize: '13px', fontStyle: 'italic', color: '#24344A', borderLeft: '3px solid #C8A86A', paddingLeft: '8px' }}>
+-                  “Khi các giai cấp vừa có lợi ích chung vừa có khác biệt, vì sao liên minh công – nông – trí thức trở thành đòi hỏi khách quan quyết định thắng lợi của CNXH?”
++                <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #C87046' }}>
++                  <strong>2. Vị trí ra sao?</strong> Trung tâm hàng đầu trong hệ thống xã hội.
+                 </div>
+-                <div style={{ marginTop: '10px', fontSize: '11px', color: '#7A361E', fontWeight: 600 }}>
+-                  ➔ Nhấn Space để chuyển sang Quyển II
++                <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #76A394' }}>
++                  <strong>3. Biến đổi thế nào?</strong> 3 xu hướng biến đổi có tính quy luật trong thời kỳ quá độ.
+                 </div>
+               </div>
+-            )}
++            </div>
+           </div>
+         </Html>
+       </group>
+diff --git a/src/scenes/r3f/Part1BridgeScene.tsx b/src/scenes/r3f/Part1BridgeScene.tsx
+index ebf50b6..091af68 100644
+--- a/src/scenes/r3f/Part1BridgeScene.tsx
++++ b/src/scenes/r3f/Part1BridgeScene.tsx
+@@ -11,6 +11,7 @@ interface Part1BridgeSceneProps {
+ }
+ 
+ const TARGET_SCALE_VEC = new THREE.Vector3();
++const LOCAL_FONT = '/fonts/roboto-regular.woff';
+ 
+ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+   scene,
+@@ -30,22 +31,23 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+     const t = state.clock.getElapsedTime();
+ 
+     if (groupRef.current) {
+-      groupRef.current.position.y = Math.sin(t * 0.8) * 0.04;
++      groupRef.current.rotation.y = Math.sin(t * 0.15) * 0.08;
+     }
+ 
+-    if (ringRef.current) {
+-      ringRef.current.rotation.x = Math.sin(t * 0.3) * 0.2;
+-      ringRef.current.rotation.y = t * 0.25;
+-    }
+-
+-    // Collapse animation at Beat 2+ (zero per-frame allocation)
+     if (coreRef.current) {
+-      const targetScale = beatIndex >= 2 ? 0.01 : 1.0;
++      coreRef.current.rotation.x = t * 0.3;
++      coreRef.current.rotation.y = t * 0.45;
++      const targetScale = beatIndex === 2 ? 0.35 : 1.0;
+       TARGET_SCALE_VEC.setScalar(targetScale);
+-      coreRef.current.scale.lerp(TARGET_SCALE_VEC, 0.08);
++      coreRef.current.scale.lerp(TARGET_SCALE_VEC, 0.06);
++    }
++
++    if (ringRef.current) {
++      ringRef.current.rotation.z = t * 0.1;
++      const s = 1 + Math.sin(t * 1.5) * 0.04;
++      ringRef.current.scale.set(s, s, 1);
+     }
+ 
+-    // Book close rotation simulation at Beat 3+
+     if (bookRef.current) {
+       const targetAngle = beatIndex >= 3 ? 0 : -Math.PI * 0.35;
+       bookRef.current.rotation.y = THREE.MathUtils.lerp(bookRef.current.rotation.y, targetAngle, 0.08);
+@@ -56,13 +58,13 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+ 
+   const recapSteps = [
+     'Cơ cấu xã hội',
+-    '↓',
++    '|',
+     'Cơ cấu XH – Giai cấp',
+-    '↓',
++    '|',
+     'Cơ cấu kinh tế biến đổi',
+-    '↓',
++    '|',
+     'Cơ cấu XH – GC biến đổi',
+-    '↓',
++    '|',
+     'Lợi ích: Thống nhất & Khác biệt',
+   ];
+ 
+@@ -78,9 +80,10 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+           {recapSteps.map((step, idx) => (
+             <Text
+               key={idx}
++              font={LOCAL_FONT}
+               position={[0, 1.8 - idx * 0.42, 0]}
+-              fontSize={step === '↓' ? 0.16 : 0.2}
+-              color={step === '↓' ? '#C87046' : '#EDE4D6'}
++              fontSize={step === '|' ? 0.16 : 0.2}
++              color={step === '|' ? '#C87046' : '#EDE4D6'}
+               anchorX="center"
+               anchorY="middle"
+             >
+@@ -88,13 +91,14 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+             </Text>
+           ))}
+           <Text
++            font={LOCAL_FONT}
+             position={[0, -2.2, 0]}
+             fontSize={0.14}
+             color="#C8A86A"
+             anchorX="center"
+             anchorY="middle"
+           >
+-            {recapLabel?.text || 'Chuỗi quy luật cốt lõi của Phần thứ nhất'}
++            {recapLabel?.text || 'Chuỗi biến đổi có tính quy luật của Phần thứ nhất'}
+           </Text>
+         </group>
+       )}
+@@ -103,6 +107,7 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+       {beatIndex === 1 && (
+         <group position={[0, 0.2, 0]}>
+           <Text
++            font={LOCAL_FONT}
+             position={[0, 0.5, 0]}
+             fontSize={0.24}
+             color="#F5F0E8"
+@@ -116,13 +121,14 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+               'Nếu các giai cấp, tầng lớp vừa có lợi ích chung, vừa tồn tại những khác biệt về lợi ích, vì sao liên minh giữa họ trở thành một yêu cầu khách quan?'}
+           </Text>
+           <Text
++            font={LOCAL_FONT}
+             position={[0, -0.9, 0]}
+             fontSize={0.15}
+             color="#C87046"
+             anchorX="center"
+             anchorY="middle"
+           >
+-            ✦ Vấn đề bản lề chuyển giao sang Phần thứ hai ✦
++            — Vấn đề bản lề chuyển giao sang Phần thứ hai —
+           </Text>
+         </group>
+       )}
+@@ -155,6 +161,7 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+       {beatIndex >= 4 && (
+         <group position={[0, 0, 0.8]}>
+           <Text
++            font={LOCAL_FONT}
+             position={[0, 0.7, 0]}
+             fontSize={0.45}
+             color="#C8A86A"
+@@ -165,6 +172,7 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+             II
+           </Text>
+           <Text
++            font={LOCAL_FONT}
+             position={[0, 0.1, 0]}
+             fontSize={0.24}
+             color="#F5F0E8"
+@@ -176,6 +184,7 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+             {book2Tease?.sub || 'TÍNH TẤT YẾU CỦA LIÊN MINH'}
+           </Text>
+           <Text
++            font={LOCAL_FONT}
+             position={[0, -0.45, 0]}
+             fontSize={0.14}
+             color="#9FB3C9"
+@@ -191,13 +200,14 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
+       {beatIndex >= 5 && (
+         <group position={[0, -1.8, 0.8]}>
+           <Text
++            font={LOCAL_FONT}
+             fontSize={0.16}
+             color="#C87046"
+             anchorX="center"
+             anchorY="middle"
+             fontWeight={600}
+           >
+-            ➔ Nhấn phím SPACE hoặc O để chuyển giao sang Quyển II
++            Nhấn phím SPACE hoặc O để chuyển giao sang Quyển II
+           </Text>
+         </group>
+       )}
+diff --git a/src/scenes/safe/SafePaperScene.tsx b/src/scenes/safe/SafePaperScene.tsx
+index ab82695..047c610 100644
+--- a/src/scenes/safe/SafePaperScene.tsx
++++ b/src/scenes/safe/SafePaperScene.tsx
+@@ -7,10 +7,7 @@ interface SafePaperSceneProps {
+ 
+ export const SafePaperScene: React.FC<SafePaperSceneProps> = ({
+   beatIndex = 0,
+-  sceneId = 'p1-s0',
+ }) => {
+-  const isBridge = sceneId === 'p1-s7';
+-
+   return (
+     <div
+       style={{
+@@ -38,7 +35,7 @@ export const SafePaperScene: React.FC<SafePaperSceneProps> = ({
+           marginBottom: '1rem',
+         }}
+       >
+-        {isBridge ? 'TỔNG KẾT PHẦN I · CHUYỂN TIẾP QUYỂN II' : 'VĂN BẢN TRANG GIÁO TRÌNH'}
++        VĂN BẢN TRANG GIÁO TRÌNH
+       </div>
+ 
+       <p
+@@ -52,12 +49,10 @@ export const SafePaperScene: React.FC<SafePaperSceneProps> = ({
+           fontStyle: 'italic',
+         }}
+       >
+-        {isBridge
+-          ? '“Khi các giai cấp, tầng lớp vừa có lợi ích chung vừa có khác biệt, vì sao liên minh công – nông – trí thức trở thành đòi hỏi khách quan quyết định thắng lợi của chủ nghĩa xã hội?”'
+-          : '“Cơ cấu xã hội – giai cấp giữ vị trí trung tâm hàng đầu, có mối quan hệ biện chứng và ảnh hưởng sâu sắc đến mọi quan hệ cộng đồng trong thời kỳ quá độ lên chủ nghĩa xã hội.”'}
++        “Cơ cấu xã hội – giai cấp giữ vị trí trung tâm hàng đầu, có mối quan hệ biện chứng và ảnh hưởng sâu sắc đến mọi quan hệ cộng đồng trong thời kỳ quá độ lên chủ nghĩa xã hội.”
+       </p>
+ 
+-      {beatIndex > 0 && !isBridge && (
++      {beatIndex > 0 && (
+         <div
+           style={{
+             marginTop: '2rem',
+@@ -84,28 +79,11 @@ export const SafePaperScene: React.FC<SafePaperSceneProps> = ({
+           <div style={{ background: 'rgba(255,255,255,0.7)', padding: '1rem', borderRadius: '6px', borderLeft: '3px solid #76A394' }}>
+             <strong style={{ color: '#C87046' }}>3. Biến đổi ra sao?</strong>
+             <p style={{ margin: '0.5rem 0 0', fontSize: '0.88rem', color: '#3A2118' }}>
+-              3 quy luật biến đổi khách quan trong thời kỳ quá độ.
++              3 xu hướng biến đổi có tính quy luật trong thời kỳ quá độ.
+             </p>
+           </div>
+         </div>
+       )}
+-
+-      {beatIndex > 0 && isBridge && (
+-        <div
+-          style={{
+-            marginTop: '2rem',
+-            padding: '1.25rem',
+-            background: 'rgba(200, 112, 70, 0.15)',
+-            border: '1px solid #C87046',
+-            borderRadius: '6px',
+-            color: '#7A361E',
+-            fontSize: '0.95rem',
+-            fontWeight: 600,
+-          }}
+-        >
+-          ➔ Mở đường sang Quyển II: Tính tất yếu của liên minh giai cấp, tầng lớp trong thời kỳ quá độ lên chủ nghĩa xã hội
+-        </div>
+-      )}
+     </div>
+   );
+ };
+diff --git a/src/scenes/safe/SafePart1BridgeScene.tsx b/src/scenes/safe/SafePart1BridgeScene.tsx
+index 7e0e740..ccab0bd 100644
+--- a/src/scenes/safe/SafePart1BridgeScene.tsx
++++ b/src/scenes/safe/SafePart1BridgeScene.tsx
+@@ -62,7 +62,7 @@ export const SafePart1BridgeScene: React.FC<SafePart1BridgeSceneProps> = ({
+               Tổng kết Phần thứ nhất
+             </span>
+             <h2 style={{ fontSize: '1.6rem', color: '#EDE4D6', margin: '0.25rem 0 1.5rem 0' }}>
+-              Chuỗi quy luật phát triển của Cơ cấu Xã hội – Giai cấp
++              Chuỗi biến đổi có tính quy luật của Cơ cấu Xã hội – Giai cấp
+             </h2>
+ 
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+diff --git a/src/state/presentationStore.ts b/src/state/presentationStore.ts
+index 99afa71..f9e935c 100644
+--- a/src/state/presentationStore.ts
++++ b/src/state/presentationStore.ts
+@@ -82,6 +82,17 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
+ 
+   openChapter: (chapterIndex: number, sceneIndex = 0) => {
+     const validChapterIndex = Math.max(0, Math.min(chapters.length - 1, chapterIndex));
++    const targetChapter = chapters[validChapterIndex];
++    if (!targetChapter || targetChapter.scenes.length === 0) {
++      // Empty chapter guard: remain in Library, keep book selected/highlighted, do not enter chapter view
++      set({
++        viewMode: 'library',
++        chapterIndex: validChapterIndex,
++        sceneIndex: 0,
++        beatIndex: 0,
++      });
++      return;
++    }
+     set({
+       viewMode: 'chapter',
+       chapterIndex: validChapterIndex,
+@@ -104,6 +115,11 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
+     }
+ 
+     if (state.viewMode === 'library') {
++      const targetChapter = chapters[state.chapterIndex];
++      if (!targetChapter || targetChapter.scenes.length === 0) {
++        // Empty chapter guard: remain in library, keep book selected/highlighted
++        return;
++      }
+       set({
+         viewMode: 'chapter',
+         chapterIndex: state.chapterIndex,
+@@ -153,8 +169,20 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
+ 
+     // Advance to next chapter if remaining
+     if (state.chapterIndex < chapters.length - 1) {
++      const nextChapterIndex = state.chapterIndex + 1;
++      const nextChapter = chapters[nextChapterIndex];
++      if (!nextChapter || nextChapter.scenes.length === 0) {
++        set({
++          viewMode: 'library',
++          chapterIndex: nextChapterIndex,
++          sceneIndex: 0,
++          beatIndex: 0,
++          direction: 1,
++        });
++        return;
++      }
+       set({
+-        chapterIndex: state.chapterIndex + 1,
++        chapterIndex: nextChapterIndex,
+         sceneIndex: 0,
+         beatIndex: 0,
+         direction: 1,
+@@ -206,6 +234,17 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
+ 
+   jumpToChapter: (index: number) => {
+     const validIndex = Math.max(0, Math.min(chapters.length - 1, index));
++    const targetChapter = chapters[validIndex];
++    if (!targetChapter || targetChapter.scenes.length === 0) {
++      // Empty chapter guard: remain in Library, keep book selected/highlighted, do not enter chapter view
++      set({
++        viewMode: 'library',
++        chapterIndex: validIndex,
++        sceneIndex: 0,
++        beatIndex: 0,
++      });
++      return;
++    }
+     set({
+       viewMode: 'chapter',
+       chapterIndex: validIndex,
+diff --git a/src/vendor/threeui-custom/bookshelf/bookshelfRenderer.js b/src/vendor/threeui-custom/bookshelf/bookshelfRenderer.js
+index 8dca34f..3ee22e7 100644
+--- a/src/vendor/threeui-custom/bookshelf/bookshelfRenderer.js
++++ b/src/vendor/threeui-custom/bookshelf/bookshelfRenderer.js
+@@ -36,7 +36,7 @@ function fa(Nr, m, He = {}) {
+       width: 1.05,
+       height: 1.58,
+       depth: 0.28,
+-      chapters: ["Khái niệm", "Vị trí", "Quy luật biến đổi"],
++      chapters: ["Khái niệm", "Vị trí", "Biến đổi có tính quy luật"],
+       seed: 11
+     },
+     {
+diff --git a/tests/e2e/vertical-slice.spec.ts b/tests/e2e/vertical-slice.spec.ts
+index 53b00b2..6f4d97b 100644
+--- a/tests/e2e/vertical-slice.spec.ts
++++ b/tests/e2e/vertical-slice.spec.ts
+@@ -3,6 +3,25 @@ import fs from 'node:fs';
+ import path from 'node:path';
+ 
+ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification Suite', () => {
++  test.beforeEach(async ({ page }) => {
++    // Phase 2.1.2 Acceptance: Assert zero external font or CDN requests
++    page.on('request', (request) => {
++      const url = request.url();
++      const forbiddenHosts = [
++        'fonts.googleapis.com',
++        'fonts.gstatic.com',
++        'cdn.jsdelivr.net',
++        'cdnjs.cloudflare.com',
++        'unpkg.com',
++      ];
++      for (const host of forbiddenHosts) {
++        if (url.includes(host)) {
++          throw new Error(`[Phase 2.1.2 Violation] Forbidden external network request detected: ${url}`);
++        }
++      }
++    });
++  });
++
+   test('1. Vertical Slice Core Flow: Cover -> Library -> Book I -> P1.S0 -> P1.S1 -> Backtrack -> Blackout -> Library', async ({ page }) => {
+     await page.goto('/?safe=1');
+ 
+@@ -19,6 +38,12 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification
+     await expect(page.getByText('QUYỂN III', { exact: true })).toBeVisible();
+     await expect(page.getByText('QUYỂN IV', { exact: true })).toBeVisible();
+ 
++    // Phase 2.1.2 Guard: Clicking empty Book II keeps user in Library without opening a blank chapter
++    await page.getByText('QUYỂN II', { exact: true }).click();
++    await expect(page.getByText(/Thư viện Giáo trình/i)).toBeVisible();
++    expect(await page.evaluate(() => (window as any).__store?.getState().viewMode)).toBe('library');
++    expect(await page.evaluate(() => (window as any).__store?.getState().chapterIndex)).toBe(1);
++
+     // Open Book I
+     await page.getByText('QUYỂN I', { exact: true }).click();
+     await expect(page.getByRole('heading', { name: /Khái luận về cơ cấu xã hội – giai cấp/i })).toBeVisible();
+@@ -126,6 +151,13 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification
+       expect(created).toBe(1);
+       expect(disposed).toBe(0);
+     }
++
++    // Phase 2.1.2 Guard: Press Digit2 (jumpToChapter 1, Book II with scenes = []) keeps user in Library
++    await page.keyboard.press('Digit2');
++    await page.waitForTimeout(100);
++    expect(await page.evaluate(() => (window as any).__store?.getState().viewMode)).toBe('library');
++    await expect(canvas).toBeVisible();
++    expect(await page.locator('canvas').count()).toBe(1);
+   });
+ 
+   test('5. Safe Mode Full Part I Walkthrough & Full Reverse Navigation (S0 -> S7 -> S0)', async ({ page }) => {
+diff --git a/tests/unit/presentationStore.test.ts b/tests/unit/presentationStore.test.ts
+index de6ffc9..d09f9c1 100644
+--- a/tests/unit/presentationStore.test.ts
++++ b/tests/unit/presentationStore.test.ts
+@@ -101,9 +101,9 @@ describe('PresentationStore Navigation Engine', () => {
+     expect(usePresentationStore.getState().isBlackout).toBe(false);
+   });
+ 
+-  it('supports jumpToChapter and jumpToScene', () => {
+-    usePresentationStore.getState().jumpToChapter(2);
+-    expect(usePresentationStore.getState().chapterIndex).toBe(2);
++  it('supports jumpToChapter and jumpToScene for populated chapters', () => {
++    usePresentationStore.getState().jumpToChapter(0);
++    expect(usePresentationStore.getState().chapterIndex).toBe(0);
+     expect(usePresentationStore.getState().viewMode).toBe('chapter');
+ 
+     usePresentationStore.getState().jumpToScene('p1-s1');
+@@ -111,6 +111,27 @@ describe('PresentationStore Navigation Engine', () => {
+     expect(usePresentationStore.getState().sceneIndex).toBe(1);
+   });
+ 
++  it('enforces empty chapter guard: opening or jumping to an empty book never enters blank chapter mode', () => {
++    // Attempting to open Book II (chapterIndex 1) which has scenes = []
++    usePresentationStore.getState().openChapter(1);
++    let state = usePresentationStore.getState();
++    expect(state.viewMode).toBe('library');
++    expect(state.chapterIndex).toBe(1);
++
++    // Attempting to jumpToChapter 1 which has scenes = []
++    usePresentationStore.getState().jumpToChapter(1);
++    state = usePresentationStore.getState();
++    expect(state.viewMode).toBe('library');
++    expect(state.chapterIndex).toBe(1);
++
++    // When in library with empty Book selected, next() does not enter chapter mode
++    usePresentationStore.setState({ viewMode: 'library', chapterIndex: 1 });
++    usePresentationStore.getState().next();
++    state = usePresentationStore.getState();
++    expect(state.viewMode).toBe('library');
++    expect(state.chapterIndex).toBe(1);
++  });
++
+   it('enforces Part II boundary: at final beat of P1.S7, next returns to library with Book II selected', () => {
+     // Jump to P1.S7 (final scene of Part I, order 7, scenes[7])
+     usePresentationStore.getState().openChapter(0, 7);

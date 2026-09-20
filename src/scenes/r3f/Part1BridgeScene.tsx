@@ -11,6 +11,7 @@ interface Part1BridgeSceneProps {
 }
 
 const TARGET_SCALE_VEC = new THREE.Vector3();
+const LOCAL_FONT = '/fonts/roboto-regular.woff';
 
 export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
   scene,
@@ -30,22 +31,23 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
     const t = state.clock.getElapsedTime();
 
     if (groupRef.current) {
-      groupRef.current.position.y = Math.sin(t * 0.8) * 0.04;
+      groupRef.current.rotation.y = Math.sin(t * 0.15) * 0.08;
+    }
+
+    if (coreRef.current) {
+      coreRef.current.rotation.x = t * 0.3;
+      coreRef.current.rotation.y = t * 0.45;
+      const targetScale = beatIndex === 2 ? 0.35 : 1.0;
+      TARGET_SCALE_VEC.setScalar(targetScale);
+      coreRef.current.scale.lerp(TARGET_SCALE_VEC, 0.06);
     }
 
     if (ringRef.current) {
-      ringRef.current.rotation.x = Math.sin(t * 0.3) * 0.2;
-      ringRef.current.rotation.y = t * 0.25;
+      ringRef.current.rotation.z = t * 0.1;
+      const s = 1 + Math.sin(t * 1.5) * 0.04;
+      ringRef.current.scale.set(s, s, 1);
     }
 
-    // Collapse animation at Beat 2+ (zero per-frame allocation)
-    if (coreRef.current) {
-      const targetScale = beatIndex >= 2 ? 0.01 : 1.0;
-      TARGET_SCALE_VEC.setScalar(targetScale);
-      coreRef.current.scale.lerp(TARGET_SCALE_VEC, 0.08);
-    }
-
-    // Book close rotation simulation at Beat 3+
     if (bookRef.current) {
       const targetAngle = beatIndex >= 3 ? 0 : -Math.PI * 0.35;
       bookRef.current.rotation.y = THREE.MathUtils.lerp(bookRef.current.rotation.y, targetAngle, 0.08);
@@ -56,13 +58,13 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
 
   const recapSteps = [
     'Cơ cấu xã hội',
-    '↓',
+    '|',
     'Cơ cấu XH – Giai cấp',
-    '↓',
+    '|',
     'Cơ cấu kinh tế biến đổi',
-    '↓',
+    '|',
     'Cơ cấu XH – GC biến đổi',
-    '↓',
+    '|',
     'Lợi ích: Thống nhất & Khác biệt',
   ];
 
@@ -78,9 +80,10 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
           {recapSteps.map((step, idx) => (
             <Text
               key={idx}
+              font={LOCAL_FONT}
               position={[0, 1.8 - idx * 0.42, 0]}
-              fontSize={step === '↓' ? 0.16 : 0.2}
-              color={step === '↓' ? '#C87046' : '#EDE4D6'}
+              fontSize={step === '|' ? 0.16 : 0.2}
+              color={step === '|' ? '#C87046' : '#EDE4D6'}
               anchorX="center"
               anchorY="middle"
             >
@@ -88,13 +91,14 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
             </Text>
           ))}
           <Text
+            font={LOCAL_FONT}
             position={[0, -2.2, 0]}
             fontSize={0.14}
             color="#C8A86A"
             anchorX="center"
             anchorY="middle"
           >
-            {recapLabel?.text || 'Chuỗi quy luật cốt lõi của Phần thứ nhất'}
+            {recapLabel?.text || 'Chuỗi biến đổi có tính quy luật của Phần thứ nhất'}
           </Text>
         </group>
       )}
@@ -103,6 +107,7 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
       {beatIndex === 1 && (
         <group position={[0, 0.2, 0]}>
           <Text
+            font={LOCAL_FONT}
             position={[0, 0.5, 0]}
             fontSize={0.24}
             color="#F5F0E8"
@@ -116,13 +121,14 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
               'Nếu các giai cấp, tầng lớp vừa có lợi ích chung, vừa tồn tại những khác biệt về lợi ích, vì sao liên minh giữa họ trở thành một yêu cầu khách quan?'}
           </Text>
           <Text
+            font={LOCAL_FONT}
             position={[0, -0.9, 0]}
             fontSize={0.15}
             color="#C87046"
             anchorX="center"
             anchorY="middle"
           >
-            ✦ Vấn đề bản lề chuyển giao sang Phần thứ hai ✦
+            — Vấn đề bản lề chuyển giao sang Phần thứ hai —
           </Text>
         </group>
       )}
@@ -155,6 +161,7 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
       {beatIndex >= 4 && (
         <group position={[0, 0, 0.8]}>
           <Text
+            font={LOCAL_FONT}
             position={[0, 0.7, 0]}
             fontSize={0.45}
             color="#C8A86A"
@@ -165,6 +172,7 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
             II
           </Text>
           <Text
+            font={LOCAL_FONT}
             position={[0, 0.1, 0]}
             fontSize={0.24}
             color="#F5F0E8"
@@ -176,6 +184,7 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
             {book2Tease?.sub || 'TÍNH TẤT YẾU CỦA LIÊN MINH'}
           </Text>
           <Text
+            font={LOCAL_FONT}
             position={[0, -0.45, 0]}
             fontSize={0.14}
             color="#9FB3C9"
@@ -191,13 +200,14 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
       {beatIndex >= 5 && (
         <group position={[0, -1.8, 0.8]}>
           <Text
+            font={LOCAL_FONT}
             fontSize={0.16}
             color="#C87046"
             anchorX="center"
             anchorY="middle"
             fontWeight={600}
           >
-            ➔ Nhấn phím SPACE hoặc O để chuyển giao sang Quyển II
+            Nhấn phím SPACE hoặc O để chuyển giao sang Quyển II
           </Text>
         </group>
       )}

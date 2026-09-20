@@ -1,11 +1,10 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface PaperSceneProps {
   beatIndex?: number;
-  sceneId?: string;
 }
 
 // Procedural subtle paper texture generator
@@ -56,13 +55,20 @@ function createAmbientParticles(count: number): Float32Array {
   return arr;
 }
 
-export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0, sceneId = 'p1-s0' }) => {
+export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0 }) => {
   const meshRef = useRef<THREE.Group>(null);
   const leftPageRef = useRef<THREE.Group>(null);
   const rightPageRef = useRef<THREE.Group>(null);
 
   const paperTexture = useMemo(() => createPaperTexture(), []);
   const dustParticles = useMemo(() => createAmbientParticles(60), []);
+
+  // Dispose CanvasTexture on unmount to prevent WebGL resource leaks
+  useEffect(() => {
+    return () => {
+      paperTexture.dispose();
+    };
+  }, [paperTexture]);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -81,8 +87,6 @@ export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0, sceneId =
       rightPageRef.current.rotation.y = THREE.MathUtils.lerp(rightPageRef.current.rotation.y, targetAngle, 0.05);
     }
   });
-
-  const isBridge = sceneId === 'p1-s7';
 
   return (
     <group ref={meshRef} position={[0, 0, 0]}>
@@ -174,38 +178,23 @@ export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0, sceneId =
               lineHeight: 1.45,
             }}
           >
-            {!isBridge ? (
-              // P1.S0 Academic Agenda
-              <div>
-                <div style={{ fontSize: '11px', color: '#C87046', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
-                  3 Câu hỏi dẫn luận cốt lõi:
+            {/* P1.S0 Academic Agenda */}
+            <div>
+              <div style={{ fontSize: '11px', color: '#C87046', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                3 Câu hỏi dẫn luận cốt lõi:
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px', fontSize: '12.5px' }}>
+                <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #C8A86A' }}>
+                  <strong>1. Là gì?</strong> Bản chất cấu trúc & 4 trục quan hệ sản xuất.
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px', fontSize: '12.5px' }}>
-                  <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #C8A86A' }}>
-                    <strong>1. Là gì?</strong> Bản chất cấu trúc & 4 trục quan hệ sản xuất.
-                  </div>
-                  <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #C87046' }}>
-                    <strong>2. Vị trí ra sao?</strong> Trung tâm hàng đầu trong hệ thống xã hội.
-                  </div>
-                  <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #76A394' }}>
-                    <strong>3. Biến đổi thế nào?</strong> 3 Quy luật vận động trong thời kỳ quá độ.
-                  </div>
+                <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #C87046' }}>
+                  <strong>2. Vị trí ra sao?</strong> Trung tâm hàng đầu trong hệ thống xã hội.
+                </div>
+                <div style={{ padding: '4px 6px', background: 'rgba(200, 168, 106, 0.15)', borderRadius: '4px', borderLeft: '3px solid #76A394' }}>
+                  <strong>3. Biến đổi thế nào?</strong> 3 xu hướng biến đổi có tính quy luật trong thời kỳ quá độ.
                 </div>
               </div>
-            ) : (
-              // P1.S7 Bridge to Part II
-              <div>
-                <div style={{ fontSize: '11px', color: '#C87046', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
-                  Khép lại Phần I · Mở ra Quyển II:
-                </div>
-                <div style={{ marginTop: '8px', fontSize: '13px', fontStyle: 'italic', color: '#24344A', borderLeft: '3px solid #C8A86A', paddingLeft: '8px' }}>
-                  “Khi các giai cấp vừa có lợi ích chung vừa có khác biệt, vì sao liên minh công – nông – trí thức trở thành đòi hỏi khách quan quyết định thắng lợi của CNXH?”
-                </div>
-                <div style={{ marginTop: '10px', fontSize: '11px', color: '#7A361E', fontWeight: 600 }}>
-                  ➔ Nhấn Space để chuyển sang Quyển II
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </Html>
       </group>

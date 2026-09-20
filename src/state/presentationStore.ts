@@ -82,6 +82,17 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
 
   openChapter: (chapterIndex: number, sceneIndex = 0) => {
     const validChapterIndex = Math.max(0, Math.min(chapters.length - 1, chapterIndex));
+    const targetChapter = chapters[validChapterIndex];
+    if (!targetChapter || targetChapter.scenes.length === 0) {
+      // Empty chapter guard: remain in Library, keep book selected/highlighted, do not enter chapter view
+      set({
+        viewMode: 'library',
+        chapterIndex: validChapterIndex,
+        sceneIndex: 0,
+        beatIndex: 0,
+      });
+      return;
+    }
     set({
       viewMode: 'chapter',
       chapterIndex: validChapterIndex,
@@ -104,6 +115,11 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     }
 
     if (state.viewMode === 'library') {
+      const targetChapter = chapters[state.chapterIndex];
+      if (!targetChapter || targetChapter.scenes.length === 0) {
+        // Empty chapter guard: remain in library, keep book selected/highlighted
+        return;
+      }
       set({
         viewMode: 'chapter',
         chapterIndex: state.chapterIndex,
@@ -153,8 +169,20 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
 
     // Advance to next chapter if remaining
     if (state.chapterIndex < chapters.length - 1) {
+      const nextChapterIndex = state.chapterIndex + 1;
+      const nextChapter = chapters[nextChapterIndex];
+      if (!nextChapter || nextChapter.scenes.length === 0) {
+        set({
+          viewMode: 'library',
+          chapterIndex: nextChapterIndex,
+          sceneIndex: 0,
+          beatIndex: 0,
+          direction: 1,
+        });
+        return;
+      }
       set({
-        chapterIndex: state.chapterIndex + 1,
+        chapterIndex: nextChapterIndex,
         sceneIndex: 0,
         beatIndex: 0,
         direction: 1,
@@ -206,6 +234,17 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
 
   jumpToChapter: (index: number) => {
     const validIndex = Math.max(0, Math.min(chapters.length - 1, index));
+    const targetChapter = chapters[validIndex];
+    if (!targetChapter || targetChapter.scenes.length === 0) {
+      // Empty chapter guard: remain in Library, keep book selected/highlighted, do not enter chapter view
+      set({
+        viewMode: 'library',
+        chapterIndex: validIndex,
+        sceneIndex: 0,
+        beatIndex: 0,
+      });
+      return;
+    }
     set({
       viewMode: 'chapter',
       chapterIndex: validIndex,

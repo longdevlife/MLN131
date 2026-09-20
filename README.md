@@ -136,7 +136,7 @@ npm run test:e2e
 ### 🎯 Tiêu chuẩn Nghiệm thu Kỹ thuật (QA Pass Criteria)
 - ✅ `tsc -b`: 0 lỗi biên dịch kiểu TypeScript.
 - ✅ `oxlint`: 0 cảnh báo linting (0 errors, 0 warnings trên toàn bộ 53 files mã nguồn).
-- ✅ `vitest`: 8/8 unit tests đạt 100% (kiểm thử chặt chẽ Store State Machine, navigation determinism và ranh giới Part II handoff).
+- ✅ `vitest`: 9/9 unit tests đạt 100% (kiểm thử chặt chẽ Store State Machine, navigation determinism, Empty Chapter Guard và ranh giới Part II handoff).
 - ✅ `playwright test`: 8/8 kịch bản E2E kiểm thử tự động đạt 100% (bao gồm core flow, đồng bộ Presenter Console, kiểm tra Preflight, kiểm thử ThreeUI Bookshelf lifecycle created=1/disposed=0, Safe Mode walkthrough & reverse, Real WebGL walkthrough với console capture, Real WebGL Soak Test >=5 chu kỳ S1->S7->S1, và kiểm thử hiển thị song song ở cả 2 độ phân giải 1920x1080 và 1366x768).
 - ✅ Lifecycle ThreeUI: Không ghi nhận renderer recreation hoặc WebGL context loss trong test lifecycle hiện tại (duyệt qua các tập sách I -> II -> III -> IV -> I trong thư viện giữ nguyên `created = 1`, `disposed = 0`).
 
@@ -147,7 +147,7 @@ npm run test:e2e
 1. **Phân tách Bundle JS (Lazy Splitting Architecture):**  
    Hệ thống đã triển khai Dynamic Import (`React.lazy`) và True Scene Registry cho toàn bộ các cảnh 3D chuyên biệt (P1.S1 đến P1.S7) thành các chunk độc lập tải theo nhu cầu. Chunk chính (~1.96 MB chưa gzip / ~568 kB gzipped) đóng gói Three.js r170 runtime và thư viện ThreeUI Bookshelf dùng chung. Với ứng dụng trình chiếu hội trường chạy local hoặc PWA offline có Service Worker lưu đệm, tốc độ khởi động tức thì và hoàn toàn mượt mà.
 2. **Kiểm chứng bộ nhớ WebGL:**  
-   Chỉ số `created = 1`, `disposed = 0` chứng minh renderer không bị tái tạo ngoài ý muốn khi chuyển đổi sách. Toàn bộ các cảnh R3F đã được kiểm toán triệt để, loại bỏ hoàn toàn việc cấp phát đối tượng mới (0 new allocations per frame) trong `useFrame`.
+   Chỉ số `created = 1`, `disposed = 0` chứng minh renderer không bị tái tạo ngoài ý muốn khi chuyển đổi sách. Toàn bộ các cảnh R3F đã được kiểm toán triệt để: No explicit object/array allocation or React state update remains inside authored useFrame callbacks after audit. Không tuyên bố zero-allocation bên trong nội bộ Three/R3F/Troika.
 
 ---
 

@@ -36,7 +36,7 @@ function fa(Nr, m, He = {}) {
       width: 1.05,
       height: 1.58,
       depth: 0.28,
-      chapters: ["Khái niệm", "Vị trí", "Quy luật biến đổi"],
+      chapters: ["Khái niệm", "Vị trí", "Biến đổi có tính quy luật"],
       seed: 11
     },
     {

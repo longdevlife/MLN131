@@ -62,7 +62,7 @@ export const SafePart1BridgeScene: React.FC<SafePart1BridgeSceneProps> = ({
               Tổng kết Phần thứ nhất
             </span>
             <h2 style={{ fontSize: '1.6rem', color: '#EDE4D6', margin: '0.25rem 0 1.5rem 0' }}>
-              Chuỗi quy luật phát triển của Cơ cấu Xã hội – Giai cấp
+              Chuỗi biến đổi có tính quy luật của Cơ cấu Xã hội – Giai cấp
             </h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>

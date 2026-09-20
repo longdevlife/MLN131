@@ -3,6 +3,25 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification Suite', () => {
+  test.beforeEach(async ({ page }) => {
+    // Phase 2.1.2 Acceptance: Assert zero external font or CDN requests
+    page.on('request', (request) => {
+      const url = request.url();
+      const forbiddenHosts = [
+        'fonts.googleapis.com',
+        'fonts.gstatic.com',
+        'cdn.jsdelivr.net',
+        'cdnjs.cloudflare.com',
+        'unpkg.com',
+      ];
+      for (const host of forbiddenHosts) {
+        if (url.includes(host)) {
+          throw new Error(`[Phase 2.1.2 Violation] Forbidden external network request detected: ${url}`);
+        }
+      }
+    });
+  });
+
   test('1. Vertical Slice Core Flow: Cover -> Library -> Book I -> P1.S0 -> P1.S1 -> Backtrack -> Blackout -> Library', async ({ page }) => {
     await page.goto('/?safe=1');
 
@@ -18,6 +37,12 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
     await expect(page.getByText('QUYỂN II', { exact: true })).toBeVisible();
     await expect(page.getByText('QUYỂN III', { exact: true })).toBeVisible();
     await expect(page.getByText('QUYỂN IV', { exact: true })).toBeVisible();
+
+    // Phase 2.1.2 Guard: Clicking empty Book II keeps user in Library without opening a blank chapter
+    await page.getByText('QUYỂN II', { exact: true }).click();
+    await expect(page.getByText(/Thư viện Giáo trình/i)).toBeVisible();
+    expect(await page.evaluate(() => (window as any).__store?.getState().viewMode)).toBe('library');
+    expect(await page.evaluate(() => (window as any).__store?.getState().chapterIndex)).toBe(1);
 
     // Open Book I
     await page.getByText('QUYỂN I', { exact: true }).click();
@@ -126,6 +151,13 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
       expect(created).toBe(1);
       expect(disposed).toBe(0);
     }
+
+    // Phase 2.1.2 Guard: Press Digit2 (jumpToChapter 1, Book II with scenes = []) keeps user in Library
+    await page.keyboard.press('Digit2');
+    await page.waitForTimeout(100);
+    expect(await page.evaluate(() => (window as any).__store?.getState().viewMode)).toBe('library');
+    await expect(canvas).toBeVisible();
+    expect(await page.locator('canvas').count()).toBe(1);
   });
 
   test('5. Safe Mode Full Part I Walkthrough & Full Reverse Navigation (S0 -> S7 -> S0)', async ({ page }) => {

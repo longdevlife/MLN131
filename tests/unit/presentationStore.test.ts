@@ -101,14 +101,35 @@ describe('PresentationStore Navigation Engine', () => {
     expect(usePresentationStore.getState().isBlackout).toBe(false);
   });
 
-  it('supports jumpToChapter and jumpToScene', () => {
-    usePresentationStore.getState().jumpToChapter(2);
-    expect(usePresentationStore.getState().chapterIndex).toBe(2);
+  it('supports jumpToChapter and jumpToScene for populated chapters', () => {
+    usePresentationStore.getState().jumpToChapter(0);
+    expect(usePresentationStore.getState().chapterIndex).toBe(0);
     expect(usePresentationStore.getState().viewMode).toBe('chapter');
 
     usePresentationStore.getState().jumpToScene('p1-s1');
     expect(usePresentationStore.getState().chapterIndex).toBe(0);
     expect(usePresentationStore.getState().sceneIndex).toBe(1);
+  });
+
+  it('enforces empty chapter guard: opening or jumping to an empty book never enters blank chapter mode', () => {
+    // Attempting to open Book II (chapterIndex 1) which has scenes = []
+    usePresentationStore.getState().openChapter(1);
+    let state = usePresentationStore.getState();
+    expect(state.viewMode).toBe('library');
+    expect(state.chapterIndex).toBe(1);
+
+    // Attempting to jumpToChapter 1 which has scenes = []
+    usePresentationStore.getState().jumpToChapter(1);
+    state = usePresentationStore.getState();
+    expect(state.viewMode).toBe('library');
+    expect(state.chapterIndex).toBe(1);
+
+    // When in library with empty Book selected, next() does not enter chapter mode
+    usePresentationStore.setState({ viewMode: 'library', chapterIndex: 1 });
+    usePresentationStore.getState().next();
+    state = usePresentationStore.getState();
+    expect(state.viewMode).toBe('library');
+    expect(state.chapterIndex).toBe(1);
   });
 
   it('enforces Part II boundary: at final beat of P1.S7, next returns to library with Book II selected', () => {

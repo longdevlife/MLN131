@@ -12,7 +12,7 @@ export const chapters: Chapter[] = [
     title: 'Cơ cấu xã hội – giai cấp trong thời kỳ quá độ',
     shortTitle: 'Cơ cấu xã hội – giai cấp',
     discipline: 'Khái luận & Quy luật',
-    description: 'Khái niệm, vị trí và các quy luật biến đổi trong TKQĐ.',
+    description: 'Khái niệm, vị trí và sự biến đổi có tính quy luật trong TKQĐ.',
     deck: 'Khái luận về cơ cấu xã hội - giai cấp trong thời kỳ quá độ lên chủ nghĩa xã hội: vị trí trung tâm hàng đầu, tác động qua lại biện chứng với các cơ cấu xã hội khác và xu hướng biến đổi có tính quy luật.',
     binding: 'Ultramarine cloth · copper foil',
     theme: 'Cơ cấu xã hội – giai cấp',
