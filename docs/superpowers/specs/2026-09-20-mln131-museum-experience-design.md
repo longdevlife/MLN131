@@ -1,7 +1,7 @@
 # MLN131 Museum Experience Design
 
 **Date:** 2026-09-20  
-**Status:** Written-spec review pending; implementation intentionally follows Magazine acceptance  
+**Status:** Approved; implementation intentionally follows Magazine acceptance  
 **Parent architecture:** `2026-09-20-mln131-experience-architecture-design.md`  
 **Reference:** `longdevlife/HCM202` @ `d19c0d8557ce64778574c74ede16c66ffec95a53`
 
