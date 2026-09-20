@@ -109,7 +109,7 @@ export const ChapterRail: React.FC = () => {
               >
                 {ch.roman}
               </span>
-              <span className="chapter-rail-title" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span className="chapter-rail-title">
                 {ch.shortTitle}
               </span>
             </button>

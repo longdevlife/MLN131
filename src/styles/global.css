@@ -39,3 +39,49 @@ button {
   outline: 2px solid var(--color-muted-gold);
   outline-offset: 2px;
 }
+
+/* Local offline typography */
+@font-face {
+  font-family: 'MLNBookSans';
+  src: url('/fonts/roboto-regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'MLNBookSans';
+  src: url('/fonts/roboto-bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Chapter Rail dock responsive typography */
+.chapter-rail-dock {
+  max-width: 96vw;
+  box-sizing: border-box;
+}
+
+.chapter-rail-title {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: max-width 0.2s ease;
+  max-width: 140px;
+}
+
+@media (min-width: 1280px) {
+  .chapter-rail-title {
+    max-width: 180px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .chapter-rail-title {
+    max-width: none;
+  }
+}
+
