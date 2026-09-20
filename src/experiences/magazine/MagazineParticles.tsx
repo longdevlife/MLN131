@@ -12,12 +12,11 @@ export function MagazineParticles({
   reducedMotion,
   accentColor = '#C8A86A',
 }: MagazineParticlesProps) {
-  if (reducedMotion) return null;
-
   const [showParticles, setShowParticles] = useState(false);
   const prevPage = useRef(page);
 
   useEffect(() => {
+    if (reducedMotion) return;
     if (prevPage.current !== page) {
       prevPage.current = page;
       setShowParticles(true);
@@ -29,9 +28,9 @@ export function MagazineParticles({
         clearTimeout(timer);
       };
     }
-  }, [page]);
+  }, [page, reducedMotion]);
 
-  if (!showParticles) return null;
+  if (reducedMotion || !showParticles) return null;
 
   return (
     <group position={[0, 0, 0.05]}>
