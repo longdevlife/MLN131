@@ -1,7 +1,7 @@
 # MLN131 Experience Architecture Design
 
 **Date:** 2026-09-20  
-**Status:** Design approved in chat; written-spec review pending  
+**Status:** Approved  
 **Repository:** `longdevlife/MLN131`  
 **Baseline:** `309dbe150b3b70dfe5c2762a95fe3b7de4f85594`  
 **Reference repository:** `longdevlife/HCM202` @ `d19c0d8557ce64778574c74ede16c66ffec95a53`
