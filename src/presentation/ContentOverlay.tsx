@@ -36,8 +36,8 @@ export const ContentOverlay: React.FC = () => {
           zIndex: 50,
         }}
       >
-        {/* Top Header Section */}
-        <header style={{ maxWidth: '900px' }}>
+        {/* Top Header Section: Restrained Editorial Width (38-42vw) */}
+        <header style={{ maxWidth: 'min(42vw, 580px)', pointerEvents: 'auto' }}>
           <ArticleHeadings
             as="h1"
             kicker={scene.kicker || `Quyển ${chapter.roman} · ${chapter.shortTitle}`}
@@ -46,8 +46,8 @@ export const ContentOverlay: React.FC = () => {
           />
         </header>
 
-        {/* Center Callout / Academic Quote Card (Revealed at specified beat) */}
-        {callout && (
+        {/* Center Callout / Academic Quote Card: Excluded on ThreeUI scenes to avoid visual clutter */}
+        {callout && !['p1-s3', 'p1-s4'].includes(scene.id) && (
           <div
             style={{
               alignSelf: 'center',

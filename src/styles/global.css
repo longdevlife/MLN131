@@ -1,4 +1,5 @@
 @import './tokens.css';
+@import '@designcodeio/threeui/style.css';
 
 * {
   box-sizing: border-box;

@@ -52,14 +52,15 @@ export const ArticleHeadings: React.FC<ArticleHeadingProps> = ({
       )}
       <Component
         data-article-heading
-        className="article-title font-serif"
+        className="article-title font-sans"
         style={{
-          fontSize: 'clamp(2rem, 5vw, 3.75rem)',
-          lineHeight: 1.15,
+          fontSize: 'clamp(1.45rem, 2.2vw, 2.25rem)',
+          lineHeight: 1.2,
           color: '#F5F0E8',
           margin: 0,
-          fontWeight: 600,
-          letterSpacing: '-0.01em',
+          fontWeight: 650,
+          letterSpacing: '-0.02em',
+          textWrap: 'balance',
         }}
       >
         {title}
@@ -69,11 +70,12 @@ export const ArticleHeadings: React.FC<ArticleHeadingProps> = ({
           data-article-heading
           className="article-subtitle font-sans"
           style={{
-            fontSize: 'clamp(1rem, 2vw, 1.35rem)',
-            color: '#EDE4D6',
-            opacity: 0.85,
-            marginTop: '0.75rem',
-            lineHeight: 1.5,
+            fontSize: 'clamp(0.88rem, 1.05vw, 1.05rem)',
+            color: 'rgba(237, 228, 214, 0.78)',
+            marginTop: '0.45rem',
+            marginBottom: 0,
+            lineHeight: 1.4,
+            textWrap: 'balance',
           }}
         >
           {subtitle}

@@ -15,6 +15,12 @@ export const PresentationShell: React.FC = () => {
   const viewMode = usePresentationStore((state) => state.viewMode);
   usePerformanceTier();
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__PRESENTATION_STORE__ = usePresentationStore;
+    }
+  }, []);
+
   // Synchronize from presenter console via BroadcastChannel
   const channel = useMemo(() => {
     return new PresentationChannel((msg: PresentationSyncMessage) => {
