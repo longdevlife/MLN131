@@ -19,21 +19,67 @@ export function useKeyboardNavigation() {
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
         return;
       }
-      if (viewMode === 'library') {
+      const state = usePresentationStore.getState();
+
+      if (state.experienceMode === 'magazine') {
+        switch (e.code) {
+          case 'Space':
+          case 'ArrowRight':
+          case 'PageDown':
+            e.preventDefault();
+            state.next();
+            return;
+          case 'ArrowLeft':
+          case 'PageUp':
+            e.preventDefault();
+            state.prev();
+            return;
+          case 'Escape':
+          case 'KeyO':
+            e.preventDefault();
+            state.closeMagazine();
+            return;
+          case 'KeyB':
+            e.preventDefault();
+            toggleBlackout();
+            return;
+          case 'KeyF':
+            e.preventDefault();
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen?.().catch(() => {});
+              setFullscreen(true);
+            } else {
+              document.exitFullscreen?.().catch(() => {});
+              setFullscreen(false);
+            }
+            return;
+          default:
+            return;
+        }
+      }
+
+      const isLibrary = state.experienceMode === 'library' || viewMode === 'library';
+
+      if (isLibrary) {
         if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
           e.preventDefault();
-          usePresentationStore.setState((s) => ({ chapterIndex: Math.min(s.chapterIndex + 1, 3) }));
+          usePresentationStore.setState((s) => {
+            const nextIdx = Math.min(s.chapterIndex + 1, 3);
+            return { chapterIndex: nextIdx, selectedBook: nextIdx };
+          });
           return;
         }
         if (e.code === 'ArrowLeft' || e.code === 'ArrowUp') {
           e.preventDefault();
-          usePresentationStore.setState((s) => ({ chapterIndex: Math.max(s.chapterIndex - 1, 0) }));
+          usePresentationStore.setState((s) => {
+            const prevIdx = Math.max(s.chapterIndex - 1, 0);
+            return { chapterIndex: prevIdx, selectedBook: prevIdx };
+          });
           return;
         }
         if (e.code === 'Space' || e.code === 'Enter') {
           e.preventDefault();
-          const curIndex = usePresentationStore.getState().chapterIndex;
-          usePresentationStore.getState().openChapter(curIndex);
+          state.openBook(state.selectedBook);
           return;
         }
       }
@@ -54,22 +100,38 @@ export function useKeyboardNavigation() {
 
         case 'Digit1':
           e.preventDefault();
-          jumpToChapter(0);
+          if (isLibrary) {
+            state.openBook(0);
+          } else {
+            jumpToChapter(0);
+          }
           break;
 
         case 'Digit2':
           e.preventDefault();
-          jumpToChapter(1);
+          if (isLibrary) {
+            state.openBook(1);
+          } else {
+            jumpToChapter(1);
+          }
           break;
 
         case 'Digit3':
           e.preventDefault();
-          jumpToChapter(2);
+          if (isLibrary) {
+            state.openBook(2);
+          } else {
+            jumpToChapter(2);
+          }
           break;
 
         case 'Digit4':
           e.preventDefault();
-          jumpToChapter(3);
+          if (isLibrary) {
+            state.openBook(3);
+          } else {
+            jumpToChapter(3);
+          }
           break;
 
         case 'KeyO':

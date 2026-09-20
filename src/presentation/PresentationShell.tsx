@@ -32,6 +32,10 @@ export const PresentationShell: React.FC = () => {
           sceneIndex: msg.sceneIndex,
           beatIndex: msg.beatIndex,
           isBlackout: msg.isBlackout,
+          ...(msg.experienceMode ? { experienceMode: msg.experienceMode } : {}),
+          ...(msg.selectedBook !== undefined ? { selectedBook: msg.selectedBook } : {}),
+          ...(msg.magazinePage !== undefined ? { magazinePage: msg.magazinePage } : {}),
+          ...(msg.magazineViewMode ? { magazineViewMode: msg.magazineViewMode } : {}),
         });
       }
     });

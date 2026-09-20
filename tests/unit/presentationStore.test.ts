@@ -197,5 +197,30 @@ describe('PresentationStore Navigation Engine', () => {
     usePresentationStore.getState().openBook(0);
     expect(['cover', 'library', 'chapter']).toContain(usePresentationStore.getState().viewMode);
   });
+
+  it('advances and rewinds Magazine pages via next() and prev() only when in magazine mode', () => {
+    usePresentationStore.getState().openBook(0);
+    expect(usePresentationStore.getState().magazinePage).toBe(0);
+
+    usePresentationStore.getState().next();
+    expect(usePresentationStore.getState().magazinePage).toBe(1);
+
+    usePresentationStore.getState().next();
+    expect(usePresentationStore.getState().magazinePage).toBe(2);
+
+    usePresentationStore.getState().prev();
+    expect(usePresentationStore.getState().magazinePage).toBe(1);
+  });
+
+  it('exits Magazine via openLibrary() and preserves selected book', () => {
+    usePresentationStore.getState().openBook(0);
+    usePresentationStore.getState().setMagazinePage(2);
+    usePresentationStore.getState().openLibrary();
+
+    const state = usePresentationStore.getState();
+    expect(state.experienceMode).toBe('library');
+    expect(state.selectedBook).toBe(0);
+  });
 });
+
 
