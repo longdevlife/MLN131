@@ -1,7 +1,7 @@
 # MLN131 Magazine Core Design
 
 **Date:** 2026-09-20  
-**Status:** Written-spec review pending  
+**Status:** Approved  
 **Parent architecture:** `2026-09-20-mln131-experience-architecture-design.md`  
 **Baseline:** `309dbe150b3b70dfe5c2762a95fe3b7de4f85594`  
 **Reference:** `longdevlife/HCM202` @ `d19c0d8557ce64778574c74ede16c66ffec95a53`
