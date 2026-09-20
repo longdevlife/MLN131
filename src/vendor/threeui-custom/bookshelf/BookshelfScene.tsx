@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 // @ts-expect-error - vendored ThreeUI renderer
 import { createBookshelfRenderer } from './bookshelfRenderer.js';
+import { ensureBookshelfFonts } from './fontLoader';
 
 declare global {
   interface Window {
@@ -66,43 +67,51 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
       window.bookshelfRendererCreated = (window.bookshelfRendererCreated || 0) + 1;
     }
 
-    try {
-      const renderer = createBookshelfRenderer(container, canvas, {
-        initialIndex: initialIndexRef.current,
-        onReady: () => {
-          if (!disposed) setStatus('ready');
-        },
-        onError: (err: string | Error) => {
+    const initRenderer = async () => {
+      try {
+        await ensureBookshelfFonts();
+        if (disposed) return;
+
+        const renderer = createBookshelfRenderer(container, canvas, {
+          initialIndex: initialIndexRef.current,
+          onReady: () => {
+            if (!disposed) setStatus('ready');
+          },
+          onError: (err: string | Error) => {
+            if (!disposed) {
+              setErrorMessage(typeof err === 'string' ? err : err.message);
+              setStatus('unavailable');
+            }
+          },
+          onSelectionChange: (info: { index: number; total: number; title: string }) => {
+            if (!disposed && onSelectBookRef.current) {
+              onSelectBookRef.current(info.index, info as any);
+            }
+          },
+          onOpenBook: (index: number, book: any) => {
+            if (!disposed && onOpenBookRef.current) {
+              onOpenBookRef.current(index, book);
+            }
+          },
+        });
+
+        rendererRef.current = renderer;
+
+        renderer.ready?.catch((err: any) => {
           if (!disposed) {
-            setErrorMessage(typeof err === 'string' ? err : err.message);
+            setErrorMessage(err instanceof Error ? err.message : 'Unknown renderer error');
             setStatus('unavailable');
           }
-        },
-        onSelectionChange: (info: { index: number; total: number; title: string }) => {
-          if (!disposed && onSelectBookRef.current) {
-            onSelectBookRef.current(info.index, info as any);
-          }
-        },
-        onOpenBook: (index: number, book: any) => {
-          if (!disposed && onOpenBookRef.current) {
-            onOpenBookRef.current(index, book);
-          }
-        },
-      });
-
-      rendererRef.current = renderer;
-
-      renderer.ready?.catch((err: any) => {
+        });
+      } catch (err: any) {
         if (!disposed) {
-          setErrorMessage(err instanceof Error ? err.message : 'Unknown renderer error');
+          setErrorMessage(err instanceof Error ? err.message : 'Failed to initialize 3D Bookshelf');
           setStatus('unavailable');
         }
-      });
-    } catch (err: any) {
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to initialize 3D Bookshelf');
-      setStatus('unavailable');
-      return;
-    }
+      }
+    };
+
+    initRenderer();
 
     const resizeObserver = new ResizeObserver(() => {
       rendererRef.current?.resize?.();
