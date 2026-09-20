@@ -10,6 +10,8 @@ interface Part1BridgeSceneProps {
   qualityTier?: 'high' | 'medium' | 'safe';
 }
 
+const TARGET_SCALE_VEC = new THREE.Vector3();
+
 export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
   scene,
   beatIndex,
@@ -36,10 +38,11 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
       ringRef.current.rotation.y = t * 0.25;
     }
 
-    // Collapse animation at Beat 2+
+    // Collapse animation at Beat 2+ (zero per-frame allocation)
     if (coreRef.current) {
       const targetScale = beatIndex >= 2 ? 0.01 : 1.0;
-      coreRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.08);
+      TARGET_SCALE_VEC.setScalar(targetScale);
+      coreRef.current.scale.lerp(TARGET_SCALE_VEC, 0.08);
     }
 
     // Book close rotation simulation at Beat 3+
@@ -80,7 +83,6 @@ export const Part1BridgeScene: React.FC<Part1BridgeSceneProps> = ({
               color={step === '↓' ? '#C87046' : '#EDE4D6'}
               anchorX="center"
               anchorY="middle"
-              font="/fonts/serif.woff"
             >
               {step}
             </Text>

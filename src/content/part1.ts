@@ -88,6 +88,14 @@ export const part1Scenes: PresentationScene[] = [
       'Beat 3: Khắc sâu công thức: Cơ cấu xã hội = Các cộng đồng người + Các mối quan hệ xã hội giữa họ.',
     ],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.1',
+    callout: {
+      badge: 'Định nghĩa cốt lõi',
+      text: 'Cơ cấu xã hội là những cộng đồng người cùng toàn bộ những mối quan hệ xã hội do sự tác động lẫn nhau của các cộng đồng ấy tạo nên.',
+      isExactQuote: true,
+      minBeat: 2,
+      badgeColor: '#C8A86A',
+      borderColor: '#C87046',
+    },
     transitionIn: 'fade',
   },
   {
@@ -120,6 +128,14 @@ export const part1Scenes: PresentationScene[] = [
       'Phân tích theo định nghĩa giai cấp kinh điển của V.I.Lênin gắn liền với 4 chiều kích: (1) Quan hệ sở hữu TLSX; (2) Vai trò tổ chức quản lý lao động; (3) Địa vị chính trị - xã hội; (4) Phương thức và quy mô phân phối thu nhập.',
     ],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.1',
+    callout: {
+      badge: 'Định nghĩa cốt lõi',
+      text: 'Cơ cấu xã hội – giai cấp là hệ thống các giai cấp, tầng lớp xã hội tồn tại khách quan trong một chế độ xã hội nhất định.',
+      isExactQuote: true,
+      minBeat: 1,
+      badgeColor: '#C8A86A',
+      borderColor: '#C8A86A',
+    },
   },
   {
     id: 'p1-s3',
@@ -137,10 +153,10 @@ export const part1Scenes: PresentationScene[] = [
     },
     visualLabels: [
       { id: 'CENTRAL', text: 'Cơ cấu XH - Giai cấp', sub: 'Vị trí trung tâm hàng đầu', role: 'Hạt nhân trung tâm, phản ánh và tác động trực tiếp đến quan hệ sản xuất' },
-      { id: 'DANTOC', text: 'Cơ cấu Dân tộc', sub: 'Quan hệ tộc người', role: 'Tác động sâu sắc đến khối đại đoàn kết và ổn định chính trị' },
-      { id: 'TONGIAO', text: 'Cơ cấu Tôn giáo', sub: 'Đời sống tín ngưỡng', role: 'Ảnh hưởng tới tâm lý, đạo đức và khối liên minh xã hội' },
-      { id: 'DANSO', text: 'Cơ cấu Dân cư / Dân số', sub: 'Quy mô & Phân bố', role: 'Cung cấp nguồn nhân lực và nền tảng không gian sinh tồn' },
-      { id: 'NGHENGHIEP', text: 'Cơ cấu Nghề nghiệp', sub: 'Phân công lao động', role: 'Tạo cơ sở kinh tế - kỹ thuật trực tiếp hình thành giai tầng' },
+      { id: 'DANTOC', text: 'Cơ cấu Dân tộc', sub: 'Quan hệ tộc người', role: 'Tác động qua lại với cơ cấu giai cấp trong quan hệ tộc người' },
+      { id: 'TONGIAO', text: 'Cơ cấu Tôn giáo', sub: 'Đời sống tín ngưỡng', role: 'Tác động qua lại với cơ cấu giai cấp trong đời sống tín ngưỡng' },
+      { id: 'DANSO', text: 'Cơ cấu Dân cư / Dân số', sub: 'Quy mô & Phân bố', role: 'Cung cấp nguồn lực con người và không gian sinh tồn' },
+      { id: 'NGHENGHIEP', text: 'Cơ cấu Nghề nghiệp', sub: 'Phân công lao động', role: 'Cơ sở phân công lao động gắn liền vị trí việc làm' },
     ],
     beats: [
       { id: 'p1-s3-b0', label: 'Hạt nhân trung tâm quan trọng hàng đầu', durationMs: 700 },
@@ -154,6 +170,14 @@ export const part1Scenes: PresentationScene[] = [
       'Cảnh báo sai lầm: Không được tuyệt đối hóa vai trò của cơ cấu xã hội – giai cấp và xem nhẹ các loại hình cơ cấu xã hội khác.',
     ],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.1',
+    callout: {
+      badge: 'Ý chính',
+      text: 'Cơ cấu xã hội – giai cấp giữ vị trí quan trọng hàng đầu và có ảnh hưởng mạnh tới các loại hình cơ cấu xã hội khác trong mối quan hệ biện chứng hai chiều.',
+      isExactQuote: false,
+      minBeat: 2,
+      badgeColor: '#BD7880',
+      borderColor: '#BD7880',
+    },
   },
   {
     id: 'p1-s4',
@@ -186,6 +210,14 @@ export const part1Scenes: PresentationScene[] = [
       'Xu hướng 1: Khi cơ cấu kinh tế chuyển dịch (công nghiệp hóa, hiện đại hóa, kinh tế thị trường định hướng XHCN), cơ cấu giai tầng cũng biến đổi theo.',
     ],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.2',
+    callout: {
+      badge: 'Quy luật khách quan 1',
+      text: 'Cơ cấu xã hội – giai cấp biến đổi gắn liền và bị quy định bởi sự biến đổi của cơ cấu kinh tế trong thời kỳ quá độ lên chủ nghĩa xã hội.',
+      isExactQuote: true,
+      minBeat: 1,
+      badgeColor: '#C87046',
+      borderColor: '#C87046',
+    },
   },
   {
     id: 'p1-s5',
@@ -218,6 +250,14 @@ export const part1Scenes: PresentationScene[] = [
       'Xu hướng 2: Sự tồn tại của nhiều thành phần kinh tế tất yếu dẫn đến sự phân hóa và xuất hiện các tầng lớp mới.',
     ],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.2',
+    callout: {
+      badge: 'Khái quát',
+      text: 'Cơ cấu xã hội – giai cấp biến đổi phức tạp, đa dạng, làm xuất hiện các tầng lớp xã hội mới và phân hóa nội bộ trong thời kỳ quá độ.',
+      isExactQuote: false,
+      minBeat: 2,
+      badgeColor: '#E5A93C',
+      borderColor: '#E5A93C',
+    },
   },
   {
     id: 'p1-s6',
@@ -237,7 +277,7 @@ export const part1Scenes: PresentationScene[] = [
       { id: 'CLUSTER_B', text: 'Giai tầng B', sub: 'Lợi ích riêng & Khác biệt kinh tế' },
       { id: 'CLUSTER_C', text: 'Giai tầng C', sub: 'Lợi ích riêng & Khác biệt kinh tế' },
       { id: 'CLUSTER_D', text: 'Giai tầng D', sub: 'Lợi ích riêng & Khác biệt kinh tế' },
-      { id: 'SHARED_FIELD', text: 'Trường lợi ích chung', sub: 'Mục tiêu xây dựng CNXH', role: 'Nền tảng khách quan quy tụ khối đại đoàn kết toàn dân' },
+      { id: 'SHARED_FIELD', text: 'Trường lợi ích chung', sub: 'Mục tiêu xây dựng CNXH', role: 'Nền tảng khách quan cho sự liên minh và xích lại gần nhau' },
     ],
     beats: [
       { id: 'p1-s6-b0', label: 'Các cụm giai tầng tách biệt với vectơ lợi ích riêng', durationMs: 700, speakerNote: 'Các giai tầng ban đầu có sự khác biệt về địa vị kinh tế và lợi ích riêng.' },
@@ -251,6 +291,14 @@ export const part1Scenes: PresentationScene[] = [
       'Xu hướng 3: Đấu tranh để khắc phục tiêu cực, phân hóa bất bình đẳng; liên minh để phát huy sức mạnh tổng hợp xây dựng CNXH.',
     ],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I.2',
+    callout: {
+      badge: 'Quy luật khách quan 3',
+      text: 'Cơ cấu xã hội – giai cấp biến đổi trong mối quan hệ vừa đấu tranh, vừa liên minh, từng bước dẫn đến sự xích lại gần nhau giữa các giai cấp, tầng lớp cơ bản trong xã hội.',
+      isExactQuote: true,
+      minBeat: 2,
+      badgeColor: '#C8A86A',
+      borderColor: '#C8A86A',
+    },
   },
   {
     id: 'p1-s7',
@@ -280,6 +328,14 @@ export const part1Scenes: PresentationScene[] = [
     ],
     speakerNotes: ['Đúc kết Phần I và mở đường dẫn dắt sang Quyển II: Liên minh giai cấp, tầng lớp trong thời kỳ quá độ lên CNXH.'],
     sourceNote: 'Giáo trình Chủ nghĩa xã hội khoa học, 2021, Chương 5, Mục I',
+    callout: {
+      badge: 'Vấn đề bản lề',
+      text: 'Nếu các giai cấp, tầng lớp vừa có lợi ích chung, vừa tồn tại những khác biệt về lợi ích, vì sao liên minh giữa họ trở thành một yêu cầu khách quan?',
+      isExactQuote: false,
+      minBeat: 1,
+      badgeColor: '#C87046',
+      borderColor: '#C87046',
+    },
     transitionOut: 'book-close',
   },
 ];

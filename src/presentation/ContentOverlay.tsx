@@ -5,77 +5,6 @@ import { ArticleHeadings } from '../vendor/threeui-custom/headings/ArticleHeadin
 import { SourceDrawer } from './SourceDrawer';
 import { BookOpen } from 'lucide-react';
 
-interface CalloutData {
-  badge: string;
-  quote: string;
-  minBeat: number;
-  badgeColor: string;
-  borderColor: string;
-}
-
-function getSceneCallout(sceneId: string): CalloutData | null {
-  switch (sceneId) {
-    case 'p1-s1':
-      return {
-        badge: 'Định nghĩa cốt lõi',
-        quote: '“Cộng đồng người + các mối quan hệ xã hội do sự tác động lẫn nhau của các cộng đồng ấy tạo nên.”',
-        minBeat: 2,
-        badgeColor: '#C8A86A',
-        borderColor: '#C87046',
-      };
-    case 'p1-s2':
-      return {
-        badge: 'Bản chất cấu trúc',
-        quote: '“Cơ cấu xã hội – giai cấp là hệ thống các giai cấp, tầng lớp xã hội tồn tại khách quan trong một chế độ xã hội nhất định.”',
-        minBeat: 1,
-        badgeColor: '#C8A86A',
-        borderColor: '#C8A86A',
-      };
-    case 'p1-s3':
-      return {
-        badge: 'Nguyên lý biện chứng',
-        quote: '“Cơ cấu xã hội – giai cấp giữ vị trí quan trọng hàng đầu và có ảnh hưởng mạnh tới các loại hình cơ cấu xã hội khác trong mối quan hệ biện chứng.”',
-        minBeat: 2,
-        badgeColor: '#BD7880',
-        borderColor: '#BD7880',
-      };
-    case 'p1-s4':
-      return {
-        badge: 'Quy luật khách quan 1',
-        quote: '“Cơ cấu xã hội – giai cấp biến đổi gắn liền và bị quy định bởi sự biến đổi của cơ cấu kinh tế trong thời kỳ quá độ lên chủ nghĩa xã hội.”',
-        minBeat: 1,
-        badgeColor: '#C87046',
-        borderColor: '#C87046',
-      };
-    case 'p1-s5':
-      return {
-        badge: 'Quy luật khách quan 2',
-        quote: '“Cơ cấu xã hội – giai cấp biến đổi phức tạp, đa dạng, làm xuất hiện các tầng lớp xã hội mới và phân hóa nội bộ trong thời kỳ quá độ.”',
-        minBeat: 2,
-        badgeColor: '#E5A93C',
-        borderColor: '#E5A93C',
-      };
-    case 'p1-s6':
-      return {
-        badge: 'Quy luật khách quan 3',
-        quote: '“Vừa đấu tranh, vừa liên minh, từng bước xích lại gần nhau giữa các giai cấp, tầng lớp cơ bản trong xã hội.”',
-        minBeat: 2,
-        badgeColor: '#C8A86A',
-        borderColor: '#C8A86A',
-      };
-    case 'p1-s7':
-      return {
-        badge: 'Cầu nối sang Phần thứ hai',
-        quote: '“Nếu các giai cấp, tầng lớp vừa có lợi ích chung, vừa tồn tại những khác biệt về lợi ích, vì sao liên minh giữa họ trở thành một yêu cầu khách quan?”',
-        minBeat: 1,
-        badgeColor: '#C87046',
-        borderColor: '#C87046',
-      };
-    default:
-      return null;
-  }
-}
-
 export const ContentOverlay: React.FC = () => {
   const isSourceDrawerOpen = usePresentationStore((state) => state.isSourceDrawerOpen);
   const openSourceDrawer = usePresentationStore((state) => state.openSourceDrawer);
@@ -88,8 +17,8 @@ export const ContentOverlay: React.FC = () => {
 
   if (viewMode !== 'chapter' || !scene) return null;
 
-  const callout = getSceneCallout(scene.id);
-  const showCallout = callout ? beatIndex >= callout.minBeat : false;
+  const callout = scene.callout;
+  const showCallout = callout ? beatIndex >= (callout.minBeat ?? 0) : false;
 
   return (
     <>
@@ -134,16 +63,16 @@ export const ContentOverlay: React.FC = () => {
               style={{
                 background: 'rgba(11, 13, 16, 0.90)',
                 backdropFilter: 'blur(16px)',
-                border: `1px solid ${callout.borderColor}`,
+                border: `1px solid ${callout.borderColor || '#C8A86A'}`,
                 borderRadius: '12px',
                 padding: '1.25rem 2rem',
-                boxShadow: `0 16px 36px rgba(0,0,0,0.6), 0 0 24px ${callout.borderColor}33`,
+                boxShadow: `0 16px 36px rgba(0,0,0,0.6), 0 0 24px ${callout.borderColor || '#C8A86A'}33`,
                 textAlign: 'center',
               }}
             >
               <div
                 style={{
-                  color: callout.badgeColor,
+                  color: callout.badgeColor || '#C8A86A',
                   fontSize: '0.8rem',
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',
@@ -160,10 +89,10 @@ export const ContentOverlay: React.FC = () => {
                   lineHeight: 1.45,
                   color: '#F5F0E8',
                   margin: 0,
-                  fontStyle: 'italic',
+                  fontStyle: callout.isExactQuote ? 'italic' : 'normal',
                 }}
               >
-                {callout.quote}
+                {callout.isExactQuote ? `“${callout.text}”` : callout.text}
               </p>
             </div>
           </div>

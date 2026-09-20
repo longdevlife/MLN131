@@ -39,6 +39,15 @@ export interface SceneBeat {
   callout?: string;
 }
 
+export interface SceneCallout {
+  badge: string;
+  text: string;
+  isExactQuote?: boolean;
+  minBeat?: number;
+  badgeColor?: string;
+  borderColor?: string;
+}
+
 export interface PresentationScene {
   id: string;
   chapterId: string;
@@ -54,6 +63,7 @@ export interface PresentationScene {
   beats: SceneBeat[];
   speakerNotes?: string[];
   sourceNote?: string;
+  callout?: SceneCallout;
   transitionIn?: 'book-open' | 'fade' | 'push' | 'zoom' | 'morph';
   transitionOut?: 'book-close' | 'fade' | 'push' | 'zoom' | 'morph';
 }

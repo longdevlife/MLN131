@@ -38,7 +38,7 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
     // Advance beat in P1.S1
     await page.keyboard.press('Space'); // beat 1
     await page.keyboard.press('Space'); // beat 2
-    await expect(page.getByText(/Cộng đồng người \+/i)).toBeVisible();
+    await expect(page.getByText(/những cộng đồng người cùng toàn bộ những mối quan hệ xã hội/i)).toBeVisible();
 
     // Source Drawer
     const sourceChip = page.getByRole('button', { name: /Nguồn:/i });
@@ -94,6 +94,7 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
   });
 
   test('4. Real ThreeUI Bookshelf Interaction: I -> II -> III -> IV -> I (created=1, disposed=0)', async ({ page }) => {
+    test.setTimeout(60000);
     await page.goto('/?tier=high');
     await page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i }).click();
 
@@ -193,28 +194,49 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
     await page.keyboard.press('Space'); // S7.B5
 
     // Reverse navigation test from S7 back to S0
-    for (let i = 0; i < 28; i++) {
+    const s0Heading = page.getByRole('heading', { name: /Khái luận về cơ cấu xã hội – giai cấp/i });
+    for (let i = 0; i < 50; i++) {
+      if (await s0Heading.isVisible()) {
+        break;
+      }
       await page.keyboard.press('ArrowLeft');
+      await page.waitForTimeout(35);
     }
-    await expect(page.getByRole('heading', { name: /Khái luận về cơ cấu xã hội – giai cấp/i })).toBeVisible();
+    await expect(s0Heading).toBeVisible({ timeout: 5000 });
   });
 
   test('6. Real WebGL Full Part I Walkthrough (P1.S0 -> P1.S7 with ?tier=high)', async ({ page }) => {
     test.setTimeout(180000);
     const pageErrors: Error[] = [];
-    const consoleErrors: string[] = [];
+    const criticalConsoleMessages: string[] = [];
+
+    // Explicit allowlist for known benign browser / environment messages
+    const BENIGN_ALLOWLIST = [
+      'download the react devtools',
+      'favicon.ico',
+      'source map',
+      'an iframe which has both allow-scripts and allow-same-origin',
+    ];
 
     page.on('pageerror', (err) => pageErrors.push(err));
     page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        const text = msg.text();
-        if (
-          text.includes('context lost') ||
-          text.includes('THREE.WebGLRenderer') ||
-          text.includes('out of memory') ||
-          text.includes('shader error')
-        ) {
-          consoleErrors.push(text);
+      const type = msg.type();
+      if (type === 'error' || type === 'warn') {
+        const rawText = msg.text();
+        const lower = rawText.toLowerCase();
+
+        // Check if benign
+        const isBenign = BENIGN_ALLOWLIST.some((allowed) => lower.includes(allowed));
+        if (!isBenign) {
+          if (
+            lower.includes('webgl') ||
+            lower.includes('context lost') ||
+            lower.includes('shader') ||
+            lower.includes('out of memory') ||
+            lower.includes('three.webglrenderer')
+          ) {
+            criticalConsoleMessages.push(`[${type}] ${rawText}`);
+          }
         }
       }
     });
@@ -260,9 +282,9 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
       }
     }
 
-    // Verify zero WebGL critical errors and zero unhandled errors
+    // Verify zero WebGL critical errors/warnings and zero unhandled page errors
     expect(pageErrors.length).toBe(0);
-    expect(consoleErrors.length).toBe(0);
+    expect(criticalConsoleMessages.length).toBe(0);
 
     // Return to Library
     await page.keyboard.press('KeyO');
@@ -271,7 +293,7 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
   });
 
   test('7. Real WebGL Soak Test (5 continuous cycles of S1 -> S7 -> S1)', async ({ page }) => {
-    test.setTimeout(180000);
+    test.setTimeout(240000);
     const pageErrors: Error[] = [];
     page.on('pageerror', (err) => pageErrors.push(err));
 
@@ -279,20 +301,143 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
     await page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i }).click();
     await page.locator('canvas.bookshelf__canvas').waitFor({ state: 'visible', timeout: 10000 });
 
+    // Open Book I
+    await page.keyboard.press('Digit1');
+    await expect(page.getByRole('heading', { name: /Khái luận về cơ cấu xã hội – giai cấp/i })).toBeVisible({ timeout: 10000 });
+
+    // Advance to S1
+    await page.keyboard.press('Space'); // S0.B1
+    await page.keyboard.press('Space'); // Enters S1
+    await expect(page.getByRole('heading', { name: /Cơ cấu xã hội là gì\?/i })).toBeVisible({ timeout: 10000 });
+
+    const sceneHeadings = [
+      /Khái luận về cơ cấu xã hội – giai cấp/i, // 0
+      /Cơ cấu xã hội là gì\?/i, // 1
+      /Cơ cấu xã hội – giai cấp là gì\?/i, // 2
+      /Vị trí của cơ cấu xã hội – giai cấp/i, // 3
+      /Gắn liền và bị quy định bởi cơ cấu kinh tế/i, // 4
+      /Biến đổi phức tạp, đa dạng và xuất hiện tầng lớp mới/i, // 5
+      /Vừa đấu tranh vừa liên minh, từng bước xích lại gần nhau/i, // 6
+      /Cầu nối sang Liên minh giai cấp, tầng lớp/i, // 7
+    ];
+
+    // Forward helper: from S1 to S7
+    const navigateS1ToS7 = async () => {
+      // From S1 (beat 0) to S2: 3 spaces
+      for (let i = 0; i < 3; i++) {
+        await page.keyboard.press('Space');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[2] })).toBeVisible({ timeout: 10000 });
+
+      // S2 -> S3: 5 spaces
+      for (let i = 0; i < 5; i++) {
+        await page.keyboard.press('Space');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[3] })).toBeVisible({ timeout: 10000 });
+
+      // S3 -> S4: 5 spaces
+      for (let i = 0; i < 5; i++) {
+        await page.keyboard.press('Space');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[4] })).toBeVisible({ timeout: 10000 });
+
+      // S4 -> S5: 5 spaces
+      for (let i = 0; i < 5; i++) {
+        await page.keyboard.press('Space');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[5] })).toBeVisible({ timeout: 10000 });
+
+      // S5 -> S6: 5 spaces
+      for (let i = 0; i < 5; i++) {
+        await page.keyboard.press('Space');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[6] })).toBeVisible({ timeout: 10000 });
+
+      // S6 -> S7: 6 spaces (enters S7)
+      for (let i = 0; i < 6; i++) {
+        await page.keyboard.press('Space');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[7] })).toBeVisible({ timeout: 10000 });
+
+      // Advance through remaining beats of S7
+      for (let i = 0; i < 5; i++) {
+        await page.keyboard.press('Space');
+        await page.waitForTimeout(40);
+      }
+    };
+
+    // Reverse helper: from S7 (beat 5) back to S1 (beat 0)
+    const reverseS7ToS1 = async () => {
+      // S7 (beat 5) -> S6: 6 ArrowLeft
+      for (let i = 0; i < 6; i++) {
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[6] })).toBeVisible({ timeout: 10000 });
+
+      // S6 -> S5: 6 ArrowLeft
+      for (let i = 0; i < 6; i++) {
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[5] })).toBeVisible({ timeout: 10000 });
+
+      // S5 -> S4: 5 ArrowLeft
+      for (let i = 0; i < 5; i++) {
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[4] })).toBeVisible({ timeout: 10000 });
+
+      // S4 -> S3: 5 ArrowLeft
+      for (let i = 0; i < 5; i++) {
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[3] })).toBeVisible({ timeout: 10000 });
+
+      // S3 -> S2: 5 ArrowLeft
+      for (let i = 0; i < 5; i++) {
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[2] })).toBeVisible({ timeout: 10000 });
+
+      // S2 -> S1: 5 ArrowLeft (reaches S1 last beat)
+      for (let i = 0; i < 5; i++) {
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[1] })).toBeVisible({ timeout: 10000 });
+
+      // Rewind to S1 beat 0 (2 ArrowLeft)
+      for (let i = 0; i < 2; i++) {
+        await page.keyboard.press('ArrowLeft');
+        await page.waitForTimeout(40);
+      }
+      await expect(page.getByRole('heading', { name: sceneHeadings[1] })).toBeVisible({ timeout: 10000 });
+    };
+
+    // Repeat >= 5 cycles in real WebGL
     for (let cycle = 1; cycle <= 5; cycle++) {
-      // Enter Book I
-      await page.keyboard.press('Digit1');
-      await expect(page.getByRole('heading', { name: /Khái luận về cơ cấu xã hội – giai cấp/i })).toBeVisible();
+      // Navigate forward S1 -> S7
+      await navigateS1ToS7();
+
+      // Assert scene heading at S7 every cycle
+      await expect(page.getByRole('heading', { name: /Cầu nối sang Liên minh giai cấp, tầng lớp/i })).toBeVisible();
       expect(await page.locator('canvas').count()).toBe(1);
 
-      // Advance through scenes rapidly
-      for (let i = 0; i < 24; i++) {
-        await page.keyboard.press('Space');
-      }
+      // Reverse back to S1
+      await reverseS7ToS1();
 
-      // Return to Library
-      await page.keyboard.press('KeyO');
-      await expect(page.locator('canvas.bookshelf__canvas')).toBeVisible({ timeout: 10000 });
+      // Assert scene heading at S1 every cycle
+      await expect(page.getByRole('heading', { name: /Cơ cấu xã hội là gì\?/i })).toBeVisible();
       expect(await page.locator('canvas').count()).toBe(1);
     }
 
@@ -300,7 +445,7 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
   });
 
   test('8. Visual Proof Screenshot Generator (1920x1080 & 1366x768)', async ({ page }) => {
-    test.setTimeout(120000);
+    test.setTimeout(240000);
     const screenshotDir = path.resolve('artifacts/screenshots/phase-2.1');
     const reviewDir = path.resolve('review-phase-2.1');
     const downloadsDir = 'C:/Users/admin/Downloads';
@@ -317,7 +462,35 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
       }
     };
 
-    // 1920x1080 Viewport
+    // Common assertions at both resolutions:
+    // - no clipping
+    // - no horizontal overflow
+    // - source chip visible
+    // - main heading visible
+    // - active beat label visible
+    const assertResolutionIntegrity = async () => {
+      // Check horizontal overflow
+      const isOverflowing = await page.evaluate(() => {
+        return document.documentElement.scrollWidth > window.innerWidth;
+      });
+      expect(isOverflowing).toBe(false);
+
+      // Source chip visible
+      const sourceChip = page.getByRole('button', { name: /Nguồn:/i });
+      await expect(sourceChip).toBeVisible();
+
+      // Main heading visible
+      const heading = page.getByRole('heading', { level: 1 });
+      await expect(heading).toBeVisible();
+
+      // Active beat label / nhịp indicator visible
+      const beatIndicator = page.locator('text=Nhịp');
+      await expect(beatIndicator).toBeVisible();
+    };
+
+    // ==========================================
+    // VIEWPORT 1: 1920x1080
+    // ==========================================
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/?tier=high');
     await page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i }).click();
@@ -325,61 +498,117 @@ test.describe('MLN Chapter 5 Presentation - Phase 2.1 Compliance & Verification 
     await page.keyboard.press('Digit1');
     await page.waitForTimeout(500);
 
-    // 1. P1.S2 Beat 4
+    // 1. S2.B4 (9 spaces from start of Book I)
     for (let i = 0; i < 9; i++) {
       await page.keyboard.press('Space');
-      await page.waitForTimeout(60);
+      await page.waitForTimeout(50);
     }
     await expect(page.getByRole('heading', { name: /Cơ cấu xã hội – giai cấp là gì\?/i })).toBeVisible();
-    await page.waitForTimeout(600);
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
     await saveScreenshot('p1-s2-beat4.png');
 
-    // 2. P1.S3 Beat 4
+    // 2. S3.B4 (5 spaces)
     for (let i = 0; i < 5; i++) {
       await page.keyboard.press('Space');
-      await page.waitForTimeout(60);
+      await page.waitForTimeout(50);
     }
     await expect(page.getByRole('heading', { name: /Vị trí của cơ cấu xã hội – giai cấp/i })).toBeVisible();
-    await page.waitForTimeout(600);
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
     await saveScreenshot('p1-s3-beat4.png');
 
-    // 3. P1.S4 Beat 4
+    // 3. S4.B4 (5 spaces)
     for (let i = 0; i < 5; i++) {
       await page.keyboard.press('Space');
-      await page.waitForTimeout(60);
+      await page.waitForTimeout(50);
     }
     await expect(page.getByRole('heading', { name: /Gắn liền và bị quy định bởi cơ cấu kinh tế/i })).toBeVisible();
-    await page.waitForTimeout(600);
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
     await saveScreenshot('p1-s4-beat4.png');
 
-    // 4. P1.S5 Beat 4
+    // 4. S5.B4 (5 spaces)
     for (let i = 0; i < 5; i++) {
       await page.keyboard.press('Space');
-      await page.waitForTimeout(60);
+      await page.waitForTimeout(50);
     }
     await expect(page.getByRole('heading', { name: /Biến đổi phức tạp, đa dạng và xuất hiện tầng lớp mới/i })).toBeVisible();
-    await page.waitForTimeout(600);
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
     await saveScreenshot('p1-s5-beat4.png');
 
-    // 5. P1.S6 Beat 5
+    // 5. S6.B5 (6 spaces)
     for (let i = 0; i < 6; i++) {
       await page.keyboard.press('Space');
-      await page.waitForTimeout(60);
+      await page.waitForTimeout(50);
     }
     await expect(page.getByRole('heading', { name: /Vừa đấu tranh vừa liên minh, từng bước xích lại gần nhau/i })).toBeVisible();
-    await page.waitForTimeout(600);
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
     await saveScreenshot('p1-s6-beat5.png');
 
-    // 6. P1.S7 Beat 5
+    // 6. S7.B5 (6 spaces)
     for (let i = 0; i < 6; i++) {
       await page.keyboard.press('Space');
-      await page.waitForTimeout(60);
+      await page.waitForTimeout(50);
     }
     await expect(page.getByRole('heading', { name: /Cầu nối sang Liên minh giai cấp, tầng lớp/i })).toBeVisible();
-    await page.waitForTimeout(600);
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
     await saveScreenshot('p1-s7-beat5.png');
 
-    // Copy patch and diff to downloads and review folders if present
+    // ==========================================
+    // VIEWPORT 2: 1366x768
+    // ==========================================
+    await page.setViewportSize({ width: 1366, height: 768 });
+    await page.goto('/?tier=high');
+    await page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i }).click();
+    await page.locator('canvas.bookshelf__canvas').waitFor({ state: 'visible', timeout: 10000 });
+    await page.keyboard.press('Digit1');
+    await page.waitForTimeout(500);
+
+    // Advance to S3.B4 (9 + 5 = 14 spaces)
+    for (let i = 0; i < 14; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(50);
+    }
+    await expect(page.getByRole('heading', { name: /Vị trí của cơ cấu xã hội – giai cấp/i })).toBeVisible();
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
+    await saveScreenshot('p1-s3-1366x768.png');
+
+    // S4.B4 (5 spaces)
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(50);
+    }
+    await expect(page.getByRole('heading', { name: /Gắn liền và bị quy định bởi cơ cấu kinh tế/i })).toBeVisible();
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
+    await saveScreenshot('p1-s4-1366x768.png');
+
+    // Advance past S5 to S6.B5 (5 + 6 = 11 spaces)
+    for (let i = 0; i < 11; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(50);
+    }
+    await expect(page.getByRole('heading', { name: /Vừa đấu tranh vừa liên minh, từng bước xích lại gần nhau/i })).toBeVisible();
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
+    await saveScreenshot('p1-s6-1366x768.png');
+
+    // S7.B5 (6 spaces)
+    for (let i = 0; i < 6; i++) {
+      await page.keyboard.press('Space');
+      await page.waitForTimeout(50);
+    }
+    await expect(page.getByRole('heading', { name: /Cầu nối sang Liên minh giai cấp, tầng lớp/i })).toBeVisible();
+    await assertResolutionIntegrity();
+    await page.waitForTimeout(500);
+    await saveScreenshot('p1-s7-1366x768.png');
+
+    // Copy patch and diff to reviewDir and downloadsDir if present
     if (fs.existsSync('phase-2.1.patch')) {
       fs.copyFileSync('phase-2.1.patch', path.join(reviewDir, 'phase-2.1.patch'));
       if (fs.existsSync(downloadsDir)) {

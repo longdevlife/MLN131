@@ -110,4 +110,24 @@ describe('PresentationStore Navigation Engine', () => {
     expect(usePresentationStore.getState().chapterIndex).toBe(0);
     expect(usePresentationStore.getState().sceneIndex).toBe(1);
   });
+
+  it('enforces Part II boundary: at final beat of P1.S7, next returns to library with Book II selected', () => {
+    // Jump to P1.S7 (final scene of Part I, order 7, scenes[7])
+    usePresentationStore.getState().openChapter(0, 7);
+    usePresentationStore.setState({ beatIndex: 5 }); // last beat of P1.S7 (6 beats total)
+
+    expect(usePresentationStore.getState().viewMode).toBe('chapter');
+    expect(usePresentationStore.getState().chapterIndex).toBe(0);
+    expect(usePresentationStore.getState().sceneIndex).toBe(7);
+
+    // Call next at final beat of Part I
+    usePresentationStore.getState().next();
+
+    const finalState = usePresentationStore.getState();
+    expect(finalState.viewMode).toBe('library');
+    expect(finalState.chapterIndex).toBe(1); // Book II is selected
+    expect(finalState.sceneIndex).toBe(0);
+    expect(finalState.beatIndex).toBe(0);
+  });
 });
+

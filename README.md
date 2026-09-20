@@ -135,18 +135,19 @@ npm run test:e2e
 
 ### 🎯 Tiêu chuẩn Nghiệm thu Kỹ thuật (QA Pass Criteria)
 - ✅ `tsc -b`: 0 lỗi biên dịch kiểu TypeScript.
-- ✅ `oxlint`: 0 cảnh báo linting (loại trừ vendor library được cô lập, 0 warnings trong mã nguồn ứng dụng).
-- ✅ `playwright test`: 6/6 kịch bản E2E kiểm thử tự động đạt 100% (bao gồm kiểm thử hoàn chỉnh toàn bộ Part 1 từ P1.S0 đến P1.S7, bài kiểm tra độ bền WebGL qua nhiều chu trình chuyển đổi, kiểm tra đồng bộ BroadcastChannel, và kiểm tra giao diện tiền trạm Preflight).
+- ✅ `oxlint`: 0 cảnh báo linting (0 errors, 0 warnings trên toàn bộ 53 files mã nguồn).
+- ✅ `vitest`: 8/8 unit tests đạt 100% (kiểm thử chặt chẽ Store State Machine, navigation determinism và ranh giới Part II handoff).
+- ✅ `playwright test`: 8/8 kịch bản E2E kiểm thử tự động đạt 100% (bao gồm core flow, đồng bộ Presenter Console, kiểm tra Preflight, kiểm thử ThreeUI Bookshelf lifecycle created=1/disposed=0, Safe Mode walkthrough & reverse, Real WebGL walkthrough với console capture, Real WebGL Soak Test >=5 chu kỳ S1->S7->S1, và kiểm thử hiển thị song song ở cả 2 độ phân giải 1920x1080 và 1366x768).
 - ✅ Lifecycle ThreeUI: Không ghi nhận renderer recreation hoặc WebGL context loss trong test lifecycle hiện tại (duyệt qua các tập sách I -> II -> III -> IV -> I trong thư viện giữ nguyên `created = 1`, `disposed = 0`).
 
 ---
 
 ## ⚠️ 6. Giới hạn đã biết (Known Limitations)
 
-1. **Kích thước Bundle JS (~1.96 MB):**  
-   Do tích hợp đồng thời Three.js r170, React Three Fiber, Drei và ThreeUI Bookshelf tùy biến, bundle chính hiện xấp xỉ 1.96 MB (chưa gzip). Đối với ứng dụng trình chiếu hội trường chạy local hoặc PWA offline, tốc độ nạp là tức thì và hoạt động hoàn toàn mượt mà. Trong các phase mở rộng tiếp theo (Part II - IV), giải pháp dynamic import (`React.lazy`) theo từng chương sẽ được áp dụng để chia nhỏ chunk.
+1. **Phân tách Bundle JS (Lazy Splitting Architecture):**  
+   Hệ thống đã triển khai Dynamic Import (`React.lazy`) và True Scene Registry cho toàn bộ các cảnh 3D chuyên biệt (P1.S1 đến P1.S7) thành các chunk độc lập tải theo nhu cầu. Chunk chính (~1.96 MB chưa gzip / ~568 kB gzipped) đóng gói Three.js r170 runtime và thư viện ThreeUI Bookshelf dùng chung. Với ứng dụng trình chiếu hội trường chạy local hoặc PWA offline có Service Worker lưu đệm, tốc độ khởi động tức thì và hoàn toàn mượt mà.
 2. **Kiểm chứng bộ nhớ WebGL:**  
-   Chỉ số `created = 1`, `disposed = 0` chứng minh renderer không bị tái tạo ngoài ý muốn khi chuyển đổi sách. Tuy nhiên, việc loại trừ rò rỉ bộ nhớ GPU tuyệt đối ở quy mô dài hạn cần tiếp tục được quan sát thông qua Chrome Memory & Heap Profiler trong điều kiện tải liên tục.
+   Chỉ số `created = 1`, `disposed = 0` chứng minh renderer không bị tái tạo ngoài ý muốn khi chuyển đổi sách. Toàn bộ các cảnh R3F đã được kiểm toán triệt để, loại bỏ hoàn toàn việc cấp phát đối tượng mới (0 new allocations per frame) trong `useFrame`.
 
 ---
 

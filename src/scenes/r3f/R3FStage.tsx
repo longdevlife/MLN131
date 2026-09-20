@@ -2,16 +2,7 @@ import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import type { PresentationScene } from '../../content/types';
 import { SceneCameraRig } from './camera/SceneCameraRig';
-import {
-  PaperSceneLazy,
-  SocialNetworkSceneLazy,
-  ClassRelationsSceneLazy,
-  OrbitalCentralitySceneLazy,
-  StructureFlowSceneLazy,
-  DiversificationSceneLazy,
-  ConvergenceSceneLazy,
-  Part1BridgeSceneLazy,
-} from './sceneRegistry';
+import { SCENE_REGISTRY } from './sceneRegistry';
 
 interface R3FStageProps {
   scene: PresentationScene;
@@ -25,6 +16,7 @@ export const R3FStage: React.FC<R3FStageProps> = ({
   qualityTier = 'high',
 }) => {
   const dpr: [number, number] = qualityTier === 'safe' ? [1, 1] : [1, 1.5];
+  const SceneComponent = SCENE_REGISTRY[scene.visual.id];
 
   return (
     <div
@@ -60,48 +52,14 @@ export const R3FStage: React.FC<R3FStageProps> = ({
         <SceneCameraRig sceneId={scene.id} beatIndex={beatIndex} />
 
         <Suspense fallback={null}>
-          {scene.visual.id === 'paper' && (
-            <PaperSceneLazy sceneId={scene.id} beatIndex={beatIndex} />
-          )}
-
-          {scene.visual.id === 'constellation' && (
-            <SocialNetworkSceneLazy beatIndex={beatIndex} qualityTier={qualityTier} />
-          )}
-
-          {scene.visual.id === 'class-relations' && (
-            <ClassRelationsSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
-          )}
-
-          {scene.visual.id === 'orbital-centrality' && (
-            <OrbitalCentralitySceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
-          )}
-
-          {scene.visual.id === 'structure-flow' && (
-            <StructureFlowSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
-          )}
-
-          {scene.visual.id === 'diversification' && (
-            <DiversificationSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
-          )}
-
-          {scene.visual.id === 'convergence' && (
-            <ConvergenceSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
-          )}
-
-          {scene.visual.id === 'part1-bridge' && (
-            <Part1BridgeSceneLazy scene={scene} beatIndex={beatIndex} qualityTier={qualityTier} />
-          )}
-
-          {![
-            'paper',
-            'constellation',
-            'class-relations',
-            'orbital-centrality',
-            'structure-flow',
-            'diversification',
-            'convergence',
-            'part1-bridge',
-          ].includes(scene.visual.id) && (
+          {SceneComponent ? (
+            <SceneComponent
+              scene={scene}
+              sceneId={scene.id}
+              beatIndex={beatIndex}
+              qualityTier={qualityTier}
+            />
+          ) : (
             <group position={[0, 0, 0]}>
               <mesh>
                 <sphereGeometry args={[0.8, 32, 32]} />

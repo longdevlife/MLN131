@@ -1,5 +1,5 @@
 import React from 'react';
-import type { PresentationScene } from '../../content/types';
+import type { PresentationScene, VisualId } from '../../content/types';
 import { SafePaperScene } from './SafePaperScene';
 import { SafeSocialNetworkScene } from './SafeSocialNetworkScene';
 import { SafeClassRelationsScene } from './SafeClassRelationsScene';
@@ -14,7 +14,28 @@ interface SafeStageProps {
   beatIndex: number;
 }
 
+type SafeSceneComponent = React.ComponentType<{
+  scene?: PresentationScene;
+  sceneId?: string;
+  beatIndex: number;
+}>;
+
+const SAFE_SCENE_REGISTRY: Record<VisualId, SafeSceneComponent | null> = {
+  'paper': SafePaperScene as unknown as SafeSceneComponent,
+  'constellation': SafeSocialNetworkScene as unknown as SafeSceneComponent,
+  'class-relations': SafeClassRelationsScene as unknown as SafeSceneComponent,
+  'orbital-centrality': SafeOrbitalCentralityScene as unknown as SafeSceneComponent,
+  'structure-flow': SafeStructureFlowScene as unknown as SafeSceneComponent,
+  'diversification': SafeDiversificationScene as unknown as SafeSceneComponent,
+  'convergence': SafeConvergenceScene as unknown as SafeSceneComponent,
+  'part1-bridge': SafePart1BridgeScene as unknown as SafeSceneComponent,
+  'bookshelf': null,
+  'none': null,
+};
+
 export const SafeStage: React.FC<SafeStageProps> = ({ scene, beatIndex }) => {
+  const SceneComponent = SAFE_SCENE_REGISTRY[scene.visual.id];
+
   return (
     <div
       className="safe-stage-container"
@@ -28,48 +49,9 @@ export const SafeStage: React.FC<SafeStageProps> = ({ scene, beatIndex }) => {
         boxSizing: 'border-box',
       }}
     >
-      {scene.visual.id === 'paper' && (
-        <SafePaperScene beatIndex={beatIndex} sceneId={scene.id} />
-      )}
-
-      {scene.visual.id === 'constellation' && (
-        <SafeSocialNetworkScene beatIndex={beatIndex} />
-      )}
-
-      {scene.visual.id === 'class-relations' && (
-        <SafeClassRelationsScene scene={scene} beatIndex={beatIndex} />
-      )}
-
-      {scene.visual.id === 'orbital-centrality' && (
-        <SafeOrbitalCentralityScene scene={scene} beatIndex={beatIndex} />
-      )}
-
-      {scene.visual.id === 'structure-flow' && (
-        <SafeStructureFlowScene scene={scene} beatIndex={beatIndex} />
-      )}
-
-      {scene.visual.id === 'diversification' && (
-        <SafeDiversificationScene scene={scene} beatIndex={beatIndex} />
-      )}
-
-      {scene.visual.id === 'convergence' && (
-        <SafeConvergenceScene scene={scene} beatIndex={beatIndex} />
-      )}
-
-      {scene.visual.id === 'part1-bridge' && (
-        <SafePart1BridgeScene scene={scene} beatIndex={beatIndex} />
-      )}
-
-      {![
-        'paper',
-        'constellation',
-        'class-relations',
-        'orbital-centrality',
-        'structure-flow',
-        'diversification',
-        'convergence',
-        'part1-bridge',
-      ].includes(scene.visual.id) && (
+      {SceneComponent ? (
+        <SceneComponent scene={scene} sceneId={scene.id} beatIndex={beatIndex} />
+      ) : (
         <div
           style={{
             background: 'rgba(23, 26, 36, 0.9)',

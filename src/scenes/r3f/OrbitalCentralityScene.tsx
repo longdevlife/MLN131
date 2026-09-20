@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html, Line } from '@react-three/drei';
 import * as THREE from 'three';
@@ -37,6 +37,13 @@ function generateOrbitPoints(radius: number, segments = 64): [number, number, nu
   return points;
 }
 
+function createRayGeometry(): THREE.BufferGeometry {
+  const geom = new THREE.BufferGeometry();
+  const positions = new Float32Array(6); // [0,0,0,  x,y,z]
+  geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  return geom;
+}
+
 export const OrbitalCentralityScene: React.FC<OrbitalCentralitySceneProps> = ({
   scene,
   beatIndex = 0,
@@ -46,14 +53,19 @@ export const OrbitalCentralityScene: React.FC<OrbitalCentralitySceneProps> = ({
   const satellitesRef = useRef<(THREE.Group | null)[]>([]);
   const auraRef = useRef<THREE.Mesh>(null);
 
-  // Store live positions for dynamic ray rendering
-  const [satelliteCoords, setSatelliteCoords] = useState<[number, number, number][]>(
-    SATELLITE_CONFIGS.map((sat) => [
-      Math.cos(sat.phase) * sat.radius,
-      Math.sin(sat.phase * 2) * sat.tilt,
-      Math.sin(sat.phase) * sat.radius,
-    ])
-  );
+  // Pre-allocated geometries for the 4 dynamic rays - zero React state updates, zero per-frame allocations
+  const rayGeometries = useMemo(() => SATELLITE_CONFIGS.map(() => createRayGeometry()), []);
+
+  const rayLines = useMemo(() => {
+    return rayGeometries.map((geom, i) => {
+      const mat = new THREE.LineBasicMaterial({
+        color: SATELLITE_CONFIGS[i].color,
+        transparent: true,
+        opacity: 0.6,
+      });
+      return new THREE.Line(geom, mat);
+    });
+  }, [rayGeometries]);
 
   const orbits = useMemo(() => {
     const segments = qualityTier === 'high' ? 64 : 32;
@@ -73,9 +85,9 @@ export const OrbitalCentralityScene: React.FC<OrbitalCentralitySceneProps> = ({
       auraRef.current.scale.set(s, s, 1);
     }
 
-    // Update satellites position
-    const updatedCoords: [number, number, number][] = [];
-    SATELLITE_CONFIGS.forEach((sat, i) => {
+    // Update satellites position and dynamic connection rays directly via buffer attribute
+    for (let i = 0; i < SATELLITE_CONFIGS.length; i++) {
+      const sat = SATELLITE_CONFIGS[i];
       const el = satellitesRef.current[i];
       const angle = t * sat.speed + sat.phase;
       const x = Math.cos(angle) * sat.radius;
@@ -85,12 +97,22 @@ export const OrbitalCentralityScene: React.FC<OrbitalCentralitySceneProps> = ({
       if (el) {
         el.position.set(x, y, z);
       }
-      updatedCoords.push([x, y, z]);
-    });
 
-    // Update state throttled to animation frames for connection rays
-    if (t % 0.05 < 0.02) {
-      setSatelliteCoords(updatedCoords);
+      // Direct buffer mutation: vertex 1 is (x, y, z)
+      const rayGeom = rayGeometries[i];
+      if (rayGeom) {
+        const posAttr = rayGeom.attributes.position as THREE.BufferAttribute;
+        posAttr.setXYZ(1, x, y, z);
+        posAttr.needsUpdate = true;
+      }
+
+      const rayLine = rayLines[i];
+      if (rayLine) {
+        rayLine.visible = showOutbound;
+        const mat = rayLine.material as THREE.LineBasicMaterial;
+        mat.color.set(showReciprocal ? '#F5F0E8' : sat.color);
+        mat.opacity = showReciprocal ? 0.85 : 0.6;
+      }
     }
   });
 
@@ -151,13 +173,11 @@ export const OrbitalCentralityScene: React.FC<OrbitalCentralitySceneProps> = ({
         </div>
       </Html>
 
-      {/* Orbit paths, Real Dynamic Connecting Rays & Satellites */}
       {SATELLITE_CONFIGS.map((sat, i) => {
         const canonical = scene?.visualLabels?.find((l) => l.id === sat.id);
         const name = canonical?.text || sat.defaultName;
         const sub = canonical?.sub || sat.defaultSub;
         const role = canonical?.role;
-        const currentCoord = satelliteCoords[i] || [sat.radius, 0, 0];
 
         return (
           <group key={sat.id}>
@@ -172,15 +192,7 @@ export const OrbitalCentralityScene: React.FC<OrbitalCentralitySceneProps> = ({
 
             {/* Dynamic Real Outbound Ray: from Center [0,0,0] to satellite position */}
             {showOutbound && (
-              <Line
-                points={[[0, 0, 0], currentCoord]}
-                color={showReciprocal ? '#F5F0E8' : sat.color}
-                lineWidth={showReciprocal ? 2.5 : 1.8}
-                transparent
-                opacity={showReciprocal ? 0.8 : 0.6}
-                dashed={showReciprocal}
-                dashScale={showReciprocal ? 5 : 1}
-              />
+              <primitive object={rayLines[i]} />
             )}
 
             {/* Satellite body */}

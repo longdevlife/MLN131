@@ -138,6 +138,19 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       return;
     }
 
+    // At final beat of Chapter 0 (Part I final scene P1.S7):
+    // Transition back to Library with Book II selected/highlighted
+    if (state.chapterIndex === 0) {
+      set({
+        viewMode: 'library',
+        chapterIndex: 1,
+        sceneIndex: 0,
+        beatIndex: 0,
+        direction: 1,
+      });
+      return;
+    }
+
     // Advance to next chapter if remaining
     if (state.chapterIndex < chapters.length - 1) {
       set({
