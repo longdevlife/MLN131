@@ -3,6 +3,7 @@ import { OrbitControls as na } from "./three165/OrbitControls.js";
 import { RoomEnvironment as aa } from "./three165/RoomEnvironment.js";
 import { RoundedBoxGeometry as Et } from "./three165/RoundedBoxGeometry.js";
 import { RectAreaLightUniformsLib as ia } from "./three165/RectAreaLightUniformsLib.js";
+import { normalizeVietnameseText, fitTextToWidth, fitSingleLineText } from "./typographyUtils";
 function fa(Nr, m, He = {}) {
   let jt = !1;
   const S = [
@@ -349,17 +350,76 @@ function fa(Nr, m, He = {}) {
       const i = r() * o.width, d = r() * o.height, s = 4 + r() * 22;
       t.strokeStyle = r() > 0.5 ? "rgba(255,255,255,0.024)" : "rgba(0,0,0,0.025)", t.lineWidth = 0.6 + r() * 0.8, t.beginPath(), t.moveTo(i, d), t.lineTo(i + s, d + (r() - 0.5) * 2), t.stroke();
     }
-    t.strokeStyle = e.foil, t.globalAlpha = 0.72, t.lineWidth = 2, t.strokeRect(42, 42, o.width - 84, o.height - 84), t.strokeRect(55, 55, o.width - 110, o.height - 110), t.globalAlpha = 1, $t(t, e, o.width, o.height), t.fillStyle = e.foil, t.textAlign = "center", t.textBaseline = "middle", t.font = '500 18px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "4px", t.fillText(`GIÁO TRÌNH CHƯƠNG V  /  TẬP ${e.roman}`, o.width / 2, 92);
-    const n = e.title.length > 10 ? 72 : 88;
-    return t.font = `400 ${n}px "Iowan Old Style", Baskerville, Georgia, serif`, t.fillText(e.title, o.width / 2, o.height * 0.72), t.font = '500 16px Inter, "Helvetica Neue", Arial, sans-serif', t.fillText(e.discipline.toUpperCase(), o.width / 2, o.height * 0.79), Q(new l.CanvasTexture(o));
+    t.strokeStyle = e.foil, t.globalAlpha = 0.72, t.lineWidth = 2, t.strokeRect(42, 42, o.width - 84, o.height - 84), t.strokeRect(55, 55, o.width - 110, o.height - 110), t.globalAlpha = 1, $t(t, e, o.width, o.height), t.fillStyle = e.foil, t.textAlign = "center", t.textBaseline = "middle";
+    t.font = '500 18px MLNBookSans, sans-serif';
+    t.fillText(`GIÁO TRÌNH CHƯƠNG V  /  TẬP ${e.roman}`, o.width / 2, 92);
+    const normTitle = normalizeVietnameseText(e.title);
+    const normDiscipline = normalizeVietnameseText(e.discipline);
+    const fittedTitle = fitTextToWidth(t, normTitle, {
+      maxWidth: 610,
+      maxLines: 2,
+      startSize: 68,
+      minSize: 42,
+      lineHeight: 1.12,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 700
+    });
+    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
+    const centerY = o.height * 0.72;
+    if (fittedTitle.lines.length === 1) {
+      t.fillText(fittedTitle.lines[0], o.width / 2, centerY);
+    } else if (fittedTitle.lines.length === 2) {
+      const halfGap = (fittedTitle.lineHeightPx * 0.5);
+      t.fillText(fittedTitle.lines[0], o.width / 2, centerY - halfGap);
+      t.fillText(fittedTitle.lines[1], o.width / 2, centerY + halfGap);
+    }
+    const fittedDiscipline = fitSingleLineText(t, normDiscipline.toUpperCase(), {
+      maxWidth: 580,
+      startSize: 16,
+      minSize: 12,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 500
+    });
+    t.font = `500 ${fittedDiscipline.fontSize}px MLNBookSans, sans-serif`;
+    t.fillText(fittedDiscipline.text, o.width / 2, o.height * 0.80);
+    return Q(new l.CanvasTexture(o));
   }
   function Cn(e) {
     const o = document.createElement("canvas");
     o.width = 768, o.height = 1152;
     const t = o.getContext("2d"), r = S.indexOf(e) + 1;
-    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.textAlign = "left", t.textBaseline = "alphabetic", t.font = '500 15px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "2.8px", t.fillText(`GIÁO TRÌNH CHƯƠNG V  /  TẬP ${ge(r)}`, 58, 70), t.globalAlpha = 0.7, t.lineWidth = 1, t.beginPath(), t.moveTo(58, 86), t.lineTo(164, 86), t.stroke(), t.globalAlpha = 1;
-    const a = e.title.length > 10 ? 64 : 78;
-    return t.font = `400 ${a}px "Iowan Old Style", Baskerville, Georgia, serif`, t.fillText(e.title, 58, 1020), t.font = '500 14px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "2.4px", t.fillText(e.discipline.toUpperCase(), 60, 1066), Q(new l.CanvasTexture(o));
+    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.textAlign = "left", t.textBaseline = "alphabetic";
+    t.font = '500 15px MLNBookSans, sans-serif';
+    t.fillText(`GIÁO TRÌNH CHƯƠNG V  /  TẬP ${ge(r)}`, 58, 70);
+    t.globalAlpha = 0.7, t.lineWidth = 1, t.beginPath(), t.moveTo(58, 86), t.lineTo(164, 86), t.stroke(), t.globalAlpha = 1;
+    const normTitle = normalizeVietnameseText(e.title);
+    const normDiscipline = normalizeVietnameseText(e.discipline);
+    const fittedTitle = fitTextToWidth(t, normTitle, {
+      maxWidth: 610,
+      maxLines: 2,
+      startSize: 64,
+      minSize: 42,
+      lineHeight: 1.12,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 700
+    });
+    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
+    if (fittedTitle.lines.length === 1) {
+      t.fillText(fittedTitle.lines[0], 58, 1010);
+    } else {
+      t.fillText(fittedTitle.lines[0], 58, 1010 - fittedTitle.lineHeightPx);
+      t.fillText(fittedTitle.lines[1], 58, 1010);
+    }
+    const fittedDiscipline = fitSingleLineText(t, normDiscipline.toUpperCase(), {
+      maxWidth: 610,
+      startSize: 14,
+      minSize: 11,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 500
+    });
+    t.font = `500 ${fittedDiscipline.fontSize}px MLNBookSans, sans-serif`;
+    t.fillText(fittedDiscipline.text, 60, 1060);
+    return Q(new l.CanvasTexture(o));
   }
   function An(e) {
     const o = document.createElement("canvas");
@@ -454,7 +514,7 @@ function fa(Nr, m, He = {}) {
           r.globalAlpha = 0.22 + a() * 0.11, r.fillRect(x, g, C, 1.45);
         }
       }
-      r.globalAlpha = 0.32, r.font = '400 17px "Iowan Old Style", Baskerville, Georgia, serif', r.fillText(e.roman, t.width - 104, t.height - 72), r.globalAlpha = 1;
+      r.globalAlpha = 0.32, r.font = '400 17px MLNBookSans, sans-serif', r.fillText(e.roman, t.width - 104, t.height - 72), r.globalAlpha = 1;
     }
     const n = Q(new l.CanvasTexture(t));
     return o || (_t = n), n;
@@ -491,11 +551,24 @@ function fa(Nr, m, He = {}) {
       const s = c.getContext("2d");
       s.scale(0.75, 0.75);
       const h = ye(pe(`${e.id}-leaf-${n}`) + e.seed);
-      if (to(s, i, d, h), s.fillStyle = r, s.strokeStyle = r, s.textAlign = "left", s.textBaseline = "alphabetic", s.globalAlpha = 0.58, s.font = '500 10px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "1.8px", s.fillText(`WORKING VOLUMES  /  ${e.roman}`, 48, 48), s.textAlign = "right", s.fillText(ge(n + 1), i - 48, 48), s.textAlign = "left", s.fillRect(48, 64, i - 96, 1), s.globalAlpha = 1, n === 0)
-        s.font = '500 12px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2.3px", s.fillText(e.discipline.toUpperCase(), 54, 174), s.font = `400 ${e.title.length > 10 ? 48 : 58}px "Iowan Old Style", Baskerville, Georgia, serif`, s.letterSpacing = "0px", de(s, e.title, 52, 246, 18, 58, 2), s.globalAlpha = 0.55, s.font = '400 22px "Iowan Old Style", Baskerville, Georgia, serif', de(s, e.note, 54, 462, 36, 30, 4);
-      else if (n === 1 || n === 3) {
+      if (to(s, i, d, h), s.fillStyle = r, s.strokeStyle = r, s.textAlign = "left", s.textBaseline = "alphabetic", s.globalAlpha = 0.58, s.font = '500 10px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "1.8px", s.fillText(`WORKING VOLUMES  /  ${e.roman}`, 48, 48), s.textAlign = "right", s.fillText(ge(n + 1), i - 48, 48), s.textAlign = "left", s.fillRect(48, 64, i - 96, 1), s.globalAlpha = 1, n === 0) {
+        s.font = '500 12px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2.3px", s.fillText(e.discipline.toUpperCase(), 54, 174);
+        const fittedLeafTitle = fitTextToWidth(s, normalizeVietnameseText(e.title), {
+          maxWidth: 400,
+          maxLines: 2,
+          startSize: 52,
+          minSize: 36,
+          fontFamily: 'MLNBookSans'
+        });
+        s.font = `400 ${fittedLeafTitle.fontSize}px MLNBookSans, sans-serif`;
+        s.letterSpacing = "0px";
+        fittedLeafTitle.lines.forEach((ln, idx) => {
+          s.fillText(ln, 52, 246 + idx * fittedLeafTitle.lineHeightPx);
+        });
+        s.globalAlpha = 0.55, s.font = '400 22px MLNBookSans, sans-serif', de(s, e.note, 54, 462, 36, 30, 4);
+      } else if (n === 1 || n === 3) {
         const f = n === 1 ? 0 : 1;
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText(`CHAPTER ${ge(f + 1)}`, 54, 166), s.font = '400 49px "Iowan Old Style", Baskerville, Georgia, serif', s.letterSpacing = "0px", de(s, e.chapters[f], 52, 244, 18, 54, 3), s.globalAlpha = 0.52, s.font = '400 20px "Iowan Old Style", Baskerville, Georgia, serif', de(
+        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText(`CHAPTER ${ge(f + 1)}`, 54, 166), s.font = '400 49px MLNBookSans, sans-serif', s.letterSpacing = "0px", de(s, e.chapters[f], 52, 244, 18, 54, 3), s.globalAlpha = 0.52, s.font = '400 20px MLNBookSans, sans-serif', de(
           s,
           f === 0 ? e.note : e.deck,
           54,
@@ -505,7 +578,7 @@ function fa(Nr, m, He = {}) {
           6
         );
       } else if (n === 2)
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("PLATE 01  /  SYSTEM MOTIF", 54, 146), s.save(), s.globalAlpha = 0.58, $t(s, { ...e, foil: r }, i, d * 0.92), s.restore(), s.globalAlpha = 0.48, s.font = '400 17px "Iowan Old Style", Baskerville, Georgia, serif', de(s, e.theme, 54, 650, 44, 24, 3);
+        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("PLATE 01  /  SYSTEM MOTIF", 54, 146), s.save(), s.globalAlpha = 0.58, $t(s, { ...e, foil: r }, i, d * 0.92), s.restore(), s.globalAlpha = 0.48, s.font = '400 17px MLNBookSans, sans-serif', de(s, e.theme, 54, 650, 44, 24, 3);
       else if (n === 4) {
         s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText(`NOTES  /  ${e.chapters[1].toUpperCase()}`, 54, 138), s.globalAlpha = 0.44;
         for (let f = 0; f < 2; f += 1) {
@@ -517,7 +590,7 @@ function fa(Nr, m, He = {}) {
         }
         s.globalAlpha = 0.78, s.strokeRect(54, 654, 404, 54), s.font = '500 10px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "1.4px", s.fillText(e.motif.toUpperCase(), 70, 686);
       } else if (n === 5)
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("CHAPTER 03", 54, 166), s.font = '400 49px "Iowan Old Style", Baskerville, Georgia, serif', s.letterSpacing = "0px", de(s, e.chapters[2], 52, 244, 18, 54, 3), s.globalAlpha = 0.52, s.font = '400 20px "Iowan Old Style", Baskerville, Georgia, serif', de(s, e.deck, 54, 438, 42, 28, 6);
+        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("CHAPTER 03", 54, 166), s.font = '400 49px MLNBookSans, sans-serif', s.letterSpacing = "0px", de(s, e.chapters[2], 52, 244, 18, 54, 3), s.globalAlpha = 0.52, s.font = '400 20px MLNBookSans, sans-serif', de(s, e.deck, 54, 438, 42, 28, 6);
       else if (n === 6) {
         s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("PLATE 02  /  TECHNICAL SYSTEM", 54, 146), s.save(), s.translate(i * 0.5, 380), s.globalAlpha = 0.55;
         for (let f = 0; f < 5; f += 1) {
@@ -528,9 +601,9 @@ function fa(Nr, m, He = {}) {
           const g = f * Math.PI * 0.25;
           s.beginPath(), s.moveTo(Math.cos(g) * 36, Math.sin(g) * 36), s.lineTo(Math.cos(g) * 176, Math.sin(g) * 176), s.stroke();
         }
-        s.restore(), s.globalAlpha = 0.48, s.font = '400 17px "Iowan Old Style", Baskerville, Georgia, serif', de(s, e.theme, 54, 650, 44, 24, 3);
+        s.restore(), s.globalAlpha = 0.48, s.font = '400 17px MLNBookSans, sans-serif', de(s, e.theme, 54, 650, 44, 24, 3);
       } else
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("COLOPHON", 54, 164), s.font = '400 32px "Iowan Old Style", Baskerville, Georgia, serif', s.letterSpacing = "0px", s.fillText(e.title, 54, 230), s.globalAlpha = 0.58, s.font = '400 18px "Iowan Old Style", Baskerville, Georgia, serif', de(
+        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("COLOPHON", 54, 164), s.font = '400 32px MLNBookSans, sans-serif', s.letterSpacing = "0px", s.fillText(e.title, 54, 230), s.globalAlpha = 0.58, s.font = '400 18px MLNBookSans, sans-serif', de(
           s,
           `${e.binding}. ${e.format}. Conceived as an original editorial study for Working Volumes.`,
           54,
@@ -633,7 +706,27 @@ function fa(Nr, m, He = {}) {
     const o = document.createElement("canvas");
     o.width = 384, o.height = 1536;
     const t = o.getContext("2d");
-    return t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.lineWidth = 2.4, t.strokeRect(34, 38, o.width - 68, o.height - 76), t.textAlign = "center", t.textBaseline = "middle", t.font = '500 24px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "5px", t.fillText(e.roman, o.width * 0.5, 118), t.save(), t.translate(o.width * 0.5, o.height * 0.5), t.rotate(Math.PI / 2), t.font = `400 ${e.title.length > 10 ? 58 : 68}px "Iowan Old Style", Baskerville, Georgia, serif`, t.letterSpacing = "0px", t.fillText(e.title, 0, 0), t.restore(), t.beginPath(), t.arc(o.width * 0.5, o.height - 120, 24, 0, Math.PI * 2), t.stroke(), t.beginPath(), t.moveTo(o.width * 0.5 - 24, o.height - 120), t.lineTo(o.width * 0.5 + 24, o.height - 120), t.stroke(), Q(new l.CanvasTexture(o));
+    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.lineWidth = 2.4, t.strokeRect(34, 38, o.width - 68, o.height - 76), t.textAlign = "center", t.textBaseline = "middle";
+    t.font = '500 24px MLNBookSans, sans-serif';
+    t.fillText(e.roman, o.width * 0.5, 118);
+
+    const normTitle = normalizeVietnameseText(e.title);
+    const fittedSpine = fitSingleLineText(t, normTitle, {
+      maxWidth: 960,
+      startSize: 58,
+      minSize: 34,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 700
+    });
+
+    t.save(), t.translate(o.width * 0.5, o.height * 0.5), t.rotate(Math.PI / 2);
+    t.font = `700 ${fittedSpine.fontSize}px MLNBookSans, sans-serif`;
+    t.fillText(fittedSpine.text, 0, 0);
+    t.restore();
+
+    t.beginPath(), t.arc(o.width * 0.5, o.height - 120, 24, 0, Math.PI * 2), t.stroke();
+    t.beginPath(), t.moveTo(o.width * 0.5 - 24, o.height - 120), t.lineTo(o.width * 0.5 + 24, o.height - 120), t.stroke();
+    return Q(new l.CanvasTexture(o));
   }
   function kn(e) {
     const o = document.createElement("canvas");
@@ -660,10 +753,47 @@ function fa(Nr, m, He = {}) {
     const o = document.createElement("canvas");
     o.width = 768, o.height = 1152;
     const t = o.getContext("2d");
-    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.textAlign = "left", t.textBaseline = "alphabetic", t.font = '500 16px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "3px", t.fillText(`WORKING VOLUMES  /  ${e.roman}`, 68, 82), t.globalAlpha = 0.72, t.fillRect(68, 108, 176, 2), t.globalAlpha = 1, t.lineWidth = 1.5;
+    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.textAlign = "left", t.textBaseline = "alphabetic";
+    t.font = '500 16px MLNBookSans, sans-serif';
+    t.fillText(`WORKING VOLUMES  /  ${e.roman}`, 68, 82);
+    t.globalAlpha = 0.72, t.fillRect(68, 108, 176, 2), t.globalAlpha = 1, t.lineWidth = 1.5;
     for (let r = 0; r < 5; r += 1)
       t.globalAlpha = 0.24 - r * 0.032, t.beginPath(), t.arc(548, 374, 74 + r * 38, 0, Math.PI * 2), t.stroke();
-    return t.globalAlpha = 1, t.beginPath(), t.moveTo(348, 374), t.lineTo(704, 374), t.moveTo(548, 174), t.lineTo(548, 574), t.stroke(), t.font = `400 ${e.title.length > 10 ? 52 : 62}px "Iowan Old Style", Baskerville, Georgia, serif`, t.letterSpacing = "0px", t.fillText(e.title, 68, 956), t.font = '500 15px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "2.6px", t.fillText(e.discipline.toUpperCase(), 70, 1004), t.globalAlpha = 0.68, t.fillRect(68, 1040, 632, 1.5), t.globalAlpha = 1, t.textAlign = "right", t.fillText("AN IMAGINED EDITION", 700, 1080), Q(new l.CanvasTexture(o));
+    t.globalAlpha = 1, t.beginPath(), t.moveTo(348, 374), t.lineTo(704, 374), t.moveTo(548, 174), t.lineTo(548, 574), t.stroke();
+
+    const normTitle = normalizeVietnameseText(e.title);
+    const normDiscipline = normalizeVietnameseText(e.discipline);
+    const fittedTitle = fitTextToWidth(t, normTitle, {
+      maxWidth: 610,
+      maxLines: 2,
+      startSize: 58,
+      minSize: 38,
+      lineHeight: 1.12,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 700
+    });
+
+    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
+    if (fittedTitle.lines.length === 1) {
+      t.fillText(fittedTitle.lines[0], 68, 956);
+    } else {
+      t.fillText(fittedTitle.lines[0], 68, 956 - fittedTitle.lineHeightPx);
+      t.fillText(fittedTitle.lines[1], 68, 956);
+    }
+
+    const fittedDiscipline = fitSingleLineText(t, normDiscipline.toUpperCase(), {
+      maxWidth: 610,
+      startSize: 15,
+      minSize: 11,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 500
+    });
+    t.font = `500 ${fittedDiscipline.fontSize}px MLNBookSans, sans-serif`;
+    t.fillText(fittedDiscipline.text, 70, 1004);
+
+    t.globalAlpha = 0.68, t.fillRect(68, 1040, 632, 1.5), t.globalAlpha = 1, t.textAlign = "right";
+    t.fillText("AN IMAGINED EDITION", 700, 1080);
+    return Q(new l.CanvasTexture(o));
   }
   function T(e, o, t, r = !0, a = !0) {
     const n = new l.Mesh(e, o);
