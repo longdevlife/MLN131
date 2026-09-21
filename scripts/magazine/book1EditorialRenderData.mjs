@@ -23,6 +23,11 @@ export const pages = [
     labels: ['Cộng đồng người', 'Mối quan hệ xã hội'],
     layout: 'definition',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'equation',
+      terms: ['Cộng đồng người', 'Mối quan hệ xã hội'],
+      result: 'Cơ cấu xã hội',
+    },
   },
   {
     number: 2,
@@ -31,9 +36,20 @@ export const pages = [
     headline: 'Năm lát cắt của cơ cấu xã hội',
     body: 'Dân cư, nghề nghiệp, giai cấp, dân tộc và tôn giáo cùng tồn tại và tác động qua lại trong đời sống xã hội.',
     labels: ['Dân cư', 'Nghề nghiệp', 'Giai cấp', 'Dân tộc', 'Tôn giáo'],
-    footer: 'Chủ nghĩa xã hội khoa học tập trung nghiên cứu cơ cấu xã hội – giai cấp do mối liên hệ trực tiếp với giai cấp, lợi ích và liên minh.',
     layout: 'constellation',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'constellation',
+      center: 'Cơ cấu xã hội',
+      nodes: [
+        { id: 'dc', label: 'Dân cư' },
+        { id: 'nn', label: 'Nghề nghiệp' },
+        { id: 'gc', label: 'Giai cấp', highlighted: true },
+        { id: 'dt', label: 'Dân tộc' },
+        { id: 'tg', label: 'Tôn giáo' },
+      ],
+      highlightedCaption: 'Chủ nghĩa xã hội khoa học tập trung nghiên cứu cơ cấu xã hội – giai cấp do mối liên hệ trực tiếp với giai cấp, lợi ích và liên minh.',
+    },
   },
   {
     number: 3,
@@ -43,6 +59,12 @@ export const pages = [
     body: 'Cơ cấu xã hội – giai cấp là hệ thống các giai cấp, tầng lớp xã hội tồn tại khách quan trong một chế độ xã hội nhất định.',
     layout: 'definition',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'class-system',
+      center: 'Cơ cấu xã hội – giai cấp',
+      nodes: ['Giai cấp', 'Tầng lớp xã hội'],
+      caption: 'Tồn tại khách quan trong một chế độ xã hội nhất định',
+    },
   },
   {
     number: 4,
@@ -58,6 +80,15 @@ export const pages = [
     footer: 'TKQĐ: công nhân · nông dân · trí thức · doanh nhân · tiểu chủ · các nhóm xã hội khác',
     layout: 'four-dimensions',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'four-dimensions',
+      dimensions: [
+        'Sở hữu tư liệu sản xuất',
+        'Tổ chức và quản lý sản xuất',
+        'Địa vị chính trị – xã hội',
+        'Phân phối sản phẩm và thu nhập',
+      ],
+    },
   },
   {
     number: 5,
@@ -67,6 +98,13 @@ export const pages = [
     body: 'Cơ cấu xã hội – giai cấp gắn chặt với các quan hệ kinh tế, chính trị và có ảnh hưởng mạnh tới những loại hình cơ cấu xã hội khác.',
     layout: 'orbital',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'orbital',
+      center: 'Cơ cấu XH – giai cấp',
+      nodes: ['Dân cư', 'Nghề nghiệp', 'Tôn giáo', 'Dân tộc'],
+      direction: 'outward',
+      caption: 'Có ảnh hưởng mạnh tới các cơ cấu xã hội khác',
+    },
   },
   {
     number: 6,
@@ -76,6 +114,13 @@ export const pages = [
     body: 'Dân tộc, tôn giáo, dân cư và nghề nghiệp cũng tác động trở lại. Không tuyệt đối hóa cơ cấu xã hội – giai cấp và không xem nhẹ các cơ cấu khác.',
     layout: 'orbital',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'orbital',
+      center: 'Cơ cấu XH – giai cấp',
+      nodes: ['Dân cư', 'Nghề nghiệp', 'Tôn giáo', 'Dân tộc'],
+      direction: 'reciprocal',
+      caption: 'Tác động qua lại hai chiều',
+    },
   },
   {
     number: 7,
@@ -85,6 +130,10 @@ export const pages = [
     body: 'Sự biến đổi của cơ cấu xã hội – giai cấp gắn liền và bị quy định bởi sự biến đổi của cơ cấu kinh tế trong thời kỳ quá độ.',
     layout: 'flow',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'flow',
+      steps: ['Kinh tế thay đổi', 'Cơ cấu kinh tế chuyển dịch', 'Cơ cấu giai cấp thay đổi'],
+    },
   },
   {
     number: 8,
@@ -100,6 +149,15 @@ export const pages = [
     footer: 'Minh họa công nghiệp hóa: tỷ trọng nông nghiệp có xu hướng giảm tương đối, công nghiệp và dịch vụ tăng.',
     layout: 'flow',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'flow',
+      steps: [
+        'Cơ cấu kinh tế',
+        'Lao động & nghề nghiệp',
+        'Vị trí · số lượng · vai trò',
+        'Cơ cấu xã hội – giai cấp',
+      ],
+    },
   },
   {
     number: 9,
@@ -109,6 +167,11 @@ export const pages = [
     body: 'Nhiều thành phần kinh tế và hình thức sở hữu làm cơ cấu xã hội – giai cấp thêm đa dạng, đồng thời làm xuất hiện những tầng lớp xã hội mới.',
     layout: 'branching',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'branching',
+      heading: 'Kinh tế nhiều thành phần',
+      items: ['Đa dạng hóa cơ cấu giai cấp', 'Xuất hiện tầng lớp xã hội mới'],
+    },
   },
   {
     number: 10,
@@ -119,6 +182,11 @@ export const pages = [
     footer: 'Doanh nhân · tiểu chủ · lao động tự do là những ví dụ minh họa cho diện mạo xã hội đa dạng hơn.',
     layout: 'branching',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'branching',
+      heading: 'Tiêu chí phân hóa nội bộ',
+      items: ['Nghề nghiệp', 'Trình độ', 'Thu nhập', 'Điều kiện sống', 'Vị thế xã hội'],
+    },
   },
   {
     number: 11,
@@ -128,6 +196,14 @@ export const pages = [
     body: 'Lợi ích giữa các giai cấp, tầng lớp vừa có điểm chung vừa có khác biệt; vì vậy quan hệ xã hội bao gồm cả hợp tác, liên minh và những căng thẳng, khác biệt.',
     layout: 'convergence',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'convergence',
+      leftLabel: 'Mặt thống nhất',
+      leftTitle: 'Hợp tác & Liên minh',
+      rightLabel: 'Mặt khác biệt',
+      rightTitle: 'Khác biệt & Đấu tranh',
+      convergenceLabel: 'Quan hệ xã hội đan xen',
+    },
   },
   {
     number: 12,
@@ -137,6 +213,14 @@ export const pages = [
     body: 'Trong quá trình phát triển và liên minh, các giai cấp, tầng lớp có xu hướng từng bước xích lại gần nhau; sự khác biệt không vì thế mà biến mất hoàn toàn.',
     layout: 'convergence',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'convergence',
+      leftLabel: 'Phát triển kinh tế',
+      leftTitle: 'Liên minh giai tầng',
+      rightLabel: 'Đặc thù giai cấp',
+      rightTitle: 'Khác biệt tồn tại',
+      convergenceLabel: 'Từng bước xích lại gần nhau',
+    },
   },
   {
     number: 13,
@@ -150,6 +234,14 @@ export const pages = [
     ],
     layout: 'synthesis',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'synthesis',
+      steps: [
+        'Kinh tế thay đổi',
+        'Cơ cấu XH–GC thay đổi',
+        'Lợi ích vừa thống nhất vừa khác biệt',
+      ],
+    },
   },
   {
     number: 14,
@@ -159,5 +251,9 @@ export const pages = [
     body: 'Điều gì khiến các giai cấp và tầng lớp phải liên minh?',
     layout: 'transition',
     sourceIds: ['giaoTrinh2021'],
+    visual: {
+      kind: 'transition',
+      label: 'Câu hỏi chuyển tiếp sang Quyển II',
+    },
   },
 ];

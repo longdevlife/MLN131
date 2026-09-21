@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   BOOK1_EDITORIAL_PAGE_COUNT,
@@ -58,7 +60,7 @@ describe('Book I editorial content', () => {
     expect(volumePageIds).toEqual(editorialIds);
   });
 
-  it('enforces deep parity between typed editorial model and render data', () => {
+  it('enforces deep parity between typed editorial model and render data including visual model', () => {
     const volume = getMagazineVolume(0)!;
     expect(renderCoverFront.title).toBe('Cơ cấu xã hội – giai cấp');
     expect(volume.title).toBe(renderCoverFront.title);
@@ -77,6 +79,34 @@ describe('Book I editorial content', () => {
       expect(target.footer).toBe(source.footer);
       expect(target.layout).toBe(source.layout);
       expect(target.sourceIds).toEqual(source.sourceIds);
+      expect(target.visual).toEqual(source.visual);
+    }
+  });
+
+  it('guarantees renderer contains zero hard-coded academic semantic strings', () => {
+    const rendererPath = path.resolve('scripts/magazine/renderBook1Editorial.mjs');
+    const rendererCode = fs.readFileSync(rendererPath, 'utf8');
+
+    const forbiddenStrings = [
+      'CƠ CẤU XÃ HỘI – GIAI CẤP',
+      'Tác động chi phối lan tỏa',
+      'Outward Influence',
+      'Reciprocal',
+      'Hợp tác & Liên minh',
+      'Khác biệt & Đấu tranh',
+      'Từng bước xích lại gần nhau',
+      'Xuất phát từ quan hệ sản xuất',
+      'CỘNG ĐỒNG NGƯỜI',
+      'MỐI QUAN HỆ XÃ HỘI',
+      'CÁC TIÊU CHÍ PHÂN HÓA',
+      'Nền kinh tế nhiều thành phần',
+      'chuyên gia công nghệ',
+      'lợi ích cục bộ',
+      'đặt nền tảng tất yếu',
+    ];
+
+    for (const forbidden of forbiddenStrings) {
+      expect(rendererCode).not.toContain(forbidden);
     }
   });
 });

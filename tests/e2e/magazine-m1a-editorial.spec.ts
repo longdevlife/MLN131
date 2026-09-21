@@ -4,8 +4,8 @@ import path from 'node:path';
 
 const SCREENSHOT_DIR = path.resolve('artifacts/screenshots/magazine-m1a');
 
-test.describe('MLN131 Magazine M1A Early Visual Gate — Spreads 01-02 & 05-06', () => {
-  test('Early Visual Gate: Capture required 6 screenshots and assert strict layout & network integrity', async ({ page }) => {
+test.describe('MLN131 Magazine M1A Early Visual Gate — Spreads 01-02, 03-04 & 05-06', () => {
+  test('Early Visual Gate: Capture required 7 screenshots and assert strict layout & network integrity', async ({ page }) => {
     test.setTimeout(180000);
 
     const pageErrors: Error[] = [];
@@ -106,14 +106,22 @@ test.describe('MLN131 Magazine M1A Early Visual Gate — Spreads 01-02 & 05-06',
       fullPage: false,
     });
 
+    // Lật tiếp sang Trang 2 (Spread 03–04: Hệ thống giai cấp & Bốn chiều kích)
+    // Giữ nguyên ở Reading mode để chụp rõ bằng chứng Page 03 đã dùng class-system riêng biệt
+    await page.keyboard.press('Space');
+    await expect(page.locator('.magazine-page-indicator')).toContainText('Trang 3–4');
+    await waitForMagazineSettled();
+
+    // Screenshot 4: M1A-gate-spread-03-04-reading-1920.png (PROOF: Page 03 bug fixed)
+    await assertLayoutClean();
+    await page.screenshot({
+      path: path.join(SCREENSHOT_DIR, 'M1A-gate-spread-03-04-reading-1920.png'),
+      fullPage: false,
+    });
+
     // Chuyển lại sang Showcase mode để lật tiếp
     const showcaseModeBtn = page.getByRole('button', { name: 'Chuyển sang chế độ 3D' });
     await showcaseModeBtn.click();
-    await waitForMagazineSettled();
-
-    // Lật sang Trang 2 (Spread 03–04)
-    await page.keyboard.press('Space');
-    await expect(page.locator('.magazine-page-indicator')).toContainText('Trang 3–4');
     await waitForMagazineSettled();
 
     // Lật sang Trang 3 (Spread 05–06: Vị trí quan trọng hàng đầu & Tác động qua lại)
@@ -121,7 +129,7 @@ test.describe('MLN131 Magazine M1A Early Visual Gate — Spreads 01-02 & 05-06',
     await expect(page.locator('.magazine-page-indicator')).toContainText('Trang 5–6');
     await waitForMagazineSettled();
 
-    // Screenshot 4: M1A-gate-spread-05-06-showcase-1920.png
+    // Screenshot 5: M1A-gate-spread-05-06-showcase-1920.png
     await assertLayoutClean();
     await page.screenshot({
       path: path.join(SCREENSHOT_DIR, 'M1A-gate-spread-05-06-showcase-1920.png'),
@@ -133,7 +141,7 @@ test.describe('MLN131 Magazine M1A Early Visual Gate — Spreads 01-02 & 05-06',
     await expect(page.getByRole('button', { name: 'Chuyển sang chế độ 3D' })).toBeVisible();
     await waitForMagazineSettled();
 
-    // Screenshot 5: M1A-gate-spread-05-06-reading-1920.png
+    // Screenshot 6: M1A-gate-spread-05-06-reading-1920.png
     await assertLayoutClean();
     await page.screenshot({
       path: path.join(SCREENSHOT_DIR, 'M1A-gate-spread-05-06-reading-1920.png'),
@@ -160,7 +168,7 @@ test.describe('MLN131 Magazine M1A Early Visual Gate — Spreads 01-02 & 05-06',
     await expect(page.locator('.magazine-page-indicator')).toContainText('Trang 1–2');
     await waitForMagazineSettled();
 
-    // Screenshot 6: M1A-gate-spread-01-02-1366.png
+    // Screenshot 7: M1A-gate-spread-01-02-1366.png
     await assertLayoutClean();
     await page.screenshot({
       path: path.join(SCREENSHOT_DIR, 'M1A-gate-spread-01-02-1366.png'),
@@ -174,11 +182,12 @@ test.describe('MLN131 Magazine M1A Early Visual Gate — Spreads 01-02 & 05-06',
     expect(pageErrors).toHaveLength(0);
     expect(consoleErrors).toHaveLength(0);
 
-    // Xác nhận đủ 6 file screenshots với kích thước > 10KB
+    // Xác nhận đủ 7 file screenshots với kích thước > 10KB
     const requiredScreenshots = [
       'M1A-gate-cover-1920.png',
       'M1A-gate-spread-01-02-showcase-1920.png',
       'M1A-gate-spread-01-02-reading-1920.png',
+      'M1A-gate-spread-03-04-reading-1920.png',
       'M1A-gate-spread-05-06-showcase-1920.png',
       'M1A-gate-spread-05-06-reading-1920.png',
       'M1A-gate-spread-01-02-1366.png',

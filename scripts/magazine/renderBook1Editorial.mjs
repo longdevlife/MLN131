@@ -143,7 +143,7 @@ const BASE_CSS = `
     margin: 8px 0 20px 0;
   }
 
-  /* Footer */
+  /* Footer: source / folio only */
   .page-footer {
     display: flex;
     justify-content: space-between;
@@ -164,7 +164,7 @@ const BASE_CSS = `
     font-size: 15px;
   }
 
-  /* Editorial SVG & typography elements (NO DASHBOARD CARDS) */
+  /* Editorial typographic primitives (NO HARD-CODED CONTENT) */
   .equation-container {
     width: 100%;
     max-width: 540px;
@@ -206,309 +206,312 @@ const BASE_CSS = `
 function renderPageHTML(page) {
   const isOdd = page.number % 2 !== 0;
   const paddingClass = isOdd ? 'is-odd' : 'is-even';
+  const visual = page.visual;
 
   let diagramHTML = '';
 
-  switch (page.layout) {
-    // PAGE 01 & 03: Editorial Typographic Equation
-    case 'definition': {
-      const term1 = page.labels?.[0] || 'CỘNG ĐỒNG NGƯỜI';
-      const term2 = page.labels?.[1] || 'MỐI QUAN HỆ XÃ HỘI';
-      diagramHTML = `
-        <div class="equation-container">
-          <div class="equation-term">${term1}</div>
-          <div class="equation-op">+</div>
-          <div class="equation-term">${term2}</div>
-          <div class="equation-op">=</div>
-          <div class="equation-result">CƠ CẤU XÃ HỘI</div>
-        </div>
-      `;
-      break;
-    }
-
-    // PAGE 02: Constellation / Radial Diagram with SVG linework
-    case 'constellation': {
-      diagramHTML = `
-        <div style="width: 100%; max-width: 550px; display: flex; flex-direction: column; align-items: center;">
-          <svg viewBox="0 0 540 340" width="540" height="340" style="overflow: visible;">
-            <!-- Subtle background orbit guide -->
-            <ellipse cx="270" cy="170" rx="200" ry="115" fill="none" stroke="rgba(170, 133, 77, 0.15)" stroke-dasharray="4,4" />
-            
-            <!-- Connecting lines from center to nodes -->
-            <line x1="270" y1="170" x2="270" y2="52" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3,3" />
-            <line x1="270" y1="170" x2="435" y2="125" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3,3" />
-            <line x1="270" y1="170" x2="385" y2="285" stroke="var(--copper)" stroke-width="1.8" />
-            <line x1="270" y1="170" x2="155" y2="285" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3,3" />
-            <line x1="270" y1="170" x2="105" y2="125" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3,3" />
-
-            <!-- Node 1: Top - Dân cư -->
-            <g transform="translate(270, 52)">
-              <circle r="22" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
-              <text y="5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">01</text>
-              <text y="-30" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Dân cư</text>
-            </g>
-
-            <!-- Node 2: Right - Nghề nghiệp -->
-            <g transform="translate(435, 125)">
-              <circle r="22" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
-              <text y="5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">02</text>
-              <text x="32" y="5" text-anchor="start" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Nghề nghiệp</text>
-            </g>
-
-            <!-- Node 3: Bottom Right - Giai cấp (HIGHLIGHTED) -->
-            <g transform="translate(385, 285)">
-              <circle r="26" fill="var(--copper)" stroke="#faf6ee" stroke-width="2" />
-              <circle r="32" fill="none" stroke="var(--copper)" stroke-width="1.2" stroke-dasharray="3,2" />
-              <text y="6" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" font-family="MLNBookSans">03</text>
-              <text x="40" y="5" text-anchor="start" font-size="18" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">Giai cấp</text>
-              <text x="40" y="24" text-anchor="start" font-size="11" font-weight="700" fill="var(--gold)" letter-spacing="0.08em" font-family="MLNBookSans">TRỌNG TÂM</text>
-            </g>
-
-            <!-- Node 4: Bottom Left - Dân tộc -->
-            <g transform="translate(155, 285)">
-              <circle r="22" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
-              <text y="5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">04</text>
-              <text x="-32" y="5" text-anchor="end" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Dân tộc</text>
-            </g>
-
-            <!-- Node 5: Left - Tôn giáo -->
-            <g transform="translate(105, 125)">
-              <circle r="22" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
-              <text y="5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">05</text>
-              <text x="-32" y="5" text-anchor="end" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Tôn giáo</text>
-            </g>
-
-            <!-- CENTER NODE: Cơ cấu xã hội -->
-            <g transform="translate(270, 170)">
-              <circle r="48" fill="#faf6ee" stroke="var(--gold)" stroke-width="2" />
-              <circle r="54" fill="none" stroke="var(--rule)" stroke-width="1" />
-              <text y="-6" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="0.14em" fill="var(--copper)" font-family="MLNBookSans">TRUNG TÂM</text>
-              <text y="14" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">CƠ CẤU XÃ HỘI</text>
-            </g>
-          </svg>
-        </div>
-      `;
-      break;
-    }
-
-    // PAGE 04: Four Dimensions (Linework Quadrant, No Boxes)
-    case 'four-dimensions': {
-      diagramHTML = `
-        <div style="width: 100%; max-width: 540px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px 36px; padding: 20px 0; position: relative;">
-          <!-- Quadrant central thin axis lines -->
-          <div style="position: absolute; top: 12px; bottom: 12px; left: 50%; width: 1px; background: var(--rule);"></div>
-          <div style="position: absolute; left: 12px; right: 12px; top: 50%; height: 1px; background: var(--rule);"></div>
-
-          ${(page.labels || []).map((dim, idx) => `
-            <div style="padding: 12px 18px;">
-              <div style="font-size: 13px; font-weight: 700; color: var(--copper); letter-spacing: 0.14em; margin-bottom: 8px;">
-                0${idx + 1} / QUAN HỆ
-              </div>
-              <div style="font-size: 19px; font-weight: 700; color: var(--ink); line-height: 1.4;">
-                ${dim}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-      break;
-    }
-
-    // PAGE 05 & 06: Orbital Diagrams
-    // Page 05: Outward influence (Centrifugal / Influence outward)
-    // Page 06: Reciprocal influence (Bidirectional arrows)
-    case 'orbital': {
-      const isPage6 = page.number === 6;
-      const arrowSymbol = isPage6 ? '↔' : '→';
-
-      diagramHTML = `
-        <div style="width: 100%; max-width: 550px; display: flex; flex-direction: column; align-items: center;">
-          <svg viewBox="0 0 540 360" width="540" height="360" style="overflow: visible;">
-            <defs>
-              <marker id="arrow-gold" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--copper)" />
-              </marker>
-              <marker id="arrow-gold-rev" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                <path d="M 8 1.5 L 0 5 L 8 8.5 z" fill="var(--copper)" />
-              </marker>
-            </defs>
-
-            <!-- Concentric orbital rings -->
-            <ellipse cx="270" cy="180" rx="130" ry="75" fill="none" stroke="rgba(170, 133, 77, 0.2)" stroke-dasharray="3,3" />
-            <ellipse cx="270" cy="180" rx="210" ry="120" fill="none" stroke="rgba(170, 133, 77, 0.3)" stroke-width="1.2" />
-
-            <!-- Connecting Rays with directional markers -->
-            <!-- Top: Dân cư -->
-            <line x1="270" y1="120" x2="270" y2="72" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isPage6 ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
-            <!-- Right: Nghề nghiệp -->
-            <line x1="365" y1="180" x2="425" y2="180" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isPage6 ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
-            <!-- Bottom: Tôn giáo -->
-            <line x1="270" y1="240" x2="270" y2="288" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isPage6 ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
-            <!-- Left: Dân tộc -->
-            <line x1="175" y1="180" x2="115" y2="180" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isPage6 ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
-
-            <!-- Orbital Peripheral Nodes -->
-            <!-- Node: Dân cư -->
-            <g transform="translate(270, 48)">
-              <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
-              <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Dân cư</text>
-            </g>
-
-            <!-- Node: Nghề nghiệp -->
-            <g transform="translate(450, 180)">
-              <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
-              <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Nghề nghiệp</text>
-            </g>
-
-            <!-- Node: Tôn giáo -->
-            <g transform="translate(270, 312)">
-              <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
-              <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Tôn giáo</text>
-            </g>
-
-            <!-- Node: Dân tộc -->
-            <g transform="translate(90, 180)">
-              <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
-              <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Dân tộc</text>
-            </g>
-
-            <!-- CENTER ORBITAL NUCLEUS: Cơ cấu xã hội – giai cấp -->
-            <g transform="translate(270, 180)">
-              <circle r="52" fill="#faf6ee" stroke="var(--copper)" stroke-width="2" />
-              <circle r="60" fill="none" stroke="var(--copper)" stroke-width="1" stroke-dasharray="4,2" />
-              <text y="-8" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="0.12em" fill="var(--copper)" font-family="MLNBookSans">VỊ TRÍ HÀNG ĐẦU</text>
-              <text y="10" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">CƠ CẤU XH – GC</text>
-            </g>
-          </svg>
-
-          <!-- Editorial subtitle under diagram -->
-          <div style="margin-top: 10px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--copper); text-transform: uppercase;">
-            ${isPage6 ? 'Tác động qua lại hai chiều (Reciprocal)' : 'Tác động chi phối lan tỏa (Outward Influence)'}
+  if (visual) {
+    switch (visual.kind) {
+      // PAGE 01: Typographic Equation
+      case 'equation': {
+        diagramHTML = `
+          <div class="equation-container">
+            ${visual.terms.map((t, idx) => `
+              <div class="equation-term">${t}</div>
+              ${idx < visual.terms.length - 1 ? '<div class="equation-op">+</div>' : ''}
+            `).join('')}
+            <div class="equation-op">=</div>
+            <div class="equation-result">${visual.result}</div>
           </div>
-        </div>
-      `;
-      break;
-    }
+        `;
+        break;
+      }
 
-    // PAGE 07 & 08: Flow / Sequential Transition
-    case 'flow': {
-      const steps = page.labels || ['Cơ cấu kinh tế', 'Lao động & nghề nghiệp', 'Cơ cấu XH–GC'];
-      diagramHTML = `
-        <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 12px 0;">
-          ${steps.map((step, idx, arr) => `
-            <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--rule);">
-              <div style="display: flex; align-items: center; gap: 16px;">
-                <span style="font-size: 13px; font-weight: 700; color: var(--copper); letter-spacing: 0.1em;">
-                  BƯỚC 0${idx + 1}
-                </span>
-                <span style="font-size: 19px; font-weight: 700; color: var(--ink);">
-                  ${step}
-                </span>
-              </div>
-              <div style="font-size: 18px; color: var(--gold); font-weight: 700;">
-                ${idx < arr.length - 1 ? '↓' : '●'}
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-      break;
-    }
+      // PAGE 02: Constellation / Radial SVG
+      case 'constellation': {
+        const coords = [
+          { x: 270, y: 52, labelPos: 'top' },
+          { x: 435, y: 125, labelPos: 'right' },
+          { x: 385, y: 285, labelPos: 'bottom-right' },
+          { x: 155, y: 285, labelPos: 'bottom-left' },
+          { x: 105, y: 125, labelPos: 'left' },
+        ];
 
-    // PAGE 09 & 10: Branching / Diversification (Linework Tree, ZERO academic text)
-    case 'branching': {
-      const items = page.labels || ['Nghề nghiệp', 'Trình độ', 'Thu nhập', 'Vị thế'];
-      diagramHTML = `
-        <div style="width: 100%; max-width: 540px; display: flex; flex-direction: column; align-items: center; padding: 10px 0;">
-          <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: var(--copper); text-transform: uppercase; margin-bottom: 16px;">
-            CÁC TIÊU CHÍ PHÂN HÓA NỘI BỘ
+        diagramHTML = `
+          <div style="width: 100%; max-width: 550px; display: flex; flex-direction: column; align-items: center;">
+            <svg viewBox="0 0 540 340" width="540" height="340" style="overflow: visible;">
+              <ellipse cx="270" cy="170" rx="200" ry="115" fill="none" stroke="rgba(170, 133, 77, 0.15)" stroke-dasharray="4,4" />
+              
+              ${visual.nodes.map((node, idx) => {
+                const c = coords[idx % coords.length];
+                const isHl = !!node.highlighted;
+                return `
+                  <line x1="270" y1="170" x2="${c.x}" y2="${c.y}" stroke="${isHl ? 'var(--copper)' : 'var(--gold)'}" stroke-width="${isHl ? '1.8' : '1.2'}" ${isHl ? '' : 'stroke-dasharray="3,3"'} />
+                  <g transform="translate(${c.x}, ${c.y})">
+                    <circle r="${isHl ? '26' : '22'}" fill="${isHl ? 'var(--copper)' : '#faf6ee'}" stroke="${isHl ? '#faf6ee' : 'var(--gold)'}" stroke-width="${isHl ? '2' : '1.5'}" />
+                    ${isHl ? '<circle r="32" fill="none" stroke="var(--copper)" stroke-width="1.2" stroke-dasharray="3,2" />' : ''}
+                    <text y="${isHl ? '6' : '5'}" text-anchor="middle" font-size="${isHl ? '13' : '12'}" font-weight="700" fill="${isHl ? '#fff' : 'var(--copper)'}" font-family="MLNBookSans">0${idx + 1}</text>
+                    ${c.labelPos === 'top' ? `<text y="-30" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${node.label}</text>` : ''}
+                    ${c.labelPos === 'right' ? `<text x="32" y="5" text-anchor="start" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${node.label}</text>` : ''}
+                    ${c.labelPos === 'bottom-right' ? `<text x="40" y="5" text-anchor="start" font-size="18" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">${node.label}</text>` : ''}
+                    ${c.labelPos === 'bottom-left' ? `<text x="-32" y="5" text-anchor="end" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${node.label}</text>` : ''}
+                    ${c.labelPos === 'left' ? `<text x="-32" y="5" text-anchor="end" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${node.label}</text>` : ''}
+                  </g>
+                `;
+              }).join('')}
+
+              <!-- CENTER NODE -->
+              <g transform="translate(270, 170)">
+                <circle r="48" fill="#faf6ee" stroke="var(--gold)" stroke-width="2" />
+                <circle r="54" fill="none" stroke="var(--rule)" stroke-width="1" />
+                <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${visual.center}</text>
+              </g>
+            </svg>
+
+            ${visual.highlightedCaption ? `
+              <div style="margin-top: 14px; max-width: 520px; font-size: 16px; line-height: 1.5; color: var(--ink-soft); text-align: center; padding: 12px 18px; border-left: 3px solid var(--copper); background: rgba(168, 102, 67, 0.06);">
+                ${visual.highlightedCaption}
+              </div>
+            ` : ''}
           </div>
-          <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px;">
-            ${items.map((crit, idx) => `
-              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-left: 2px solid var(--gold);">
-                <span style="font-size: 12px; font-weight: 700; color: var(--copper);">0${idx + 1}</span>
-                <span style="font-size: 17px; font-weight: 700; color: var(--ink);">${crit}</span>
+        `;
+        break;
+      }
+
+      // PAGE 03: Class System (Dedicated Structure Diagram - NOT equation)
+      case 'class-system': {
+        diagramHTML = `
+          <div style="width: 100%; max-width: 540px; display: flex; flex-direction: column; align-items: center; padding: 16px 0;">
+            <svg viewBox="0 0 520 220" width="520" height="220" style="overflow: visible;">
+              <!-- Central nucleus box -->
+              <g transform="translate(260, 45)">
+                <rect x="-160" y="-28" width="320" height="56" rx="6" fill="#faf6ee" stroke="var(--copper)" stroke-width="1.8" />
+                <text y="6" text-anchor="middle" font-size="17" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${visual.center}</text>
+              </g>
+
+              <!-- Branch lines -->
+              <line x1="260" y1="73" x2="260" y2="105" stroke="var(--copper)" stroke-width="1.5" />
+              <line x1="130" y1="105" x2="390" y2="105" stroke="var(--copper)" stroke-width="1.5" />
+              <line x1="130" y1="105" x2="130" y2="135" stroke="var(--copper)" stroke-width="1.5" />
+              <line x1="390" y1="105" x2="390" y2="135" stroke="var(--copper)" stroke-width="1.5" />
+
+              <!-- Left Node -->
+              <g transform="translate(130, 165)">
+                <rect x="-100" y="-24" width="200" height="48" rx="4" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.4" />
+                <text y="5" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${visual.nodes[0]}</text>
+              </g>
+
+              <!-- Right Node -->
+              <g transform="translate(390, 165)">
+                <rect x="-100" y="-24" width="200" height="48" rx="4" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.4" />
+                <text y="5" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${visual.nodes[1]}</text>
+              </g>
+            </svg>
+
+            ${visual.caption ? `
+              <div style="margin-top: 24px; font-size: 16px; color: var(--ink-soft); text-align: center; max-width: 460px; line-height: 1.5; font-style: italic;">
+                ${visual.caption}
+              </div>
+            ` : ''}
+          </div>
+        `;
+        break;
+      }
+
+      // PAGE 04: Four Dimensions (Linework Quadrant)
+      case 'four-dimensions': {
+        diagramHTML = `
+          <div style="width: 100%; max-width: 540px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px 36px; padding: 20px 0; position: relative;">
+            <div style="position: absolute; top: 12px; bottom: 12px; left: 50%; width: 1px; background: var(--rule);"></div>
+            <div style="position: absolute; left: 12px; right: 12px; top: 50%; height: 1px; background: var(--rule);"></div>
+
+            ${visual.dimensions.map((dim, idx) => `
+              <div style="padding: 12px 18px;">
+                <div style="font-size: 13px; font-weight: 700; color: var(--copper); letter-spacing: 0.14em; margin-bottom: 8px;">
+                  0${idx + 1}
+                </div>
+                <div style="font-size: 19px; font-weight: 700; color: var(--ink); line-height: 1.4;">
+                  ${dim}
+                </div>
               </div>
             `).join('')}
           </div>
-        </div>
-      `;
-      break;
-    }
+        `;
+        break;
+      }
 
-    // PAGE 11 & 12: Convergence / Dual Trends (ZERO hard-coded claims)
-    case 'convergence': {
-      diagramHTML = `
-        <div style="width: 100%; max-width: 540px; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 16px 0;">
-          <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; position: relative;">
-            <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--rule);"></div>
-            
-            <div style="padding: 10px 16px; text-align: center;">
-              <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 8px;">
-                MẶT THỐNG NHẤT
+      // PAGE 05 & 06: Orbital Diagrams
+      case 'orbital': {
+        const isTwoWay = visual.direction === 'reciprocal';
+
+        diagramHTML = `
+          <div style="width: 100%; max-width: 550px; display: flex; flex-direction: column; align-items: center;">
+            <svg viewBox="0 0 540 360" width="540" height="360" style="overflow: visible;">
+              <defs>
+                <marker id="arrow-gold" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--copper)" />
+                </marker>
+                <marker id="arrow-gold-rev" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                  <path d="M 8 1.5 L 0 5 L 8 8.5 z" fill="var(--copper)" />
+                </marker>
+              </defs>
+
+              <ellipse cx="270" cy="180" rx="130" ry="75" fill="none" stroke="rgba(170, 133, 77, 0.2)" stroke-dasharray="3,3" />
+              <ellipse cx="270" cy="180" rx="210" ry="120" fill="none" stroke="rgba(170, 133, 77, 0.3)" stroke-width="1.2" />
+
+              <!-- Rays -->
+              <line x1="270" y1="120" x2="270" y2="72" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isTwoWay ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
+              <line x1="365" y1="180" x2="425" y2="180" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isTwoWay ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
+              <line x1="270" y1="240" x2="270" y2="288" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isTwoWay ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
+              <line x1="175" y1="180" x2="115" y2="180" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isTwoWay ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
+
+              <!-- Peripheral Nodes -->
+              <g transform="translate(270, 48)">
+                <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+                <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${visual.nodes[0]}</text>
+              </g>
+              <g transform="translate(450, 180)">
+                <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+                <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${visual.nodes[1]}</text>
+              </g>
+              <g transform="translate(270, 312)">
+                <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+                <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${visual.nodes[2]}</text>
+              </g>
+              <g transform="translate(90, 180)">
+                <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+                <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${visual.nodes[3]}</text>
+              </g>
+
+              <!-- CENTER NUCLEUS -->
+              <g transform="translate(270, 180)">
+                <circle r="52" fill="#faf6ee" stroke="var(--copper)" stroke-width="2" />
+                <circle r="60" fill="none" stroke="var(--copper)" stroke-width="1" stroke-dasharray="4,2" />
+                <text y="5" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">${visual.center}</text>
+              </g>
+            </svg>
+
+            <div style="margin-top: 10px; font-size: 15px; font-weight: 700; color: var(--copper); text-align: center;">
+              ${visual.caption}
+            </div>
+          </div>
+        `;
+        break;
+      }
+
+      // PAGE 07 & 08: Flow
+      case 'flow': {
+        diagramHTML = `
+          <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 12px 0;">
+            ${visual.steps.map((step, idx, arr) => `
+              <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--rule);">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <span style="font-size: 13px; font-weight: 700; color: var(--copper); letter-spacing: 0.1em;">
+                    0${idx + 1}
+                  </span>
+                  <span style="font-size: 19px; font-weight: 700; color: var(--ink);">
+                    ${step}
+                  </span>
+                </div>
+                <div style="font-size: 18px; color: var(--gold); font-weight: 700;">
+                  ${idx < arr.length - 1 ? '↓' : '●'}
+                </div>
               </div>
-              <div style="font-size: 20px; font-weight: 700; color: var(--ink);">
-                Hợp tác & Liên minh
+            `).join('')}
+          </div>
+        `;
+        break;
+      }
+
+      // PAGE 09 & 10: Branching
+      case 'branching': {
+        diagramHTML = `
+          <div style="width: 100%; max-width: 540px; display: flex; flex-direction: column; align-items: center; padding: 10px 0;">
+            <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: var(--copper); text-transform: uppercase; margin-bottom: 16px;">
+              ${visual.heading}
+            </div>
+            <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px;">
+              ${visual.items.map((item, idx) => `
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-left: 2px solid var(--gold);">
+                  <span style="font-size: 12px; font-weight: 700; color: var(--copper);">0${idx + 1}</span>
+                  <span style="font-size: 17px; font-weight: 700; color: var(--ink);">${item}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        break;
+      }
+
+      // PAGE 11 & 12: Convergence
+      case 'convergence': {
+        diagramHTML = `
+          <div style="width: 100%; max-width: 540px; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 16px 0;">
+            <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; position: relative;">
+              <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--rule);"></div>
+              
+              <div style="padding: 10px 16px; text-align: center;">
+                <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 8px;">
+                  ${visual.leftLabel}
+                </div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--ink);">
+                  ${visual.leftTitle}
+                </div>
+              </div>
+
+              <div style="padding: 10px 16px; text-align: center;">
+                <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--copper); text-transform: uppercase; margin-bottom: 8px;">
+                  ${visual.rightLabel}
+                </div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--ink);">
+                  ${visual.rightTitle}
+                </div>
               </div>
             </div>
 
-            <div style="padding: 10px 16px; text-align: center;">
-              <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--copper); text-transform: uppercase; margin-bottom: 8px;">
-                MẶT KHÁC BIỆT
-              </div>
-              <div style="font-size: 20px; font-weight: 700; color: var(--ink);">
-                Khác biệt & Đấu tranh
-              </div>
+            <div style="display: flex; align-items: center; gap: 16px; width: 100%; justify-content: center; padding-top: 12px; border-top: 1px dashed var(--rule);">
+              <span style="font-size: 18px; color: var(--copper); font-weight: 700;">→</span>
+              <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.08em; color: var(--copper); text-transform: uppercase;">
+                ${visual.convergenceLabel}
+              </span>
+              <span style="font-size: 18px; color: var(--copper); font-weight: 700;">←</span>
             </div>
           </div>
+        `;
+        break;
+      }
 
-          <div style="display: flex; align-items: center; gap: 16px; width: 100%; justify-content: center; padding-top: 12px; border-top: 1px dashed var(--rule);">
-            <span style="font-size: 18px; color: var(--copper); font-weight: 700;">→</span>
-            <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.08em; color: var(--copper); text-transform: uppercase;">
-              Từng bước xích lại gần nhau
-            </span>
-            <span style="font-size: 18px; color: var(--copper); font-weight: 700;">←</span>
+      // PAGE 13: Synthesis
+      case 'synthesis': {
+        diagramHTML = `
+          <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 20px; padding: 16px 0;">
+            ${visual.steps.map((step, i) => `
+              <div style="display: flex; align-items: baseline; gap: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--rule);">
+                <span style="font-size: 22px; font-weight: 700; color: var(--copper);">0${i + 1}</span>
+                <span style="font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1.35;">${step}</span>
+              </div>
+            `).join('')}
           </div>
-        </div>
-      `;
-      break;
-    }
+        `;
+        break;
+      }
 
-    // PAGE 13: Synthesis (Interlinked Sequence, Clean Editorial)
-    case 'synthesis': {
-      const pts = page.labels || ['Kinh tế thay đổi', 'Cơ cấu XH–GC thay đổi', 'Lợi ích vừa thống nhất vừa khác biệt'];
-      diagramHTML = `
-        <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 20px; padding: 16px 0;">
-          ${pts.map((pt, i) => `
-            <div style="display: flex; align-items: baseline; gap: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--rule);">
-              <span style="font-size: 22px; font-weight: 700; color: var(--copper);">0${i + 1}</span>
-              <span style="font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1.35;">${pt}</span>
+      // PAGE 14: Transition
+      case 'transition': {
+        diagramHTML = `
+          <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 20px;">
+            <div style="font-size: 64px; color: var(--copper); font-weight: 700; margin-bottom: 24px; line-height: 1;">
+              ?
             </div>
-          `).join('')}
-        </div>
-      `;
-      break;
-    }
-
-    // PAGE 14: Bridge / Question-only Transition to Book II
-    // MUST NOT assert any answer or necessity of alliance
-    case 'transition': {
-      diagramHTML = `
-        <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 20px;">
-          <div style="font-size: 64px; color: var(--copper); font-weight: 700; margin-bottom: 24px; line-height: 1;">
-            ?
+            <div style="width: 48px; height: 1px; background: var(--gold); margin-bottom: 24px;"></div>
+            <div style="font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: var(--copper); text-transform: uppercase;">
+              ${visual.label}
+            </div>
           </div>
-          <div style="width: 48px; height: 1px; background: var(--gold); margin-bottom: 24px;"></div>
-          <div style="font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: var(--copper); text-transform: uppercase;">
-            CÂU HỎI MỞ RA QUYỂN II
-          </div>
-        </div>
-      `;
-      break;
+        `;
+        break;
+      }
     }
-
-    default:
-      diagramHTML = '';
   }
 
   return `
@@ -584,7 +587,7 @@ function renderCoverFrontHTML(data) {
       <div class="cover-box">
         <div class="cover-frame-inner"></div>
         
-        <!-- Header Series -->
+        <!-- Series -->
         <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.2em; color: var(--copper); text-transform: uppercase; margin-bottom: 24px;">
           ${data.series}
         </div>
@@ -602,7 +605,7 @@ function renderCoverFrontHTML(data) {
           ${data.volume}
         </div>
 
-        <!-- Book Title: Strictly CƠ CẤU XÃ HỘI – GIAI CẤP -->
+        <!-- Book Title -->
         <h1 style="font-size: 46px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 36px; max-width: 540px; text-transform: uppercase;">
           ${data.title}
         </h1>
@@ -704,7 +707,7 @@ async function run() {
   // 2. Render Pages 01 to 14
   for (const p of pages) {
     const filename = `page-${String(p.number).padStart(2, '0')}.png`;
-    console.log(`[RenderBook1] Rendering ${filename} (layout: ${p.layout})...`);
+    console.log(`[RenderBook1] Rendering ${filename} (layout: ${p.layout}, visual: ${p.visual?.kind})...`);
     await page.setContent(renderPageHTML(p));
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({

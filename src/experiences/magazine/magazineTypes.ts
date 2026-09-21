@@ -50,6 +50,61 @@ export type MagazineEditorialLayout =
   | 'synthesis'
   | 'transition';
 
+export type Book1Visual =
+  | {
+      kind: 'equation';
+      terms: string[];
+      result: string;
+    }
+  | {
+      kind: 'constellation';
+      center: string;
+      nodes: { id: string; label: string; highlighted?: boolean }[];
+      highlightedCaption?: string;
+    }
+  | {
+      kind: 'class-system';
+      center: string;
+      nodes: string[];
+      caption?: string;
+    }
+  | {
+      kind: 'four-dimensions';
+      dimensions: string[];
+    }
+  | {
+      kind: 'orbital';
+      center: string;
+      nodes: string[];
+      direction: 'outward' | 'reciprocal';
+      caption: string;
+    }
+  | {
+      kind: 'flow';
+      steps: string[];
+    }
+  | {
+      kind: 'branching';
+      heading: string;
+      items: string[];
+    }
+  | {
+      kind: 'convergence';
+      leftLabel: string;
+      leftTitle: string;
+      rightLabel: string;
+      rightTitle: string;
+      convergenceLabel: string;
+    }
+  | {
+      kind: 'synthesis';
+      steps: string[];
+    }
+  | {
+      kind: 'transition';
+      label: string;
+    };
+
 export interface Book1EditorialPage {
   number: number;
   id: string;
@@ -60,4 +115,5 @@ export interface Book1EditorialPage {
   footer?: string;
   layout: MagazineEditorialLayout;
   sourceIds: string[];
+  visual?: Book1Visual;
 }
