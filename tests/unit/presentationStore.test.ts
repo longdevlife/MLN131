@@ -189,7 +189,7 @@ describe('PresentationStore Navigation Engine', () => {
   it('clamps Magazine pages', () => {
     usePresentationStore.getState().openBook(0);
     usePresentationStore.getState().setMagazinePage(99);
-    expect(usePresentationStore.getState().magazinePage).toBe(3);
+    expect(usePresentationStore.getState().magazinePage).toBe(8);
   });
 
   it('keeps legacy viewMode valid while Magazine is active', () => {

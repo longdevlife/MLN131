@@ -3,6 +3,7 @@ import {
   BOOK1_EDITORIAL_PAGE_COUNT,
   book1EditorialPages,
 } from '../../src/content/magazine/book1Editorial';
+import { getMagazineVolume } from '../../src/experiences/magazine/magazineModel';
 
 describe('Book I editorial content', () => {
   it('contains exactly fourteen numbered interior pages', () => {
@@ -41,5 +42,15 @@ describe('Book I editorial content', () => {
       ].join(' ').trim().split(/\s+/).filter(Boolean);
       expect(words.length).toBeLessThanOrEqual(65);
     }
+  });
+
+  it('matches Book I volume sheets page IDs in sequential order', () => {
+    const volume = getMagazineVolume(0)!;
+    const volumePageIds = volume.sheets.flatMap((sheet) => [
+      sheet.front.id,
+      sheet.back.id,
+    ]);
+    const editorialIds = book1EditorialPages.map((p) => p.id);
+    expect(volumePageIds).toEqual(editorialIds);
   });
 });
