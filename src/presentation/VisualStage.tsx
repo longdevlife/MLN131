@@ -43,6 +43,9 @@ export const VisualStage: React.FC = () => {
         onSelectBook={(index) => {
           usePresentationStore.setState({ selectedBook: index, chapterIndex: index });
         }}
+        onModeChange={(mode) => {
+          usePresentationStore.getState().setBookshelfMode(mode);
+        }}
       />
     );
   }

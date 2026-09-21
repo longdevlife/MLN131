@@ -7,6 +7,7 @@ declare global {
   interface Window {
     bookshelfRendererCreated?: number;
     bookshelfRendererDisposed?: number;
+    __BOOKSHELF_RENDERER__?: any;
   }
 }
 
@@ -29,6 +30,7 @@ export interface BookshelfSceneProps {
   className?: string;
   onSelectBook?: (index: number, book: BookRecord) => void;
   onOpenBook?: (index: number, book: BookRecord) => void;
+  onModeChange?: (mode: 'hero' | 'opening' | 'detail' | 'closing') => void;
   initialIndex?: number;
 }
 
@@ -36,6 +38,7 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
   className = '',
   onSelectBook,
   onOpenBook,
+  onModeChange,
   initialIndex = 0,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -44,15 +47,65 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
   const [status, setStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Diagnostic & stable attributes
+  const [mode, setMode] = useState<'hero' | 'opening' | 'detail' | 'closing'>('hero');
+  const [selectedIndex, setSelectedIndex] = useState(initialIndex);
+  const [isSettled, setIsSettled] = useState(true);
+
   // Stable callbacks using refs to prevent renderer recreation
   const onSelectBookRef = useRef(onSelectBook);
   onSelectBookRef.current = onSelectBook;
   const onOpenBookRef = useRef(onOpenBook);
   onOpenBookRef.current = onOpenBook;
+  const onModeChangeRef = useRef(onModeChange);
+  onModeChangeRef.current = onModeChange;
 
-  // Track initial index without triggering renderer re-creation
-  const initialIndexRef = useRef(initialIndex);
+  // Stale initial index fix: desiredIndexRef refreshed on EVERY render
+  const desiredIndexRef = useRef(initialIndex);
+  desiredIndexRef.current = initialIndex;
+
   const isFirstMount = useRef(true);
+
+  // Periodic settled & volume check
+  useEffect(() => {
+    let animId: number;
+    const checkSettled = () => {
+      try {
+        if (rendererRef.current) {
+          const settled = rendererRef.current.isSettled ? rendererRef.current.isSettled() : true;
+          const currentVol = rendererRef.current.getSelectedVolume?.();
+          const currentMode = rendererRef.current.getMode?.() || 'hero';
+
+          setIsSettled(settled);
+          if (typeof currentVol === 'number') {
+            setSelectedIndex(currentVol);
+          }
+
+          if (containerRef.current) {
+            containerRef.current.setAttribute('data-bookshelf-settled', String(settled));
+            containerRef.current.setAttribute('data-bookshelf-mode', currentMode);
+            if (typeof currentVol === 'number') {
+              containerRef.current.setAttribute('data-bookshelf-selected-index', String(currentVol));
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error in checkSettled:', err);
+      }
+    };
+
+    const intervalId = setInterval(checkSettled, 50);
+    const rafLoop = () => {
+      checkSettled();
+      animId = requestAnimationFrame(rafLoop);
+    };
+    animId = requestAnimationFrame(rafLoop);
+
+    return () => {
+      clearInterval(intervalId);
+      cancelAnimationFrame(animId);
+    };
+  }, []);
 
   // Initialize renderer exactly once per mount
   useEffect(() => {
@@ -73,9 +126,15 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
         if (disposed) return;
 
         const renderer = createBookshelfRenderer(container, canvas, {
-          initialIndex: initialIndexRef.current,
+          initialIndex: desiredIndexRef.current,
           onReady: () => {
-            if (!disposed) setStatus('ready');
+            if (!disposed) {
+              setStatus('ready');
+              if (rendererRef.current && desiredIndexRef.current !== undefined) {
+                rendererRef.current.selectVolume(desiredIndexRef.current, true);
+                setSelectedIndex(desiredIndexRef.current);
+              }
+            }
           },
           onError: (err: string | Error) => {
             if (!disposed) {
@@ -83,9 +142,18 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
               setStatus('unavailable');
             }
           },
+          onModeChange: (newMode: 'hero' | 'opening' | 'detail' | 'closing') => {
+            if (!disposed) {
+              setMode(newMode);
+              onModeChangeRef.current?.(newMode);
+            }
+          },
           onSelectionChange: (info: { index: number; total: number; title: string }) => {
-            if (!disposed && onSelectBookRef.current) {
-              onSelectBookRef.current(info.index, info as any);
+            if (!disposed) {
+              setSelectedIndex(info.index);
+              if (onSelectBookRef.current) {
+                onSelectBookRef.current(info.index, info as any);
+              }
             }
           },
           onOpenBook: (index: number, book: any) => {
@@ -96,6 +164,9 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
         });
 
         rendererRef.current = renderer;
+        if (typeof window !== 'undefined') {
+          window.__BOOKSHELF_RENDERER__ = renderer;
+        }
 
         renderer.ready?.catch((err: any) => {
           if (!disposed) {
@@ -119,9 +190,13 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
     resizeObserver.observe(container);
 
     return () => {
+      console.log('[DIAG_LIFECYCLE] initRenderer effect unmounting! disposed=true');
       disposed = true;
       if (typeof window !== 'undefined') {
         window.bookshelfRendererDisposed = (window.bookshelfRendererDisposed || 0) + 1;
+        if (window.__BOOKSHELF_RENDERER__ === rendererRef.current) {
+          delete window.__BOOKSHELF_RENDERER__;
+        }
       }
       resizeObserver.disconnect();
       try {
@@ -133,14 +208,15 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
     };
   }, []); // Run ONCE on mount
 
-  // Sync volume change without re-creating WebGL renderer
+  // Sync volume change without re-creating WebGL renderer (NORMAL SELECTION MUST BE SMOOTH: immediate = false)
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false;
       return;
     }
     if (rendererRef.current?.selectVolume) {
-      rendererRef.current.selectVolume(initialIndex, true);
+      rendererRef.current.selectVolume(initialIndex, false);
+      setSelectedIndex(initialIndex);
     }
   }, [initialIndex]);
 
@@ -149,6 +225,9 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
       className={`bookshelf-wrapper ${className}`}
       ref={containerRef}
       data-state={status}
+      data-bookshelf-mode={mode}
+      data-bookshelf-selected-index={selectedIndex}
+      data-bookshelf-settled={String(isSettled)}
       tabIndex={0}
       style={{
         position: 'relative',

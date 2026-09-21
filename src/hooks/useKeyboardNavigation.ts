@@ -171,6 +171,15 @@ export function useKeyboardNavigation() {
             usePresentationStore.getState().closeSourceDrawer();
             return;
           }
+          if (isLibrary) {
+            const shelfMode = usePresentationStore.getState().bookshelfMode;
+            if (shelfMode && shelfMode !== 'hero') {
+              // Bookshelf detail/opening/closing owns the first Escape!
+              const closeBtn = document.getElementById('close-detail') as HTMLButtonElement | null;
+              closeBtn?.click();
+              return;
+            }
+          }
           if (viewMode === 'chapter') {
             openLibrary();
           } else if (viewMode === 'library') {

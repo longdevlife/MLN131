@@ -208,69 +208,105 @@ test.describe('M0.1 — Bookshelf Vietnamese Typography Integrity Visual Gate', 
 
     // Open Library
     await page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i }).click();
-    await expect(page.locator('.bookshelf-wrapper')).toBeVisible();
+    const wrapper = page.locator('.bookshelf-wrapper');
+    await expect(wrapper).toBeVisible();
 
     // Wait for bookshelf canvas to be ready
     await page.waitForSelector('.bookshelf-wrapper[data-state="ready"]');
-    await page.waitForTimeout(1500);
+    await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'hero', { timeout: 10000 });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 10000 });
+
+    // Assert before detail
+    let storeState = await page.evaluate(() => (window as any).__PRESENTATION_STORE__?.getState?.());
+    expect(storeState.experienceMode).toBe('library');
+    expect(storeState.selectedBook).toBe(0);
 
     // ==========================================
-    // 1. Book I detail view -> open internal pages
+    // 1. Book I: opening Book I routes to Magazine
     // ==========================================
-    await page.evaluate(() => {
-      const inspectBtn = document.getElementById('inspect') as HTMLButtonElement | null;
-      inspectBtn?.click();
-    });
-    await page.waitForTimeout(2000);
+    const book1Btn = page.getByRole('button', { name: /Quyển I\b/i });
+    await book1Btn.click();
 
-    // Click open book (toggle-book) to view inner page texture Pn
-    await page.evaluate(() => {
-      const toggleBtn = document.getElementById('toggle-book') as HTMLButtonElement | null;
-      toggleBtn?.click();
-    });
-    await page.waitForTimeout(2500);
+    // Assert Magazine explicitly
+    const magazineRoot = page.locator('.magazine-experience');
+    await expect(magazineRoot).toBeVisible({ timeout: 10000 });
+    storeState = await page.evaluate(() => (window as any).__PRESENTATION_STORE__?.getState?.());
+    expect(storeState.experienceMode).toBe('magazine');
+    await expect(page.locator('.magazine-volume-title')).toContainText('Quyển I');
 
-    // Capture M0.3-book-I-inner-page.png
+    // Capture M0.3-book-I-inner-page.png (Magazine reading view)
     await page.screenshot({
       path: path.join(SCREENSHOT_DIR, 'M0.3-book-I-inner-page.png'),
       fullPage: false,
     });
 
+    // Escape back to Library
+    await page.keyboard.press('Escape');
+    await expect(wrapper).toBeVisible({ timeout: 10000 });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'hero', { timeout: 10000 });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 10000 });
+
     // ==========================================
     // 2. Return to shelf -> select Book II -> open internal pages
     // ==========================================
-    await page.evaluate(() => {
-      const closeBtn = document.getElementById('close-detail') as HTMLButtonElement | null;
-      closeBtn?.click();
-    });
-    await page.waitForTimeout(2000);
-
-    // Select Book II via presentationStore
-    await page.evaluate(() => {
-      const store = (window as any).__PRESENTATION_STORE__?.getState?.();
-      store?.selectBook(1);
-    });
-    await page.waitForTimeout(1500);
+    // Select Book II via ChapterRail
+    const book2Btn = page.getByRole('button', { name: /Quyển II/i });
+    await book2Btn.click();
+    await expect(wrapper).toHaveAttribute('data-bookshelf-selected-index', '1', { timeout: 5000 });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 10000 });
 
     // Inspect Book II
     await page.evaluate(() => {
       const inspectBtn = document.getElementById('inspect') as HTMLButtonElement | null;
       inspectBtn?.click();
     });
-    await page.waitForTimeout(2000);
+    await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'detail', { timeout: 10000 });
 
     // Toggle open Book II
     await page.evaluate(() => {
       const toggleBtn = document.getElementById('toggle-book') as HTMLButtonElement | null;
       toggleBtn?.click();
     });
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(2000);
 
     // Capture M0.3-book-II-inner-page.png
     await page.screenshot({
       path: path.join(SCREENSHOT_DIR, 'M0.3-book-II-inner-page.png'),
       fullPage: false,
     });
+
+    // Close detail via Escape
+    await page.keyboard.press('Escape');
+    await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'hero', { timeout: 10000 });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-selected-index', '1', { timeout: 5000 });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 10000 });
+
+    storeState = await page.evaluate(() => (window as any).__PRESENTATION_STORE__?.getState?.());
+    expect(storeState.experienceMode).toBe('library');
+    expect(storeState.selectedBook).toBe(1);
+
+    // ==========================================
+    // 3. Repeat for Book III
+    // ==========================================
+    const book3Btn = page.getByRole('button', { name: /Quyển III/i });
+    await book3Btn.click();
+    await expect(wrapper).toHaveAttribute('data-bookshelf-selected-index', '2', { timeout: 5000 });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 10000 });
+
+    await page.evaluate(() => {
+      const inspectBtn = document.getElementById('inspect') as HTMLButtonElement | null;
+      inspectBtn?.click();
+    });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'detail', { timeout: 10000 });
+
+    await page.keyboard.press('Escape');
+    await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'hero', { timeout: 10000 });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-selected-index', '2', { timeout: 5000 });
+    await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 10000 });
+
+    storeState = await page.evaluate(() => (window as any).__PRESENTATION_STORE__?.getState?.());
+    expect(storeState.experienceMode).toBe('library');
+    expect(storeState.selectedBook).toBe(2);
 
     // Verification assertions
     expect(externalForbiddenRequests).toHaveLength(0);

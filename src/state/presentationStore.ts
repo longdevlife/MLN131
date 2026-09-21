@@ -15,11 +15,13 @@ export type ExperienceMode =
   | 'interactive'
   | 'museum';
 export type QualityTier = 'high' | 'medium' | 'safe';
+export type BookshelfMode = 'hero' | 'opening' | 'detail' | 'closing';
 
 export interface PresentationState {
   viewMode: ViewMode;
   experienceMode: ExperienceMode;
   selectedBook: number;
+  bookshelfMode: BookshelfMode;
   magazinePage: number;
   magazineViewMode: MagazineViewMode;
   chapterIndex: number;
@@ -37,6 +39,7 @@ export interface PresentationState {
   openSourceDrawer: () => void;
   closeSourceDrawer: () => void;
   toggleSourceDrawer: () => void;
+  setBookshelfMode: (mode: BookshelfMode) => void;
   // Navigation actions
   startPresentation: () => void;
   openCover: () => void;
@@ -74,6 +77,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   viewMode: 'cover',
   experienceMode: 'cover',
   selectedBook: 0,
+  bookshelfMode: 'hero',
   magazinePage: 0,
   magazineViewMode: 'showcase',
   chapterIndex: 0,
@@ -93,19 +97,21 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   openSourceDrawer: () => set({ isSourceDrawerOpen: true }),
   closeSourceDrawer: () => set({ isSourceDrawerOpen: false }),
   toggleSourceDrawer: () => set((state) => ({ isSourceDrawerOpen: !state.isSourceDrawerOpen })),
+  setBookshelfMode: (mode: BookshelfMode) => set({ bookshelfMode: mode }),
 
   startPresentation: () => {
-    set({ experienceMode: 'library', viewMode: 'library', direction: 1 });
+    set({ experienceMode: 'library', viewMode: 'library', bookshelfMode: 'hero', direction: 1 });
   },
 
   openCover: () => {
-    set({ experienceMode: 'cover', viewMode: 'cover', direction: -1 });
+    set({ experienceMode: 'cover', viewMode: 'cover', bookshelfMode: 'hero', direction: -1 });
   },
 
   openLibrary: () => {
     set({
       experienceMode: 'library',
       viewMode: 'library',
+      bookshelfMode: 'hero',
       chapterIndex: get().selectedBook,
       direction: -1,
     });
@@ -151,6 +157,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     set({
       experienceMode: 'library',
       viewMode: 'library',
+      bookshelfMode: 'hero',
       chapterIndex: get().selectedBook,
       magazinePage: 0,
       direction: -1,
