@@ -200,4 +200,81 @@ test.describe('M0.1 — Bookshelf Vietnamese Typography Integrity Visual Gate', 
     await expect(page.locator('.magazine-experience')).toBeVisible();
     await expect(page.locator('.magazine-volume-title')).toContainText('Quyển I');
   });
+
+  test('M0.3 — Generate exact 2 internal page verification screenshots (Book I and Book II)', async ({ page }) => {
+    test.setTimeout(180000);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto('/?tier=high');
+
+    // Open Library
+    await page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i }).click();
+    await expect(page.locator('.bookshelf-wrapper')).toBeVisible();
+
+    // Wait for bookshelf canvas to be ready
+    await page.waitForSelector('.bookshelf-wrapper[data-state="ready"]');
+    await page.waitForTimeout(1500);
+
+    // ==========================================
+    // 1. Book I detail view -> open internal pages
+    // ==========================================
+    await page.evaluate(() => {
+      const inspectBtn = document.getElementById('inspect') as HTMLButtonElement | null;
+      inspectBtn?.click();
+    });
+    await page.waitForTimeout(2000);
+
+    // Click open book (toggle-book) to view inner page texture Pn
+    await page.evaluate(() => {
+      const toggleBtn = document.getElementById('toggle-book') as HTMLButtonElement | null;
+      toggleBtn?.click();
+    });
+    await page.waitForTimeout(2500);
+
+    // Capture M0.3-book-I-inner-page.png
+    await page.screenshot({
+      path: path.join(SCREENSHOT_DIR, 'M0.3-book-I-inner-page.png'),
+      fullPage: false,
+    });
+
+    // ==========================================
+    // 2. Return to shelf -> select Book II -> open internal pages
+    // ==========================================
+    await page.evaluate(() => {
+      const closeBtn = document.getElementById('close-detail') as HTMLButtonElement | null;
+      closeBtn?.click();
+    });
+    await page.waitForTimeout(2000);
+
+    // Select Book II via presentationStore
+    await page.evaluate(() => {
+      const store = (window as any).__PRESENTATION_STORE__?.getState?.();
+      store?.selectBook(1);
+    });
+    await page.waitForTimeout(1500);
+
+    // Inspect Book II
+    await page.evaluate(() => {
+      const inspectBtn = document.getElementById('inspect') as HTMLButtonElement | null;
+      inspectBtn?.click();
+    });
+    await page.waitForTimeout(2000);
+
+    // Toggle open Book II
+    await page.evaluate(() => {
+      const toggleBtn = document.getElementById('toggle-book') as HTMLButtonElement | null;
+      toggleBtn?.click();
+    });
+    await page.waitForTimeout(2500);
+
+    // Capture M0.3-book-II-inner-page.png
+    await page.screenshot({
+      path: path.join(SCREENSHOT_DIR, 'M0.3-book-II-inner-page.png'),
+      fullPage: false,
+    });
+
+    // Verification assertions
+    expect(externalForbiddenRequests).toHaveLength(0);
+    expect(pageErrors).toHaveLength(0);
+    expect(consoleErrors).toHaveLength(0);
+  });
 });
