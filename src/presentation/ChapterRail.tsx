@@ -33,6 +33,15 @@ export const ChapterRail: React.FC = () => {
     setQualityTier(qualityTier === 'safe' ? 'high' : 'safe');
   };
 
+  const handleLibraryClick = () => {
+    const isLibrary = experienceMode === 'library' || viewMode === 'library';
+    if (isLibrary && bookshelfMode !== 'hero') {
+      requestBookshelfNavigation({ type: 'close-to-library' });
+      return;
+    }
+    openLibrary();
+  };
+
   return (
     <nav
       className="chapter-rail-dock"
@@ -57,7 +66,7 @@ export const ChapterRail: React.FC = () => {
       {/* Return to library button */}
       <button
         type="button"
-        onClick={openLibrary}
+        onClick={handleLibraryClick}
         title="Quay lại Thư viện (phím O / Esc)"
         style={{
           display: 'flex',

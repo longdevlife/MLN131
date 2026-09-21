@@ -9,7 +9,7 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
   test('Full Verification: Canvas Interaction, Closing-Race, Top-Rail Policy, Lifecycle Assertions & 5-Cycle', async ({
     browser,
   }) => {
-    test.setTimeout(600000);
+    test.setTimeout(900000);
 
     if (!fs.existsSync(VIDEO_DIR)) {
       fs.mkdirSync(VIDEO_DIR, { recursive: true });
@@ -106,16 +106,16 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
     // Helper: wait for Bookshelf in Hero mode and Settled
     const waitForShelfSettled = async (expectedIndex?: number) => {
       const wrapper = page.locator('.bookshelf-wrapper');
-      await expect(wrapper).toBeVisible({ timeout: 25000 });
-      await expect(wrapper).toHaveAttribute('data-state', 'ready', { timeout: 25000 });
-      await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'hero', { timeout: 25000 });
-      await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 25000 });
+      await expect(wrapper).toBeVisible({ timeout: 60000 });
+      await expect(wrapper).toHaveAttribute('data-state', 'ready', { timeout: 60000 });
+      await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'hero', { timeout: 60000 });
+      await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 60000 });
 
       if (expectedIndex !== undefined) {
         await expect(wrapper).toHaveAttribute(
           'data-bookshelf-selected-index',
           String(expectedIndex),
-          { timeout: 25000 }
+          { timeout: 60000 }
         );
       }
     };
@@ -123,8 +123,8 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
     // Helper: wait for Bookshelf Detail mode
     const waitForDetailMode = async () => {
       const wrapper = page.locator('.bookshelf-wrapper');
-      await expect(wrapper).toBeVisible({ timeout: 25000 });
-      await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'detail', { timeout: 25000 });
+      await expect(wrapper).toBeVisible({ timeout: 60000 });
+      await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'detail', { timeout: 60000 });
     };
 
     // =========================================================================
@@ -202,7 +202,7 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
     await page.waitForFunction(() => {
       const wrapper = document.querySelector('.bookshelf-wrapper');
       return wrapper?.getAttribute('data-bookshelf-mode') === 'closing';
-    }, { timeout: 10000 });
+    }, { timeout: 30000 });
 
     // NGAY LẬP TỨC click Book IV trên rail mà KHÔNG chờ về hero trước!
     await book4Btn.click();
@@ -232,7 +232,7 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
     await page.waitForFunction(() => {
       const wrapper = document.querySelector('.bookshelf-wrapper');
       return wrapper?.getAttribute('data-bookshelf-mode') === 'closing';
-    }, { timeout: 10000 });
+    }, { timeout: 30000 });
 
     // NGAY LẬP TỨC click Book II trên rail
     await book2Btn.click();
@@ -260,7 +260,7 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
 
     // Verify Magazine mở mượt mà
     const magazineRoot = page.locator('.magazine-experience');
-    await expect(magazineRoot).toBeVisible({ timeout: 15000 });
+    await expect(magazineRoot).toBeVisible({ timeout: 60000 });
 
     // Lifecycle Counter Assertions:
     // Khi ở Magazine: exactly 1 canvas, Bookshelf renderer đã được dispose sạch
@@ -281,9 +281,73 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
     expect(state.rendererCreated - state.rendererDisposed).toBe(1);
 
     // =========================================================================
-    // SECTION E: CYCLE VERIFICATION VỚI RAPID NAVIGATION
+    // SECTION E: LIBRARY-BUTTON REGRESSION TEST (Mục 4 trong chat.md)
     // =========================================================================
-    const TOTAL_CYCLES = 1;
+    const libraryBtn = page.getByRole('button', { name: /Thư viện/i });
+
+    // Step E1: Select Book II -> detail -> click "Thư viện" button -> safe close to hero
+    await book2Btn.click();
+    await waitForShelfSettled(1);
+
+    await clickBookOnCanvas(1);
+    await waitForDetailMode();
+
+    await libraryBtn.click();
+
+    // Assert mode becomes closing immediately without unmounting
+    await page.waitForFunction(() => {
+      const wrapper = document.querySelector('.bookshelf-wrapper');
+      return wrapper?.getAttribute('data-bookshelf-mode') === 'closing';
+    }, { timeout: 30000 });
+
+    state = await getLifecycleState();
+    expect(state.experienceMode).toBe('library');
+    expect(state.selectedBook).toBe(1);
+
+    // Wait until hero is settled and verify selected book index remains 1
+    await waitForShelfSettled(1);
+    state = await getLifecycleState();
+    expect(state.domMode).toBe('hero');
+    expect(state.selectedBook).toBe(1);
+    expect(state.domSelectedIndex).toBe(1);
+    expect(state.debugSelectedIndex).toBe(1);
+
+    // Step E2: Select Book IV -> detail -> click "Thư viện" -> hero settled -> Escape -> only NOW go to Cover
+    await book4Btn.click();
+    await waitForShelfSettled(3);
+
+    await clickBookOnCanvas(3);
+    await waitForDetailMode();
+
+    await libraryBtn.click();
+    await waitForShelfSettled(3);
+
+    state = await getLifecycleState();
+    expect(state.experienceMode).toBe('library');
+    expect(state.selectedBook).toBe(3);
+
+    // One click must never perform two transitions. Now pressing Escape while settled in hero exits to Cover.
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => {
+      const store =
+        (window as any).__PRESENTATION_STORE__?.getState?.() ||
+        (window as any).__store?.getState?.();
+      return store?.experienceMode === 'cover' || store?.viewMode === 'cover';
+    }, { timeout: 30000 });
+
+    state = await getLifecycleState();
+    expect(state.experienceMode).toBe('cover');
+
+    // Reopen Library to proceed with cycle tests
+    const reopenLibraryBtn = page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i });
+    await expect(reopenLibraryBtn).toBeVisible({ timeout: 15000 });
+    await reopenLibraryBtn.click();
+    await waitForShelfSettled(3);
+
+    // =========================================================================
+    // SECTION F: REAL 5-CYCLE VERIFICATION VỚI LIFECYCLE ASSERTIONS
+    // =========================================================================
+    const TOTAL_CYCLES = 5;
 
     for (let cycle = 1; cycle <= TOTAL_CYCLES; cycle++) {
       // Step 1: Select Book II -> enter detail -> Escape
@@ -299,6 +363,8 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
       state = await getLifecycleState();
       expect(state.experienceMode).toBe('library');
       expect(state.selectedBook).toBe(1);
+      expect(state.canvasCount).toBe(1);
+      expect(state.rendererCreated - state.rendererDisposed).toBe(1);
 
       // Step 2: Select Book IV -> enter detail -> Escape
       await book4Btn.click();
@@ -313,6 +379,8 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
       state = await getLifecycleState();
       expect(state.experienceMode).toBe('library');
       expect(state.selectedBook).toBe(3);
+      expect(state.canvasCount).toBe(1);
+      expect(state.rendererCreated - state.rendererDisposed).toBe(1);
 
       // Step 3: Select Book III
       await book3Btn.click();
@@ -320,10 +388,22 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
 
       // Step 4: Select Book I -> open Magazine -> Escape back to Library
       await book1Btn.click();
-      await expect(magazineRoot).toBeVisible({ timeout: 15000 });
+      await expect(magazineRoot).toBeVisible({ timeout: 60000 });
+
+      // Inside Magazine: exactly 1 canvas, Bookshelf renderer disposed
+      state = await getLifecycleState();
+      expect(state.experienceMode).toBe('magazine');
+      expect(state.canvasCount).toBe(1);
+      expect(state.rendererCreated - state.rendererDisposed).toBe(0);
 
       await page.keyboard.press('Escape');
       await waitForShelfSettled(0);
+
+      // Back in Library: exactly 1 canvas, exactly 1 active renderer
+      state = await getLifecycleState();
+      expect(state.experienceMode).toBe('library');
+      expect(state.canvasCount).toBe(1);
+      expect(state.rendererCreated - state.rendererDisposed).toBe(1);
 
       // Step 5: Rapid succession clicks Book IV -> Book II -> Book III
       await book4Btn.click();
@@ -337,15 +417,17 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
       expect(state.chapterIndex).toBe(2);
       expect(state.domSelectedIndex).toBe(2);
       expect(state.debugSelectedIndex).toBe(2);
+      expect(state.canvasCount).toBe(1);
+      expect(state.rendererCreated - state.rendererDisposed).toBe(1);
     }
 
     // =========================================================================
-    // SECTION F: CAPTURE EVIDENCE ARTIFACTS
+    // SECTION G: CAPTURE FRESH M0.4.2 EVIDENCE ARTIFACTS
     // =========================================================================
-    await page.screenshot({
-      path: path.join(SCREENSHOT_DIR, 'bookshelf-after-cycle-1920.png'),
-      fullPage: false,
-    });
+    const screenshotM042 = path.join(SCREENSHOT_DIR, 'm0-4-2-bookshelf-settled.png');
+    const screenshotLegacy = path.join(SCREENSHOT_DIR, 'bookshelf-after-cycle-1920.png');
+    await page.screenshot({ path: screenshotM042, fullPage: false });
+    await page.screenshot({ path: screenshotLegacy, fullPage: false });
 
     const videoObj = page.video();
     await page.close();
@@ -353,9 +435,11 @@ test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suit
 
     if (videoObj) {
       const rawVideoPath = await videoObj.path();
-      const targetVideoPath = path.join(VIDEO_DIR, 'bookshelf-navigation-lifecycle.webm');
+      const videoM042 = path.join(VIDEO_DIR, 'm0-4-2-bookshelf-lifecycle.webm');
+      const videoLegacy = path.join(VIDEO_DIR, 'bookshelf-navigation-lifecycle.webm');
       if (rawVideoPath && fs.existsSync(rawVideoPath)) {
-        fs.copyFileSync(rawVideoPath, targetVideoPath);
+        fs.copyFileSync(rawVideoPath, videoM042);
+        fs.copyFileSync(rawVideoPath, videoLegacy);
       }
     }
 

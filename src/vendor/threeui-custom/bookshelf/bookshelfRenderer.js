@@ -2019,6 +2019,8 @@ function fa(Nr, m, He = {}) {
       pendingNavigation = null;
       if (nav.type === "open-book") {
         He.onOpenBook?.(nav.index, S[nav.index]);
+      } else if (nav.type === "close-to-library") {
+        // Safe close-to-library completed: physical book returned, mode is hero, remain at current book O
       } else {
         ar(nav.index);
       }
@@ -2310,8 +2312,8 @@ function fa(Nr, m, He = {}) {
     },
     requestNavigation: (intent) => {
       if (!D || jt) return { accepted: false, queued: false };
-      const targetIdx = We(intent.index, S.length);
       const type = intent.type || "select";
+      const targetIdx = intent.index !== undefined ? We(intent.index, S.length) : O;
       if (b !== "hero") {
         pendingNavigation = { type, index: targetIdx };
         if (b === "opening" || b === "detail") {
@@ -2321,6 +2323,9 @@ function fa(Nr, m, He = {}) {
       }
       if (type === "open-book") {
         He.onOpenBook?.(targetIdx, S[targetIdx]);
+        return { accepted: true, queued: false };
+      }
+      if (type === "close-to-library") {
         return { accepted: true, queued: false };
       }
       ar(targetIdx);

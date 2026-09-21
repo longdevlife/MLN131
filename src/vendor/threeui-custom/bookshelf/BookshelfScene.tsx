@@ -108,31 +108,6 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
     }
   };
 
-  // Single lightweight mechanism only for settled-state transitions (no duplicate polling, no interval)
-  useEffect(() => {
-    let animId: number;
-    let lastSettled: boolean | null = null;
-
-    const checkSettledLoop = () => {
-      if (rendererRef.current) {
-        const settled = rendererRef.current.isSettled ? rendererRef.current.isSettled() : true;
-        if (containerRef.current) {
-          containerRef.current.setAttribute('data-bookshelf-settled', String(settled));
-        }
-        if (settled !== lastSettled) {
-          lastSettled = settled;
-          setIsSettled(settled);
-        }
-      }
-      animId = requestAnimationFrame(checkSettledLoop);
-    };
-
-    animId = requestAnimationFrame(checkSettledLoop);
-    return () => {
-      cancelAnimationFrame(animId);
-    };
-  }, []);
-
   // Initialize renderer exactly once per mount
   useEffect(() => {
     const container = containerRef.current;

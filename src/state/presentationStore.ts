@@ -19,6 +19,7 @@ export type BookshelfMode = 'hero' | 'opening' | 'detail' | 'closing';
 export type BookshelfNavigationIntent =
   | { type: 'select'; index: number }
   | { type: 'open-book'; index: number }
+  | { type: 'close-to-library' }
   | null;
 
 export interface PresentationState {
