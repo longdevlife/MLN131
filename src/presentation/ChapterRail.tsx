@@ -5,10 +5,14 @@ import { Library, Maximize, Minimize, ShieldCheck } from 'lucide-react';
 
 export const ChapterRail: React.FC = () => {
   const viewMode = usePresentationStore((state) => state.viewMode);
+  const experienceMode = usePresentationStore((state) => state.experienceMode);
+  const selectedBook = usePresentationStore((state) => state.selectedBook);
   const chapterIndex = usePresentationStore((state) => state.chapterIndex);
   const isFullscreen = usePresentationStore((state) => state.isFullscreen);
   const qualityTier = usePresentationStore((state) => state.qualityTier);
   const openLibrary = usePresentationStore((state) => state.openLibrary);
+  const openBook = usePresentationStore((state) => state.openBook);
+  const selectBook = usePresentationStore((state) => state.selectBook);
   const jumpToChapter = usePresentationStore((state) => state.jumpToChapter);
   const setFullscreen = usePresentationStore((state) => state.setFullscreen);
   const setQualityTier = usePresentationStore((state) => state.setQualityTier);
@@ -77,14 +81,28 @@ export const ChapterRail: React.FC = () => {
       {/* 4 Books / Chapters */}
       <div style={{ display: 'flex', gap: '6px' }}>
         {chapters.map((ch, idx) => {
-          const isActive = viewMode === 'chapter' && chapterIndex === idx;
+          const isLibrary = experienceMode === 'library' || viewMode === 'library';
+          const isActive = isLibrary ? selectedBook === idx : (viewMode === 'chapter' && chapterIndex === idx);
+
+          const handleBookClick = () => {
+            if (isLibrary) {
+              if (idx === 0) {
+                openBook(0);
+              } else {
+                selectBook(idx);
+              }
+            } else {
+              jumpToChapter(idx);
+            }
+          };
 
           return (
             <button
               key={ch.id}
               type="button"
-              onClick={() => jumpToChapter(idx)}
+              onClick={handleBookClick}
               title={`Quyển ${ch.roman}: ${ch.title} (phím ${idx + 1})`}
+              aria-label={`Quyển ${ch.roman}: ${ch.title}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',

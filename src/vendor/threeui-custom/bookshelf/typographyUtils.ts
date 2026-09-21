@@ -126,7 +126,7 @@ export function fitTextToWidth(
   }
 
   let currentFontSize = startSize;
-  let bestResult: { lines: string[]; maxLineWidth: number } | null = null;
+  let bestWrap: { lines: string[]; maxLineWidth: number } | null = null;
   let fits = false;
 
   while (currentFontSize >= minSize) {
@@ -137,35 +137,25 @@ export function fitTextToWidth(
     const withinWidth = wrapped.maxLineWidth <= maxWidth;
 
     if (withinLines && withinWidth) {
-      bestResult = wrapped;
+      bestWrap = wrapped;
       fits = true;
       break;
     }
 
-    // Keep the least-overflowing wrap in case even minSize exceeds
-    if (!bestResult || wrapped.lines.length < bestResult.lines.length) {
-      bestResult = wrapped;
-    }
-
+    bestWrap = wrapped;
     currentFontSize -= step;
   }
 
-  // If even minSize did not satisfy line count, enforce maxLines
+  // If a fit was found, use that currentFontSize.
+  // If not, clamp at minSize, re-wrap at minSize, and report fits = false.
+  // CRITICAL: NEVER discard words (no slice(0, maxLines))!
   const finalFontSize = fits ? currentFontSize : minSize;
   ctx.font = buildFontString(finalFontSize, fontFamily, fontWeight, fontStyle);
-  let finalWrap = bestResult || wrapText(ctx, text, maxWidth);
-
-  // If still exceeds maxLines at minSize, truncate into maxLines
-  if (finalWrap.lines.length > maxLines) {
-    const forcedLines = finalWrap.lines.slice(0, maxLines);
-    finalWrap = {
-      lines: forcedLines,
-      maxLineWidth: Math.max(...forcedLines.map((l) => ctx.measureText(l).width), 0),
-    };
-  }
+  const finalWrap = fits && bestWrap ? bestWrap : wrapText(ctx, text, maxWidth);
 
   const lineHeightPx = Math.round(finalFontSize * lineHeight);
   const totalHeightPx = finalWrap.lines.length * lineHeightPx;
+  const isSatisfied = fits && finalWrap.lines.length <= maxLines && finalWrap.maxLineWidth <= maxWidth;
 
   return {
     text,
@@ -174,7 +164,7 @@ export function fitTextToWidth(
     lineHeightPx,
     totalHeightPx,
     maxLineWidth: finalWrap.maxLineWidth,
-    fits,
+    fits: isSatisfied,
   };
 }
 

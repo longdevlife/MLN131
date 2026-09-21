@@ -43,6 +43,7 @@ export interface PresentationState {
   openLibrary: () => void;
   openChapter: (chapterIndex: number, sceneIndex?: number) => void;
   openBook: (index: number) => void;
+  selectBook: (index: number) => void;
   closeMagazine: () => void;
   setMagazinePage: (page: number) => void;
   setMagazineViewMode: (mode: MagazineViewMode) => void;
@@ -136,6 +137,16 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     });
   },
 
+  selectBook: (index: number) => {
+    const selectedBook = Math.max(0, Math.min(3, index));
+    set({
+      selectedBook,
+      chapterIndex: selectedBook,
+      experienceMode: 'library',
+      viewMode: 'library',
+    });
+  },
+
   closeMagazine: () => {
     set({
       experienceMode: 'library',
@@ -205,19 +216,8 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       return;
     }
 
-    if (state.viewMode === 'library') {
-      const targetChapter = chapters[state.chapterIndex];
-      if (!targetChapter || targetChapter.scenes.length === 0) {
-        // Empty chapter guard: remain in library, keep book selected/highlighted
-        return;
-      }
-      set({
-        viewMode: 'chapter',
-        chapterIndex: state.chapterIndex,
-        sceneIndex: 0,
-        beatIndex: 0,
-        direction: 1,
-      });
+    if (state.experienceMode === 'library' || state.viewMode === 'library') {
+      get().openBook(state.chapterIndex);
       return;
     }
 

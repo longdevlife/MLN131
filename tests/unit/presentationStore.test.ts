@@ -221,6 +221,37 @@ describe('PresentationStore Navigation Engine', () => {
     expect(state.experienceMode).toBe('library');
     expect(state.selectedBook).toBe(0);
   });
+
+  it('state regression: selectBook(3) keeps experienceMode=library and Space/next does NOT open Book I', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+
+    // Select Book IV (index 3)
+    store.selectBook(3);
+    let state = usePresentationStore.getState();
+    expect(state.selectedBook).toBe(3);
+    expect(state.chapterIndex).toBe(3);
+    expect(state.experienceMode).toBe('library');
+
+    // Space / next() in Library must NOT open Book I when Book IV is selected
+    store.next();
+    state = usePresentationStore.getState();
+    expect(state.selectedBook).toBe(3);
+    expect(state.chapterIndex).toBe(3);
+    expect(state.experienceMode).toBe('library');
+    expect(state.magazinePage).toBe(0);
+  });
+
+  it('selectBook(0) followed by openBook(0) transitions to experienceMode=magazine', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    store.selectBook(0);
+    store.openBook(0);
+
+    const state = usePresentationStore.getState();
+    expect(state.selectedBook).toBe(0);
+    expect(state.experienceMode).toBe('magazine');
+  });
 });
 
 

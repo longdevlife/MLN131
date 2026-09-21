@@ -364,15 +364,15 @@ function fa(Nr, m, He = {}) {
       fontFamily: 'MLNBookSans',
       fontWeight: 700
     });
+    if (!fittedTitle.fits) {
+      console.warn(`[Bookshelf:Typography] Front cover title "${normTitle}" exceeded bounds (fits=false). Rendering all lines without dropping words.`);
+    }
     t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
     const centerY = o.height * 0.72;
-    if (fittedTitle.lines.length === 1) {
-      t.fillText(fittedTitle.lines[0], o.width / 2, centerY);
-    } else if (fittedTitle.lines.length === 2) {
-      const halfGap = (fittedTitle.lineHeightPx * 0.5);
-      t.fillText(fittedTitle.lines[0], o.width / 2, centerY - halfGap);
-      t.fillText(fittedTitle.lines[1], o.width / 2, centerY + halfGap);
-    }
+    const startY = centerY - ((fittedTitle.lines.length - 1) * fittedTitle.lineHeightPx * 0.5);
+    fittedTitle.lines.forEach((line, idx) => {
+      t.fillText(line, o.width / 2, startY + idx * fittedTitle.lineHeightPx);
+    });
     const fittedDiscipline = fitSingleLineText(t, normDiscipline.toUpperCase(), {
       maxWidth: 580,
       startSize: 16,
@@ -403,13 +403,14 @@ function fa(Nr, m, He = {}) {
       fontFamily: 'MLNBookSans',
       fontWeight: 700
     });
-    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
-    if (fittedTitle.lines.length === 1) {
-      t.fillText(fittedTitle.lines[0], 58, 1010);
-    } else {
-      t.fillText(fittedTitle.lines[0], 58, 1010 - fittedTitle.lineHeightPx);
-      t.fillText(fittedTitle.lines[1], 58, 1010);
+    if (!fittedTitle.fits) {
+      console.warn(`[Bookshelf:Typography] Secondary title "${normTitle}" exceeded bounds (fits=false). Rendering all lines without dropping words.`);
     }
+    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
+    const startY = 1010 - ((fittedTitle.lines.length - 1) * fittedTitle.lineHeightPx);
+    fittedTitle.lines.forEach((line, idx) => {
+      t.fillText(line, 58, startY + idx * fittedTitle.lineHeightPx);
+    });
     const fittedDiscipline = fitSingleLineText(t, normDiscipline.toUpperCase(), {
       maxWidth: 610,
       startSize: 14,
@@ -773,13 +774,14 @@ function fa(Nr, m, He = {}) {
       fontWeight: 700
     });
 
-    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
-    if (fittedTitle.lines.length === 1) {
-      t.fillText(fittedTitle.lines[0], 68, 956);
-    } else {
-      t.fillText(fittedTitle.lines[0], 68, 956 - fittedTitle.lineHeightPx);
-      t.fillText(fittedTitle.lines[1], 68, 956);
+    if (!fittedTitle.fits) {
+      console.warn(`[Bookshelf:Typography] Working volume title "${normTitle}" exceeded bounds (fits=false). Rendering all lines without dropping words.`);
     }
+    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
+    const startY = 956 - ((fittedTitle.lines.length - 1) * fittedTitle.lineHeightPx);
+    fittedTitle.lines.forEach((line, idx) => {
+      t.fillText(line, 68, startY + idx * fittedTitle.lineHeightPx);
+    });
 
     const fittedDiscipline = fitSingleLineText(t, normDiscipline.toUpperCase(), {
       maxWidth: 610,

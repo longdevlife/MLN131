@@ -38,6 +38,19 @@ test.describe('M0.1 — Bookshelf Vietnamese Typography Integrity Visual Gate', 
       ) {
         externalForbiddenRequests.push(url);
       }
+
+      try {
+        const parsed = new URL(url);
+        if (
+          parsed.protocol.startsWith('http') &&
+          parsed.hostname !== 'localhost' &&
+          parsed.hostname !== '127.0.0.1'
+        ) {
+          externalForbiddenRequests.push(url);
+        }
+      } catch {
+        // ignore data: or blob:
+      }
     });
   });
 
@@ -123,9 +136,68 @@ test.describe('M0.1 — Bookshelf Vietnamese Typography Integrity Visual Gate', 
       fullPage: false,
     });
 
-    // Verification assertions
+    // Verification assertions: zero forbidden host and zero external origin requests
     expect(externalForbiddenRequests).toHaveLength(0);
     expect(pageErrors).toHaveLength(0);
     expect(consoleErrors).toHaveLength(0);
+  });
+
+  test('ChapterRail Library interaction: clicking Book IV selects Book IV and Space does NOT open Book I', async ({ page }) => {
+    test.setTimeout(120000);
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto('/?tier=high');
+
+    // Open Library
+    await page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i }).click();
+    await expect(page.locator('.bookshelf-wrapper')).toBeVisible();
+
+    // Wait for bookshelf to be ready
+    await page.waitForSelector('.bookshelf-wrapper[data-state="ready"]');
+    await page.waitForTimeout(1000);
+
+    // Click Book IV in ChapterRail dock
+    const book4Btn = page.getByRole('button', { name: /Quyển IV/i });
+    await expect(book4Btn).toBeVisible();
+    await book4Btn.click();
+
+    // Verify state in store
+    await expect.poll(async () => {
+      return await page.evaluate(() => {
+        const store = (window as any).__PRESENTATION_STORE__?.getState?.();
+        return {
+          selectedBook: store?.selectedBook,
+          chapterIndex: store?.chapterIndex,
+          experienceMode: store?.experienceMode,
+        };
+      });
+    }).toEqual({
+      selectedBook: 3,
+      chapterIndex: 3,
+      experienceMode: 'library',
+    });
+
+    // Press Space in Library while Book IV is selected
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(500);
+
+    // Assert Space did NOT open Book I (remains in library)
+    const stateAfterSpace = await page.evaluate(() => {
+      const store = (window as any).__PRESENTATION_STORE__?.getState?.();
+      return {
+        selectedBook: store?.selectedBook,
+        chapterIndex: store?.chapterIndex,
+        experienceMode: store?.experienceMode,
+      };
+    });
+    expect(stateAfterSpace.selectedBook).toBe(3);
+    expect(stateAfterSpace.chapterIndex).toBe(3);
+    expect(stateAfterSpace.experienceMode).toBe('library');
+    await expect(page.locator('.magazine-experience')).toHaveCount(0);
+
+    // Now click Book I in ChapterRail dock -> must open Book I
+    const book1Btn = page.getByRole('button', { name: /Quyển I\b/i });
+    await book1Btn.click();
+    await expect(page.locator('.magazine-experience')).toBeVisible();
+    await expect(page.locator('.magazine-volume-title')).toContainText('Quyển I');
   });
 });

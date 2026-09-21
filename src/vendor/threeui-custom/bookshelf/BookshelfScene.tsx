@@ -140,7 +140,7 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
       return;
     }
     if (rendererRef.current?.selectVolume) {
-      rendererRef.current.selectVolume(initialIndex, false);
+      rendererRef.current.selectVolume(initialIndex, true);
     }
   }, [initialIndex]);
 

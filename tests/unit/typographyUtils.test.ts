@@ -93,10 +93,13 @@ describe('typographyUtils: fitTextToWidth for Bookshelf Titles', () => {
       // 5. Font size within expected range [42, 70]
       expect(result.fontSize).toBeGreaterThanOrEqual(42);
       expect(result.fontSize).toBeLessThanOrEqual(70);
+
+      // 6. Explicitly assert fits === true for production title
+      expect(result.fits).toBe(true);
     });
   });
 
-  it('fits decomposed NFD Vietnamese text accurately into NFC lines', () => {
+  it('fits decomposed NFD Vietnamese text accurately into NFC lines with fits === true', () => {
     const ctx = createMockMeasuringContext();
     const nfd = 'Ti\u0301nh ta\u0302\u0301t ye\u0302\u0301u cu\u0309a lie\u0302n minh';
     const result = fitTextToWidth(ctx, nfd, {
@@ -108,6 +111,25 @@ describe('typographyUtils: fitTextToWidth for Bookshelf Titles', () => {
 
     expect(result.lines.join(' ')).toBe('Tính tất yếu của liên minh');
     expect(result.lines.length).toBeLessThanOrEqual(2);
+    expect(result.fits).toBe(true);
+  });
+
+  it('never discards words even when constraints cannot be satisfied (fits === false)', () => {
+    const ctx = createMockMeasuringContext();
+    const longTitle = 'Một tiêu đề tiếng Việt rất dài có nhiều chữ không thể nhét vừa trong hai dòng';
+
+    // Constrain to narrow width and max 2 lines
+    const result = fitTextToWidth(ctx, longTitle, {
+      maxWidth: 150,
+      maxLines: 2,
+      startSize: 42,
+      minSize: 36,
+    });
+
+    // Must NOT discard words (no slice(0, maxLines))
+    expect(result.fits).toBe(false);
+    expect(result.lines.length).toBeGreaterThan(2);
+    expect(result.lines.join(' ')).toBe(longTitle);
   });
 });
 
