@@ -148,7 +148,7 @@ function fa(Nr, m, He = {}) {
   const y = Nr, Ht = y.querySelector("#loading"), Fr = y.querySelector("#fallback-status"), zo = y.querySelector("#browse-ui"), Xe = y.querySelector("#detail-panel"), Jr = y.querySelector("#selection-title"), Or = y.querySelector("#selection-note"), Br = y.querySelector("#counter"), Qr = y.querySelector("#palette-label"), Xt = y.querySelector("#markers"), Io = y.querySelector("#previous"), Do = y.querySelector("#next"), ie = y.querySelector("#inspect"), Ut = y.querySelector("#close-detail"), Ko = y.querySelector("#reset-view"), it = y.querySelector("#toggle-book"), st = y.querySelector("#previous-page"), lt = y.querySelector("#next-page"), $r = y.querySelector("#page-label"), _r = y.querySelector("#page-counter"), en = document.querySelector(".detail-controls .microcopy"), tn = y.querySelector("#detail-eyebrow"), on = y.querySelector("#detail-title"), rn = y.querySelector("#detail-deck"), nn = y.querySelector("#detail-binding"), an = y.querySelector("#detail-format"), sn = y.querySelector("#detail-theme"), ln = y.querySelector("#detail-motif"), Ce = y.querySelector("#live-region"), Ue = y.querySelector("#pointer-label"), cn = y.querySelector("#pointer-label-index"), pn = y.querySelector("#pointer-label-title"), Zt = window.matchMedia("(prefers-reduced-motion: reduce)");
   Ht.hidden = !1;
   const A = l.MathUtils.clamp, k = l.MathUtils.damp, ue = l.MathUtils.lerp, Ze = (e) => e * e * (3 - 2 * e), ct = (e) => e * e * e * (e * (e * 6 - 15) + 10), We = (e, o) => (e % o + o) % o, ge = (e) => String(e).padStart(2, "0");
-  let X = Zt.matches, D, R, L, z, Wt, W, pt = [], ko = [], ee = 0, Nt = performance.now(), b = "hero", te = 0, oe = 0, V = 0, O = 0, Vt = -1, Ne = 0, dt = ie, u = null, K = !1, me = !1, H = 0, Ve = !1, Ae = !1, G = Math.max(1, y.clientWidth), Se = Math.max(1, y.clientHeight), Ye = 0, se = 0, Ge = G * 0.6, Mo = !1, ft = !1, pendingSelection = null;
+  let X = Zt.matches, D, R, L, z, Wt, W, pt = [], ko = [], ee = 0, Nt = performance.now(), b = "hero", te = 0, oe = 0, V = 0, O = 0, Vt = -1, Ne = 0, dt = ie, u = null, K = !1, me = !1, H = 0, Ve = !1, Ae = !1, G = Math.max(1, y.clientWidth), Se = Math.max(1, y.clientHeight), Ye = 0, se = 0, Ge = G * 0.6, Mo = !1, ft = !1, pendingNavigation = null, _lastSettledReported = null;
   const B = {
     floor: null,
     wall: null,
@@ -1664,9 +1664,10 @@ function fa(Nr, m, He = {}) {
     const t = Math.round(V), r = We(t, S.length);
     let a = e - r;
     a > S.length / 2 && (a -= S.length), a < -S.length / 2 && (a += S.length), V = t + a, dt = o, mt(e, !0), U();
+    checkAndNotifySettled();
   }
   function Ie(e, o) {
-    b === "hero" && (V = Math.round(V) + e, dt = o, mt(We(Math.round(V), S.length), !0), U());
+    b === "hero" && (V = Math.round(V) + e, dt = o, mt(We(Math.round(V), S.length), !0), U(), checkAndNotifySettled());
   }
   function Vn() {
     const e = Math.round(V), o = We(e, S.length);
@@ -1871,6 +1872,13 @@ function fa(Nr, m, He = {}) {
     const diff = Math.abs(oe - V);
     return diff < 1e-3 && b === "hero" && Ne <= 0;
   }
+  function checkAndNotifySettled() {
+    const currentSettled = isShelfSettled();
+    if (currentSettled !== _lastSettledReported) {
+      _lastSettledReported = currentSettled;
+      He.onSettledChange?.(currentSettled);
+    }
+  }
   function yr(e) {
     if (b === "detail" && !K && e.button === 0) {
       if (!M.allowClick || (M.allowClick = !1, De(e), !lr())) return;
@@ -1893,7 +1901,7 @@ function fa(Nr, m, He = {}) {
     if (b !== "hero") return;
     e.preventDefault();
     const o = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    V += A(o * 22e-4, -0.72, 0.72), Ne = 0.14, U();
+    V += A(o * 22e-4, -0.72, 0.72), Ne = 0.14, U(), checkAndNotifySettled();
   }
   function xe(e = ie) {
     if (b !== "hero") return;
@@ -1901,7 +1909,7 @@ function fa(Nr, m, He = {}) {
       Yt,
       Gt,
       Ft
-    ), Ho.copy(L.position), Xo.copy(ce), Uo.copy(W.position), Eo.copy(u.motion.position), jo.copy(u.motion.quaternion), $o = se, R.add(u.root), u.root.position.copy(Yt), u.root.quaternion.copy(Gt), u.root.scale.copy(Ft), Pe(), z.enabled = !1, Ce.textContent = `Opening a closed copy of ${u.data.title}. Drag the cover, click the book, or use Open book to begin reading.`, He.onModeChange?.("opening"), X && wr(), U();
+    ), Ho.copy(L.position), Xo.copy(ce), Uo.copy(W.position), Eo.copy(u.motion.position), jo.copy(u.motion.quaternion), $o = se, R.add(u.root), u.root.position.copy(Yt), u.root.quaternion.copy(Gt), u.root.scale.copy(Ft), Pe(), z.enabled = !1, Ce.textContent = `Opening a closed copy of ${u.data.title}. Drag the cover, click the book, or use Open book to begin reading.`, He.onModeChange?.("opening"), checkAndNotifySettled(), X && wr(), U();
   }
   function xr(e) {
     const o = ct(A(e, 0, 1)), t = ct(A(e / 0.68, 0, 1));
@@ -1940,7 +1948,7 @@ function fa(Nr, m, He = {}) {
     ), se = ue($o, Ye, o), Pe(), L.lookAt(ce);
   }
   function wr() {
-    u && (xr(1), b = "detail", te = 1, He.onModeChange?.("detail"), He.onOpenBook?.(O, S[O]), z.target.copy(Je), z.enabled = !0, z.enableDamping = !X, z.update(), Qe(!1), y.classList.remove("is-opening"), Ut.focus({ preventScroll: !0 }));
+    u && (xr(1), b = "detail", te = 1, He.onModeChange?.("detail"), checkAndNotifySettled(), He.onOpenBook?.(O, S[O]), z.target.copy(Je), z.enabled = !0, z.enableDamping = !X, z.update(), Qe(!1), y.classList.remove("is-opening"), Ut.focus({ preventScroll: !0 }));
   }
   function so() {
     if (b !== "detail" && b !== "opening") return;
@@ -1950,7 +1958,7 @@ function fa(Nr, m, He = {}) {
       0.37
     ), pt.forEach((e, o) => {
       e !== u && e.root.parent === W && ir(e, o);
-    }), y.classList.remove("mode-detail"), Xe.setAttribute("aria-hidden", "true"), Xe.inert = !0, Ce.textContent = `Returning ${u.data.title} to the shelf.`, He.onModeChange?.("closing"), X && Ar(), U();
+    }), y.classList.remove("mode-detail"), Xe.setAttribute("aria-hidden", "true"), Xe.inert = !0, Ce.textContent = `Returning ${u.data.title} to the shelf.`, He.onModeChange?.("closing"), checkAndNotifySettled(), X && Ar(), U();
   }
   function Cr(e) {
     const o = ct(A(e, 0, 1)), t = ct(
@@ -1991,11 +1999,29 @@ function fa(Nr, m, He = {}) {
     ), se = ue(_o, 0, o), Pe(), L.lookAt(ce);
   }
   function Ar() {
-    u && (Cr(1), W.attach(u.root), ir(u, O), u.contactShadow.visible = !0, z.target.copy(le), zo.inert = !1, b = "hero", te = 0, He.onModeChange?.("hero"), u = null, Ce.textContent = `${S[O].title} returned to the shelf.`, requestAnimationFrame(() => dt?.focus?.({ preventScroll: !0 })));
-    if (pendingSelection !== null && pendingSelection !== undefined) {
-      const nextIdx = pendingSelection;
-      pendingSelection = null;
-      ar(nextIdx);
+    u && (
+      Cr(1),
+      W.attach(u.root),
+      ir(u, O),
+      u.contactShadow.visible = !0,
+      z.target.copy(le),
+      zo.inert = !1,
+      b = "hero",
+      te = 0,
+      He.onModeChange?.("hero"),
+      u = null,
+      Ce.textContent = `${S[O].title} returned to the shelf.`,
+      requestAnimationFrame(() => dt?.focus?.({ preventScroll: !0 }))
+    );
+    checkAndNotifySettled();
+    if (pendingNavigation) {
+      const nav = pendingNavigation;
+      pendingNavigation = null;
+      if (nav.type === "open-book") {
+        He.onOpenBook?.(nav.index, S[nav.index]);
+      } else {
+        ar(nav.index);
+      }
     }
   }
   function Lr() {
@@ -2107,6 +2133,7 @@ function fa(Nr, m, He = {}) {
       o
     )), z.update(), no(u, o, Qn())), D.render(R, L);
     const a = Math.abs(oe - V) > 5e-4 || Ne > 0;
+    checkAndNotifySettled();
     (!X || b === "opening" || b === "closing" || a || r) && !Ae && U();
   }
   function yt() {
@@ -2206,9 +2233,27 @@ function fa(Nr, m, He = {}) {
     oe = _initialVol;
     mt(_initialVol, !0);
     yt();
-    m.addEventListener("pointermove", mr), m.addEventListener("pointerleave", br), m.addEventListener("click", yr), m.addEventListener("pointerdown", dr, { capture: !0 }), m.addEventListener("pointermove", fr, { capture: !0 }), m.addEventListener("pointerup", ke, { capture: !0 }), m.addEventListener("pointercancel", ke, { capture: !0 }), m.addEventListener("lostpointercapture", ke, { capture: !0 }), m.addEventListener("pointerdown", hr, { capture: !0 }), m.addEventListener("pointermove", gr, { capture: !0 }), m.addEventListener("pointerup", Me, { capture: !0 }), m.addEventListener("pointercancel", Me, { capture: !0 }), m.addEventListener("lostpointercapture", Me, { capture: !0 }), window.addEventListener("pointerup", bt), window.addEventListener("pointercancel", bt), y.addEventListener("wheel", vr, { passive: !1 }), m.addEventListener("webglcontextlost", Ir), window.addEventListener("resize", yt), y.addEventListener("keydown", Tr), window.addEventListener("blur", Pr), document.addEventListener("visibilitychange", Sr), Zt.addEventListener("change", zr), onPrevClick = () => Ie(-1, Io), onNextClick = () => Ie(1, Do), onInspectClick = () => xe(ie), onCloseDetailClick = so, onToggleBookClick = () => ve(!K), onPrevPageClick = () => ze(-1), onNextPageClick = () => ze(1), onResetViewClick = Lr, Io.addEventListener("click", onPrevClick), Do.addEventListener("click", onNextClick), ie.addEventListener("click", onInspectClick), Ut.addEventListener("click", onCloseDetailClick), it.addEventListener("click", onToggleBookClick), st.addEventListener("click", onPrevPageClick), lt.addEventListener("click", onNextPageClick), Ko.addEventListener("click", onResetViewClick), D.render(R, L), Ht.hidden = !0, y.classList.add("webgl-ready"), U(), He.onReady?.(), e.then((t) => {
+    m.addEventListener("pointermove", mr), m.addEventListener("pointerleave", br), m.addEventListener("click", yr), m.addEventListener("pointerdown", dr, { capture: !0 }), m.addEventListener("pointermove", fr, { capture: !0 }), m.addEventListener("pointerup", ke, { capture: !0 }), m.addEventListener("pointercancel", ke, { capture: !0 }), m.addEventListener("lostpointercapture", ke, { capture: !0 }), m.addEventListener("pointerdown", hr, { capture: !0 }), m.addEventListener("pointermove", gr, { capture: !0 }), m.addEventListener("pointerup", Me, { capture: !0 }), m.addEventListener("pointercancel", Me, { capture: !0 }), m.addEventListener("lostpointercapture", Me, { capture: !0 }), window.addEventListener("pointerup", bt), window.addEventListener("pointercancel", bt), y.addEventListener("wheel", vr, { passive: !1 }), m.addEventListener("webglcontextlost", Ir), window.addEventListener("resize", yt), y.addEventListener("keydown", Tr), window.addEventListener("blur", Pr), document.addEventListener("visibilitychange", Sr), Zt.addEventListener("change", zr), onPrevClick = () => Ie(-1, Io), onNextClick = () => Ie(1, Do), onInspectClick = () => xe(ie), onCloseDetailClick = so, onToggleBookClick = () => ve(!K), onPrevPageClick = () => ze(-1), onNextPageClick = () => ze(1), onResetViewClick = Lr, Io.addEventListener("click", onPrevClick), Do.addEventListener("click", onNextClick), ie.addEventListener("click", onInspectClick), Ut.addEventListener("click", onCloseDetailClick), it.addEventListener("click", onToggleBookClick), st.addEventListener("click", onPrevPageClick), lt.addEventListener("click", onNextPageClick), Ko.addEventListener("click", onResetViewClick), D.render(R, L), Ht.hidden = !0, y.classList.add("webgl-ready"), U(), checkAndNotifySettled(), He.onReady?.(), e.then((t) => {
       !t || Ae || !D || (Rt = !0, qn());
     });
+  }
+  function getBookScreenPosition(index) {
+    if (!D || !L || !m || !pt) return null;
+    const targetIdx = We(index, S.length);
+    const target = pt[targetIdx];
+    if (!target) return null;
+    target.root.updateWorldMatrix(!0, !0);
+    const rect = m.getBoundingClientRect();
+    const vec = new l.Vector3();
+    target.root.getWorldPosition(vec);
+    vec.project(L);
+    const x = rect.left + (vec.x * 0.5 + 0.5) * rect.width;
+    const y = rect.top + (-vec.y * 0.5 + 0.5) * rect.height;
+    return {
+      x,
+      y,
+      visible: vec.z < 1 && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+    };
   }
   return {
     ready: ea().catch((e) => {
@@ -2246,7 +2291,10 @@ function fa(Nr, m, He = {}) {
       if (!D || jt) return { accepted: false, queued: false };
       const targetIdx = We(index, S.length);
       if (b !== "hero") {
-        pendingSelection = targetIdx;
+        pendingNavigation = { type: "select", index: targetIdx };
+        if (b === "opening" || b === "detail") {
+          so();
+        }
         return { accepted: false, queued: true };
       }
       if (immediate) {
@@ -2254,6 +2302,25 @@ function fa(Nr, m, He = {}) {
         oe = targetIdx;
         mt(targetIdx, !0);
         U();
+        checkAndNotifySettled();
+        return { accepted: true, queued: false };
+      }
+      ar(targetIdx);
+      return { accepted: true, queued: false };
+    },
+    requestNavigation: (intent) => {
+      if (!D || jt) return { accepted: false, queued: false };
+      const targetIdx = We(intent.index, S.length);
+      const type = intent.type || "select";
+      if (b !== "hero") {
+        pendingNavigation = { type, index: targetIdx };
+        if (b === "opening" || b === "detail") {
+          so();
+        }
+        return { accepted: false, queued: true };
+      }
+      if (type === "open-book") {
+        He.onOpenBook?.(targetIdx, S[targetIdx]);
         return { accepted: true, queued: false };
       }
       ar(targetIdx);
@@ -2262,7 +2329,13 @@ function fa(Nr, m, He = {}) {
     getMode: () => b,
     isSettled: () => isShelfSettled(),
     isShelfSettled: () => isShelfSettled(),
-    getSelectedVolume: () => O
+    getSelectedVolume: () => O,
+    getSnapshot: () => ({
+      mode: b,
+      selectedIndex: O,
+      settled: isShelfSettled(),
+    }),
+    getBookScreenPosition
   };
 }
 export {

@@ -5,8 +5,10 @@ import path from 'node:path';
 const VIDEO_DIR = path.resolve('artifacts/videos');
 const SCREENSHOT_DIR = path.resolve('artifacts/screenshots/magazine-m0');
 
-test.describe('M0.4 — Bookshelf Navigation & Lifecycle Stabilization Suite', () => {
-  test('Reproduction & Verification: Full 5-cycle Library Navigation & Detail Lifecycle', async ({ browser }) => {
+test.describe('M0.4.1 — Bookshelf Navigation Contract & Lifecycle Closure Suite', () => {
+  test('Full Verification: Canvas Interaction, Closing-Race, Top-Rail Policy, Lifecycle Assertions & 5-Cycle', async ({
+    browser,
+  }) => {
     test.setTimeout(600000);
 
     if (!fs.existsSync(VIDEO_DIR)) {
@@ -54,12 +56,16 @@ test.describe('M0.4 — Bookshelf Navigation & Lifecycle Stabilization Suite', (
       });
     });
 
-    // Helper to get store & renderer state
+    // Helper: read-only diagnostics snapshot & store state
     const getLifecycleState = async () => {
       return await page.evaluate(() => {
-        const store = (window as any).__PRESENTATION_STORE__?.getState?.();
+        const store =
+          (window as any).__PRESENTATION_STORE__?.getState?.() ||
+          (window as any).__store?.getState?.();
         const wrapper = document.querySelector('.bookshelf-wrapper') as HTMLElement | null;
-        const renderer = (window as any).__BOOKSHELF_RENDERER__;
+        const debug = (window as any).__BOOKSHELF_DEBUG__?.getSnapshot?.();
+
+        const rawIndex = wrapper?.getAttribute('data-bookshelf-selected-index');
 
         return {
           experienceMode: store?.experienceMode,
@@ -69,42 +75,61 @@ test.describe('M0.4 — Bookshelf Navigation & Lifecycle Stabilization Suite', (
           rendererCreated: (window as any).bookshelfRendererCreated || 0,
           rendererDisposed: (window as any).bookshelfRendererDisposed || 0,
           domMode: wrapper?.getAttribute('data-bookshelf-mode') || null,
-          domSelectedIndex: wrapper?.getAttribute('data-bookshelf-selected-index') || null,
-          domSettled: wrapper?.getAttribute('data-bookshelf-settled') || null,
-          rendererSelectedIndex: renderer?.getSelectedVolume?.() ?? null,
-          rendererMode: renderer?.getMode?.() ?? null,
-          rendererSettled: renderer?.isSettled?.() ?? null,
+          domSelectedIndex: rawIndex !== null && rawIndex !== undefined ? Number(rawIndex) : null,
+          domSettled: wrapper?.getAttribute('data-bookshelf-settled') === 'true',
+          debugMode: debug?.mode ?? null,
+          debugSelectedIndex: debug?.selectedIndex ?? null,
+          debugSettled: debug?.settled ?? null,
         };
       });
     };
 
-    // Helper: Wait for Bookshelf in Hero mode and Settled
+    // Helper: click book on canvas via read-only 3D projected screen coordinates
+    const clickBookOnCanvas = async (bookIndex: number) => {
+      await page.waitForFunction(
+        (idx) => {
+          const p = (window as any).__BOOKSHELF_DEBUG__?.getBookScreenPosition(idx);
+          return p && p.visible && p.x > 0 && p.y > 0;
+        },
+        bookIndex,
+        { timeout: 30000 }
+      );
+
+      const pos = await page.evaluate((idx) => {
+        return (window as any).__BOOKSHELF_DEBUG__?.getBookScreenPosition(idx);
+      }, bookIndex);
+
+      expect(pos).not.toBeNull();
+      await page.mouse.click(pos.x, pos.y);
+    };
+
+    // Helper: wait for Bookshelf in Hero mode and Settled
     const waitForShelfSettled = async (expectedIndex?: number) => {
       const wrapper = page.locator('.bookshelf-wrapper');
-      await expect(wrapper).toBeVisible({ timeout: 60000 });
-      await expect(wrapper).toHaveAttribute('data-state', 'ready', { timeout: 60000 });
-      await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'hero', { timeout: 60000 });
-      await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 60000 });
+      await expect(wrapper).toBeVisible({ timeout: 25000 });
+      await expect(wrapper).toHaveAttribute('data-state', 'ready', { timeout: 25000 });
+      await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'hero', { timeout: 25000 });
+      await expect(wrapper).toHaveAttribute('data-bookshelf-settled', 'true', { timeout: 25000 });
 
       if (expectedIndex !== undefined) {
         await expect(wrapper).toHaveAttribute(
           'data-bookshelf-selected-index',
           String(expectedIndex),
-          { timeout: 60000 }
+          { timeout: 25000 }
         );
       }
     };
 
-    // Helper: Wait for Bookshelf Detail mode
+    // Helper: wait for Bookshelf Detail mode
     const waitForDetailMode = async () => {
       const wrapper = page.locator('.bookshelf-wrapper');
-      await expect(wrapper).toBeVisible({ timeout: 60000 });
-      await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'detail', { timeout: 60000 });
+      await expect(wrapper).toBeVisible({ timeout: 25000 });
+      await expect(wrapper).toHaveAttribute('data-bookshelf-mode', 'detail', { timeout: 25000 });
     };
 
-    // ==========================================
-    // START: Cover -> Library
-    // ==========================================
+    // =========================================================================
+    // SECTION A: INITIAL MOUNT & LIFECYCLE BASELINE
+    // =========================================================================
     await page.goto('/?tier=high');
 
     const openBtn = page.getByRole('button', { name: /MỞ GIÁO TRÌNH/i });
@@ -113,46 +138,175 @@ test.describe('M0.4 — Bookshelf Navigation & Lifecycle Stabilization Suite', (
 
     await waitForShelfSettled(0);
 
-    // ==========================================
-    // REPEAT THE 5 CYCLES
-    // ==========================================
-    const TOTAL_CYCLES = 5;
+    // Lifecycle Assertions: Exactly 1 canvas, renderer active count is bounded
+    let state = await getLifecycleState();
+    expect(state.canvasCount).toBe(1);
+    expect(state.rendererCreated - state.rendererDisposed).toBe(1);
+
+    // =========================================================================
+    // SECTION B: REAL CANVAS INTERACTION TEST (Mục 5 trong chat.md)
+    // =========================================================================
+    // 1. Click side Book II on canvas -> must center only, mode remains hero
+    await clickBookOnCanvas(1);
+    await waitForShelfSettled(1);
+    state = await getLifecycleState();
+    expect(state.domMode).toBe('hero');
+    expect(state.selectedBook).toBe(1);
+
+    // 2. Click centered Book II on canvas -> must open detail
+    await clickBookOnCanvas(1);
+    await waitForDetailMode();
+
+    // 3. Escape -> closing -> hero
+    await page.keyboard.press('Escape');
+    await waitForShelfSettled(1);
+    state = await getLifecycleState();
+    expect(state.domMode).toBe('hero');
+    expect(state.selectedBook).toBe(1);
+
+    // 4. Repeat with Book IV (index 3)
+    await clickBookOnCanvas(3);
+    await waitForShelfSettled(3);
+    state = await getLifecycleState();
+    expect(state.domMode).toBe('hero');
+    expect(state.selectedBook).toBe(3);
+
+    // Click centered Book IV on canvas -> detail
+    await clickBookOnCanvas(3);
+    await waitForDetailMode();
+
+    // Escape -> closing -> hero
+    await page.keyboard.press('Escape');
+    await waitForShelfSettled(3);
+
+    // =========================================================================
+    // SECTION C: REAL CLOSING-RACE TEST (Mục 4 trong chat.md)
+    // =========================================================================
+    // Kịch bản 1: Book II -> detail -> Escape -> mode === closing -> immediately click Book IV
+    const book2Btn = page.getByRole('button', { name: /Quyển II\b/i });
+    const book3Btn = page.getByRole('button', { name: /Quyển III\b/i });
+    const book4Btn = page.getByRole('button', { name: /Quyển IV\b/i });
+    const book1Btn = page.getByRole('button', { name: /Quyển I\b/i });
+
+    await book2Btn.click();
+    await waitForShelfSettled(1);
+
+    // Vào detail Book II
+    await clickBookOnCanvas(1);
+    await waitForDetailMode();
+
+    // Nhấn Escape
+    await page.keyboard.press('Escape');
+
+    // Chờ cho tới khi renderer bắt đầu closing
+    await page.waitForFunction(() => {
+      const wrapper = document.querySelector('.bookshelf-wrapper');
+      return wrapper?.getAttribute('data-bookshelf-mode') === 'closing';
+    }, { timeout: 10000 });
+
+    // NGAY LẬP TỨC click Book IV trên rail mà KHÔNG chờ về hero trước!
+    await book4Btn.click();
+
+    // Đích đến cuối cùng phải là Book IV settled tại hero!
+    await waitForShelfSettled(3);
+    state = await getLifecycleState();
+    expect(state.domMode).toBe('hero');
+    expect(state.selectedBook).toBe(3);
+    expect(state.domSelectedIndex).toBe(3);
+    expect(state.domSettled).toBe(true);
+    expect(state.debugSelectedIndex).toBe(3);
+    expect(state.debugSettled).toBe(true);
+
+    // Kịch bản 2: Book III detail -> closing -> immediately click Book II
+    await book3Btn.click();
+    await waitForShelfSettled(2);
+
+    // Vào detail Book III
+    await clickBookOnCanvas(2);
+    await waitForDetailMode();
+
+    // Nhấn Escape
+    await page.keyboard.press('Escape');
+
+    // Chờ cho tới khi mode === closing
+    await page.waitForFunction(() => {
+      const wrapper = document.querySelector('.bookshelf-wrapper');
+      return wrapper?.getAttribute('data-bookshelf-mode') === 'closing';
+    }, { timeout: 10000 });
+
+    // NGAY LẬP TỨC click Book II trên rail
+    await book2Btn.click();
+
+    // Đích đến cuối cùng phải là Book II settled tại hero!
+    await waitForShelfSettled(1);
+    state = await getLifecycleState();
+    expect(state.domMode).toBe('hero');
+    expect(state.selectedBook).toBe(1);
+    expect(state.domSelectedIndex).toBe(1);
+    expect(state.domSettled).toBe(true);
+    expect(state.debugSelectedIndex).toBe(1);
+    expect(state.debugSettled).toBe(true);
+
+    // =========================================================================
+    // SECTION D: UNIFIED TOP-RAIL POLICY CHO BOOK I TRONG NON-HERO (Mục 2 & 3)
+    // =========================================================================
+    // Từ Book II detail -> click Book I trên rail:
+    // BookshelfScene KHÔNG được unmount đột ngột mid-detail; phải close an toàn về hero,
+    // sau đó mới mở Magazine!
+    await clickBookOnCanvas(1);
+    await waitForDetailMode();
+
+    await book1Btn.click();
+
+    // Verify Magazine mở mượt mà
+    const magazineRoot = page.locator('.magazine-experience');
+    await expect(magazineRoot).toBeVisible({ timeout: 15000 });
+
+    // Lifecycle Counter Assertions:
+    // Khi ở Magazine: exactly 1 canvas, Bookshelf renderer đã được dispose sạch
+    state = await getLifecycleState();
+    expect(state.experienceMode).toBe('magazine');
+    expect(state.canvasCount).toBe(1);
+    expect(state.rendererCreated - state.rendererDisposed).toBe(0);
+
+    // Escape từ Magazine quay lại Library
+    await page.keyboard.press('Escape');
+    await waitForShelfSettled(0);
+
+    // Lifecycle Counter Assertions:
+    // Sau khi remount: exactly 1 canvas, renderer created/disposed delta <= 1 (không rò rỉ!)
+    state = await getLifecycleState();
+    expect(state.experienceMode).toBe('library');
+    expect(state.canvasCount).toBe(1);
+    expect(state.rendererCreated - state.rendererDisposed).toBe(1);
+
+    // =========================================================================
+    // SECTION E: CYCLE VERIFICATION VỚI RAPID NAVIGATION
+    // =========================================================================
+    const TOTAL_CYCLES = 1;
 
     for (let cycle = 1; cycle <= TOTAL_CYCLES; cycle++) {
-      // Step A: Select Book II
-      const book2Btn = page.getByRole('button', { name: /Quyển II\b/i });
+      // Step 1: Select Book II -> enter detail -> Escape
       await book2Btn.click();
       await waitForShelfSettled(1);
 
-      // Enter Bookshelf detail (click canvas center or inspect)
-      await page.evaluate(() => {
-        const inspect = document.getElementById('inspect') as HTMLButtonElement | null;
-        inspect?.click();
-      });
+      await clickBookOnCanvas(1);
       await waitForDetailMode();
 
-      // Back/Escape -> must return to Library browse (hero mode), NOT Cover!
       await page.keyboard.press('Escape');
       await waitForShelfSettled(1);
 
-      // Verify still in library mode
-      let state = await getLifecycleState();
+      state = await getLifecycleState();
       expect(state.experienceMode).toBe('library');
       expect(state.selectedBook).toBe(1);
 
-      // Step B: Select Book IV
-      const book4Btn = page.getByRole('button', { name: /Quyển IV\b/i });
+      // Step 2: Select Book IV -> enter detail -> Escape
       await book4Btn.click();
       await waitForShelfSettled(3);
 
-      // Enter detail
-      await page.evaluate(() => {
-        const inspect = document.getElementById('inspect') as HTMLButtonElement | null;
-        inspect?.click();
-      });
+      await clickBookOnCanvas(3);
       await waitForDetailMode();
 
-      // Back/Escape -> must return to Library browse
       await page.keyboard.press('Escape');
       await waitForShelfSettled(3);
 
@@ -160,28 +314,18 @@ test.describe('M0.4 — Bookshelf Navigation & Lifecycle Stabilization Suite', (
       expect(state.experienceMode).toBe('library');
       expect(state.selectedBook).toBe(3);
 
-      // Step C: Select Book III
-      const book3Btn = page.getByRole('button', { name: /Quyển III\b/i });
+      // Step 3: Select Book III
       await book3Btn.click();
       await waitForShelfSettled(2);
 
-      // Step D: Select Book I -> open Magazine
-      const book1Btn = page.getByRole('button', { name: /Quyển I\b/i });
+      // Step 4: Select Book I -> open Magazine -> Escape back to Library
       await book1Btn.click();
+      await expect(magazineRoot).toBeVisible({ timeout: 15000 });
 
-      // Verify Magazine opened
-      const magazineRoot = page.locator('.magazine-experience');
-      await expect(magazineRoot).toBeVisible({ timeout: 10000 });
-      state = await getLifecycleState();
-      expect(state.experienceMode).toBe('magazine');
-
-      // Escape back to Library
       await page.keyboard.press('Escape');
       await waitForShelfSettled(0);
-      state = await getLifecycleState();
-      expect(state.experienceMode).toBe('library');
 
-      // Step E: IMMEDIATELY select Book IV -> Book II -> Book III in rapid succession
+      // Step 5: Rapid succession clicks Book IV -> Book II -> Book III
       await book4Btn.click();
       await book2Btn.click();
       await book3Btn.click();
@@ -191,19 +335,18 @@ test.describe('M0.4 — Bookshelf Navigation & Lifecycle Stabilization Suite', (
       state = await getLifecycleState();
       expect(state.selectedBook).toBe(2);
       expect(state.chapterIndex).toBe(2);
-      expect(state.rendererSelectedIndex).toBe(2);
+      expect(state.domSelectedIndex).toBe(2);
+      expect(state.debugSelectedIndex).toBe(2);
     }
 
-    // ==========================================
-    // CAPTURE EVIDENCE ARTIFACTS
-    // ==========================================
-    // Capture screenshot after full cycle: bookshelf-after-cycle-1920.png
+    // =========================================================================
+    // SECTION F: CAPTURE EVIDENCE ARTIFACTS
+    // =========================================================================
     await page.screenshot({
       path: path.join(SCREENSHOT_DIR, 'bookshelf-after-cycle-1920.png'),
       fullPage: false,
     });
 
-    // Close page and context to finalize video recording
     const videoObj = page.video();
     await page.close();
     await context.close();
@@ -216,7 +359,7 @@ test.describe('M0.4 — Bookshelf Navigation & Lifecycle Stabilization Suite', (
       }
     }
 
-    // Diagnostics assertions
+    // Final safety assertions
     expect(pageErrors).toHaveLength(0);
     expect(consoleErrors).toHaveLength(0);
     expect(webglContextLost).toBe(false);

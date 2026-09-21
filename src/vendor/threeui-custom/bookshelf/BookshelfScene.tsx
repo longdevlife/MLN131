@@ -2,12 +2,24 @@ import React, { useRef, useState, useEffect } from 'react';
 // @ts-expect-error - vendored ThreeUI renderer
 import { createBookshelfRenderer } from './bookshelfRenderer.js';
 import { ensureBookshelfFonts } from './fontLoader';
+import { usePresentationStore } from '../../../state/presentationStore';
 
 declare global {
   interface Window {
     bookshelfRendererCreated?: number;
     bookshelfRendererDisposed?: number;
-    __BOOKSHELF_RENDERER__?: any;
+    __BOOKSHELF_DEBUG__?: {
+      getSnapshot: () => {
+        mode: 'hero' | 'opening' | 'detail' | 'closing';
+        selectedIndex: number;
+        settled: boolean;
+      } | null;
+      getBookScreenPosition: (index: number) => {
+        x: number;
+        y: number;
+        visible: boolean;
+      } | null;
+    };
   }
 }
 
@@ -66,43 +78,57 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
 
   const isFirstMount = useRef(true);
 
-  // Periodic settled & volume check
+  // Unified pending navigation intent listener from presentationStore
+  const pendingNav = usePresentationStore((state) => state.pendingBookshelfNavigation);
+  const clearPendingNav = usePresentationStore((state) => state.clearPendingBookshelfNavigation);
+
+  useEffect(() => {
+    if (pendingNav && rendererRef.current?.requestNavigation) {
+      rendererRef.current.requestNavigation(pendingNav);
+      clearPendingNav();
+    }
+  }, [pendingNav, clearPendingNav]);
+
+  // Helper to sync container attributes directly without unnecessary React re-renders
+  const updateContainerAttrs = (attrs: {
+    mode?: string;
+    selectedIndex?: number;
+    settled?: boolean;
+  }) => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (attrs.mode !== undefined) {
+      el.setAttribute('data-bookshelf-mode', attrs.mode);
+    }
+    if (attrs.selectedIndex !== undefined) {
+      el.setAttribute('data-bookshelf-selected-index', String(attrs.selectedIndex));
+    }
+    if (attrs.settled !== undefined) {
+      el.setAttribute('data-bookshelf-settled', String(attrs.settled));
+    }
+  };
+
+  // Single lightweight mechanism only for settled-state transitions (no duplicate polling, no interval)
   useEffect(() => {
     let animId: number;
-    const checkSettled = () => {
-      try {
-        if (rendererRef.current) {
-          const settled = rendererRef.current.isSettled ? rendererRef.current.isSettled() : true;
-          const currentVol = rendererRef.current.getSelectedVolume?.();
-          const currentMode = rendererRef.current.getMode?.() || 'hero';
+    let lastSettled: boolean | null = null;
 
-          setIsSettled(settled);
-          if (typeof currentVol === 'number') {
-            setSelectedIndex(currentVol);
-          }
-
-          if (containerRef.current) {
-            containerRef.current.setAttribute('data-bookshelf-settled', String(settled));
-            containerRef.current.setAttribute('data-bookshelf-mode', currentMode);
-            if (typeof currentVol === 'number') {
-              containerRef.current.setAttribute('data-bookshelf-selected-index', String(currentVol));
-            }
-          }
+    const checkSettledLoop = () => {
+      if (rendererRef.current) {
+        const settled = rendererRef.current.isSettled ? rendererRef.current.isSettled() : true;
+        if (containerRef.current) {
+          containerRef.current.setAttribute('data-bookshelf-settled', String(settled));
         }
-      } catch (err) {
-        console.error('Error in checkSettled:', err);
+        if (settled !== lastSettled) {
+          lastSettled = settled;
+          setIsSettled(settled);
+        }
       }
+      animId = requestAnimationFrame(checkSettledLoop);
     };
 
-    const intervalId = setInterval(checkSettled, 50);
-    const rafLoop = () => {
-      checkSettled();
-      animId = requestAnimationFrame(rafLoop);
-    };
-    animId = requestAnimationFrame(rafLoop);
-
+    animId = requestAnimationFrame(checkSettledLoop);
     return () => {
-      clearInterval(intervalId);
       cancelAnimationFrame(animId);
     };
   }, []);
@@ -130,6 +156,11 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
           onReady: () => {
             if (!disposed) {
               setStatus('ready');
+              updateContainerAttrs({
+                mode: 'hero',
+                selectedIndex: desiredIndexRef.current ?? 0,
+                settled: true,
+              });
               if (rendererRef.current && desiredIndexRef.current !== undefined) {
                 rendererRef.current.selectVolume(desiredIndexRef.current, true);
                 setSelectedIndex(desiredIndexRef.current);
@@ -145,15 +176,23 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
           onModeChange: (newMode: 'hero' | 'opening' | 'detail' | 'closing') => {
             if (!disposed) {
               setMode(newMode);
+              updateContainerAttrs({ mode: newMode });
               onModeChangeRef.current?.(newMode);
             }
           },
           onSelectionChange: (info: { index: number; total: number; title: string }) => {
             if (!disposed) {
               setSelectedIndex(info.index);
+              updateContainerAttrs({ selectedIndex: info.index });
               if (onSelectBookRef.current) {
                 onSelectBookRef.current(info.index, info as any);
               }
+            }
+          },
+          onSettledChange: (settled: boolean) => {
+            if (!disposed) {
+              setIsSettled(settled);
+              updateContainerAttrs({ settled });
             }
           },
           onOpenBook: (index: number, book: any) => {
@@ -164,8 +203,22 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
         });
 
         rendererRef.current = renderer;
+
+        // Expose ONLY read-only diagnostics to window.__BOOKSHELF_DEBUG__
         if (typeof window !== 'undefined') {
-          window.__BOOKSHELF_RENDERER__ = renderer;
+          window.__BOOKSHELF_DEBUG__ = {
+            getSnapshot: () => {
+              if (!rendererRef.current) return null;
+              return rendererRef.current.getSnapshot?.() ?? {
+                mode,
+                selectedIndex,
+                settled: isSettled,
+              };
+            },
+            getBookScreenPosition: (idx: number) => {
+              return rendererRef.current?.getBookScreenPosition?.(idx) ?? null;
+            },
+          };
         }
 
         renderer.ready?.catch((err: any) => {
@@ -190,13 +243,10 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
     resizeObserver.observe(container);
 
     return () => {
-      console.log('[DIAG_LIFECYCLE] initRenderer effect unmounting! disposed=true');
       disposed = true;
       if (typeof window !== 'undefined') {
         window.bookshelfRendererDisposed = (window.bookshelfRendererDisposed || 0) + 1;
-        if (window.__BOOKSHELF_RENDERER__ === rendererRef.current) {
-          delete window.__BOOKSHELF_RENDERER__;
-        }
+        delete window.__BOOKSHELF_DEBUG__;
       }
       resizeObserver.disconnect();
       try {
@@ -215,8 +265,11 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
       return;
     }
     if (rendererRef.current?.selectVolume) {
-      rendererRef.current.selectVolume(initialIndex, false);
-      setSelectedIndex(initialIndex);
+      const currentVol = rendererRef.current.getSelectedVolume?.();
+      if (currentVol !== initialIndex) {
+        rendererRef.current.selectVolume(initialIndex, false);
+        setSelectedIndex(initialIndex);
+      }
     }
   }, [initialIndex]);
 

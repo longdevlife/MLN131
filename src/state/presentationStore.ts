@@ -16,12 +16,17 @@ export type ExperienceMode =
   | 'museum';
 export type QualityTier = 'high' | 'medium' | 'safe';
 export type BookshelfMode = 'hero' | 'opening' | 'detail' | 'closing';
+export type BookshelfNavigationIntent =
+  | { type: 'select'; index: number }
+  | { type: 'open-book'; index: number }
+  | null;
 
 export interface PresentationState {
   viewMode: ViewMode;
   experienceMode: ExperienceMode;
   selectedBook: number;
   bookshelfMode: BookshelfMode;
+  pendingBookshelfNavigation: BookshelfNavigationIntent;
   magazinePage: number;
   magazineViewMode: MagazineViewMode;
   chapterIndex: number;
@@ -40,6 +45,8 @@ export interface PresentationState {
   closeSourceDrawer: () => void;
   toggleSourceDrawer: () => void;
   setBookshelfMode: (mode: BookshelfMode) => void;
+  requestBookshelfNavigation: (intent: BookshelfNavigationIntent) => void;
+  clearPendingBookshelfNavigation: () => void;
   // Navigation actions
   startPresentation: () => void;
   openCover: () => void;
@@ -78,6 +85,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   experienceMode: 'cover',
   selectedBook: 0,
   bookshelfMode: 'hero',
+  pendingBookshelfNavigation: null,
   magazinePage: 0,
   magazineViewMode: 'showcase',
   chapterIndex: 0,
@@ -98,6 +106,10 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   closeSourceDrawer: () => set({ isSourceDrawerOpen: false }),
   toggleSourceDrawer: () => set((state) => ({ isSourceDrawerOpen: !state.isSourceDrawerOpen })),
   setBookshelfMode: (mode: BookshelfMode) => set({ bookshelfMode: mode }),
+  requestBookshelfNavigation: (intent: BookshelfNavigationIntent) =>
+    set({ pendingBookshelfNavigation: intent }),
+  clearPendingBookshelfNavigation: () =>
+    set({ pendingBookshelfNavigation: null }),
 
   startPresentation: () => {
     set({ experienceMode: 'library', viewMode: 'library', bookshelfMode: 'hero', direction: 1 });
@@ -388,5 +400,6 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
 
 if (typeof window !== 'undefined') {
   (window as any).__store = usePresentationStore;
+  (window as any).__PRESENTATION_STORE__ = usePresentationStore;
 }
 
