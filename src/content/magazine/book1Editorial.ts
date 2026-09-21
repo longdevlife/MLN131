@@ -18,6 +18,7 @@ export const book1EditorialPages: Book1EditorialPage[] = [
     headline: 'Năm lát cắt của cơ cấu xã hội',
     body: 'Dân cư, nghề nghiệp, giai cấp, dân tộc và tôn giáo cùng tồn tại và tác động qua lại trong đời sống xã hội.',
     labels: ['Dân cư', 'Nghề nghiệp', 'Giai cấp', 'Dân tộc', 'Tôn giáo'],
+    footer: 'Chủ nghĩa xã hội khoa học tập trung nghiên cứu cơ cấu xã hội – giai cấp do mối liên hệ trực tiếp với giai cấp, lợi ích và liên minh.',
     layout: 'constellation',
     sourceIds: ['giaoTrinh2021'],
   },

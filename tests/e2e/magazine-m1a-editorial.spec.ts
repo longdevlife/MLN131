@@ -5,29 +5,31 @@ import path from 'node:path';
 const SCREENSHOT_DIR = path.resolve('artifacts/screenshots/magazine-m1a');
 
 test.describe('MLN131 Magazine M1A Early Visual Gate — Spreads 01-02 & 05-06', () => {
-  test.beforeEach(async ({ page }) => {
-    // Fail immediately on any forbidden external font or CDN requests
-    page.on('request', (request) => {
-      const url = request.url();
-      const forbiddenHosts = [
-        'fonts.googleapis.com',
-        'fonts.gstatic.com',
-        'cdn.jsdelivr.net',
-        'unpkg.com',
-      ];
-      for (const host of forbiddenHosts) {
-        if (url.includes(host)) {
-          throw new Error(`[M1A Security Violation] Forbidden external request detected: ${url}`);
-        }
-      }
-    });
-  });
-
-  test('Early Visual Gate: Capture required 6 screenshots and assert layout integrity', async ({ page }) => {
+  test('Early Visual Gate: Capture required 6 screenshots and assert strict layout & network integrity', async ({ page }) => {
     test.setTimeout(180000);
 
     const pageErrors: Error[] = [];
     const consoleErrors: string[] = [];
+    const externalRequests: string[] = [];
+    const allowedHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+
+    // Strict Network Interception: Assert ZERO external-origin HTTP(S) requests
+    page.on('request', (request) => {
+      const urlStr = request.url();
+      try {
+        const parsed = new URL(urlStr);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+          if (!allowedHosts.has(parsed.hostname)) {
+            externalRequests.push(urlStr);
+            throw new Error(`[M1A Security Violation] Forbidden external-origin request detected: ${urlStr}`);
+          }
+        }
+      } catch (err) {
+        if (err instanceof Error && err.message.includes('[M1A Security Violation]')) {
+          throw err;
+        }
+      }
+    });
 
     page.on('pageerror', (err) => pageErrors.push(err));
     page.on('console', (msg) => {
@@ -165,7 +167,10 @@ test.describe('MLN131 Magazine M1A Early Visual Gate — Spreads 01-02 & 05-06',
       fullPage: false,
     });
 
-    // Xác nhận không có page errors hoặc console errors
+    // Network assertion: Zero external-origin HTTP(S) requests
+    expect(externalRequests).toHaveLength(0);
+
+    // Không có page errors hoặc console errors
     expect(pageErrors).toHaveLength(0);
     expect(consoleErrors).toHaveLength(0);
 

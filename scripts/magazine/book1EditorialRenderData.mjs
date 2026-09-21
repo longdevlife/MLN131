@@ -1,6 +1,6 @@
 export const coverFront = {
   volume: 'QUYỂN I',
-  title: 'Cơ cấu xã hội – giai cấp và liên minh giai cấp, tầng lớp',
+  title: 'Cơ cấu xã hội – giai cấp',
   discipline: 'CHỦ NGHĨA XÃ HỘI KHOA HỌC',
   chapter: 'CHƯƠNG 5 · THỜI KỲ QUÁ ĐỘ LÊN CHỦ NGHĨA XÃ HỘI',
   series: 'GIÁO TRÌNH SỐ KHÔNG GIAN 3D · MLN131',
@@ -31,6 +31,7 @@ export const pages = [
     headline: 'Năm lát cắt của cơ cấu xã hội',
     body: 'Dân cư, nghề nghiệp, giai cấp, dân tộc và tôn giáo cùng tồn tại và tác động qua lại trong đời sống xã hội.',
     labels: ['Dân cư', 'Nghề nghiệp', 'Giai cấp', 'Dân tộc', 'Tôn giáo'],
+    footer: 'Chủ nghĩa xã hội khoa học tập trung nghiên cứu cơ cấu xã hội – giai cấp do mối liên hệ trực tiếp với giai cấp, lợi ích và liên minh.',
     layout: 'constellation',
     sourceIds: ['giaoTrinh2021'],
   },

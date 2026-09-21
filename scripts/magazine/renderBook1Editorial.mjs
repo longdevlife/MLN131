@@ -30,11 +30,12 @@ const BASE_CSS = `
     --paper: #efe7d8;
     --paper-deep: #ded3bf;
     --ink: #151719;
-    --ink-soft: #5f5b54;
+    --ink-soft: #555047;
+    --ink-faint: #827b70;
     --gold: #aa854d;
     --copper: #a86643;
-    --rule: rgba(82, 69, 54, 0.22);
-    --gold-bg: rgba(170, 133, 77, 0.08);
+    --rule: rgba(82, 69, 54, 0.20);
+    --rule-light: rgba(82, 69, 54, 0.10);
   }
 
   * {
@@ -57,11 +58,11 @@ const BASE_CSS = `
   .paper-bg {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 50% 30%, #f6f0e6 0%, #efe7d8 65%, #e3d7c3 100%);
+    background: radial-gradient(circle at 50% 28%, #faf6ee 0%, #efe7d8 60%, #e2d5be 100%);
     pointer-events: none;
   }
 
-  /* Academic frame */
+  /* Academic editorial frame */
   .page-frame {
     position: absolute;
     inset: 28px;
@@ -71,11 +72,11 @@ const BASE_CSS = `
   .page-frame-inner {
     position: absolute;
     inset: 34px;
-    border: 1px solid rgba(170, 133, 77, 0.18);
+    border: 1px solid rgba(170, 133, 77, 0.15);
     pointer-events: none;
   }
 
-  /* Gutter offset: odd page (left side) extra right margin, even page (right side) extra left margin */
+  /* Gutter offset: odd page (left page) extra right margin, even page (right page) extra left margin */
   .content-container {
     position: relative;
     width: 100%;
@@ -86,57 +87,60 @@ const BASE_CSS = `
   }
 
   .is-odd {
-    padding: 72px 88px 72px 64px;
+    padding: 68px 84px 64px 68px;
   }
   .is-even {
-    padding: 72px 64px 72px 88px;
+    padding: 68px 68px 64px 84px;
   }
 
-  /* Header elements */
-  .kicker-pill {
-    display: inline-flex;
+  /* Editorial header */
+  .kicker-line {
+    display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 16px;
-    border-radius: 20px;
-    background: rgba(168, 102, 67, 0.12);
-    border: 1px solid rgba(168, 102, 67, 0.35);
-    color: var(--copper);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kicker-text {
     font-size: 13px;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.16em;
+    color: var(--copper);
     text-transform: uppercase;
-    margin-bottom: 24px;
-    align-self: flex-start;
+  }
+  .kicker-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
   }
 
   .headline {
-    font-size: 42px;
+    font-size: 40px;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.22;
     letter-spacing: -0.02em;
     color: var(--ink);
-    margin-bottom: 28px;
+    margin-bottom: 24px;
     max-width: 580px;
   }
 
   .body-copy {
-    font-size: 21px;
+    font-size: 20px;
     line-height: 1.62;
     color: var(--ink-soft);
     font-weight: 400;
-    margin-bottom: 36px;
+    margin-bottom: 28px;
     max-width: 580px;
   }
 
-  /* Diagram area */
+  /* Diagram workspace with ample negative space (>= 40%) */
   .diagram-stage {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     position: relative;
-    margin: 12px 0 24px 0;
+    margin: 8px 0 20px 0;
   }
 
   /* Footer */
@@ -145,28 +149,57 @@ const BASE_CSS = `
     justify-content: space-between;
     align-items: flex-end;
     border-top: 1px solid var(--rule);
-    padding-top: 16px;
+    padding-top: 14px;
     font-size: 13px;
-    color: var(--ink-soft);
+    color: var(--ink-faint);
     letter-spacing: 0.04em;
   }
   .footer-left {
-    max-width: 460px;
+    max-width: 500px;
     line-height: 1.45;
   }
   .page-number {
     font-weight: 700;
     color: var(--copper);
-    font-size: 16px;
+    font-size: 15px;
   }
 
-  /* Common component cards */
-  .tag-box {
-    background: #f8f4ec;
-    border: 1px solid rgba(170, 133, 77, 0.35);
-    border-radius: 12px;
-    padding: 16px 20px;
-    box-shadow: 0 4px 14px rgba(82, 69, 54, 0.06);
+  /* Editorial SVG & typography elements (NO DASHBOARD CARDS) */
+  .equation-container {
+    width: 100%;
+    max-width: 540px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 10px 0;
+  }
+  .equation-term {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--rule);
+    text-transform: uppercase;
+  }
+  .equation-op {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--copper);
+    margin: 12px 0;
+    line-height: 1;
+  }
+  .equation-result {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--copper);
+    padding: 16px 36px;
+    border-top: 2px solid var(--gold);
+    border-bottom: 2px solid var(--gold);
+    text-transform: uppercase;
+    margin-top: 4px;
   }
 `;
 
@@ -177,95 +210,103 @@ function renderPageHTML(page) {
   let diagramHTML = '';
 
   switch (page.layout) {
+    // PAGE 01 & 03: Editorial Typographic Equation
     case 'definition': {
+      const term1 = page.labels?.[0] || 'CỘNG ĐỒNG NGƯỜI';
+      const term2 = page.labels?.[1] || 'MỐI QUAN HỆ XÃ HỘI';
       diagramHTML = `
-        <div style="display: flex; flex-direction: column; gap: 20px; max-width: 540px;">
-          <div class="tag-box" style="border-left: 6px solid var(--copper); padding: 24px;">
-            <div style="font-size: 14px; font-weight: 700; color: var(--copper); margin-bottom: 8px; text-transform: uppercase;">Trọng tâm cốt lõi</div>
-            <div style="font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.4;">
-              ${page.labels ? page.labels.join('  ✦  ') : 'Hệ thống các giai tầng xã hội'}
-            </div>
-          </div>
-          <div style="display: flex; gap: 16px; align-items: center; padding: 12px 18px; background: rgba(170, 133, 77, 0.08); border-radius: 8px; border: 1px dashed var(--gold);">
-            <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--gold);"></div>
-            <div style="font-size: 15px; color: var(--ink-soft);">Xuất phát từ quan hệ sản xuất khách quan trong từng phương thức sản xuất.</div>
-          </div>
+        <div class="equation-container">
+          <div class="equation-term">${term1}</div>
+          <div class="equation-op">+</div>
+          <div class="equation-term">${term2}</div>
+          <div class="equation-op">=</div>
+          <div class="equation-result">CƠ CẤU XÃ HỘI</div>
         </div>
       `;
       break;
     }
 
+    // PAGE 02: Constellation / Radial Diagram with SVG linework
     case 'constellation': {
       diagramHTML = `
-        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 540px;">
-          <div style="font-size: 14px; font-weight: 700; color: var(--copper); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;">5 Lát Cắt Xã Hội</div>
-          ${page.labels.map((lbl, idx) => {
-            const isTarget = lbl === 'Giai cấp';
-            return `
-              <div class="tag-box" style="display: flex; justify-content: space-between; align-items: center; ${isTarget ? 'border: 2px solid var(--copper); background: #fdfaf4;' : ''}">
-                <div style="display: flex; align-items: center; gap: 14px;">
-                  <div style="width: 32px; height: 32px; border-radius: 50%; background: ${isTarget ? 'var(--copper)' : 'rgba(82,69,54,0.12)'}; color: ${isTarget ? '#fff' : 'var(--ink)'}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">
-                    0${idx + 1}
-                  </div>
-                  <div style="font-size: 19px; font-weight: ${isTarget ? '700' : '400'}; color: ${isTarget ? 'var(--copper)' : 'var(--ink)'};">
-                    ${lbl}
-                  </div>
-                </div>
-                ${isTarget ? '<span style="font-size: 12px; font-weight: 700; background: rgba(168,102,67,0.15); color: var(--copper); padding: 4px 10px; border-radius: 12px;">TRỌNG TÂM NGHIÊN CỨU</span>' : ''}
-              </div>
-            `;
-          }).join('')}
+        <div style="width: 100%; max-width: 550px; display: flex; flex-direction: column; align-items: center;">
+          <svg viewBox="0 0 540 340" width="540" height="340" style="overflow: visible;">
+            <!-- Subtle background orbit guide -->
+            <ellipse cx="270" cy="170" rx="200" ry="115" fill="none" stroke="rgba(170, 133, 77, 0.15)" stroke-dasharray="4,4" />
+            
+            <!-- Connecting lines from center to nodes -->
+            <line x1="270" y1="170" x2="270" y2="52" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3,3" />
+            <line x1="270" y1="170" x2="435" y2="125" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3,3" />
+            <line x1="270" y1="170" x2="385" y2="285" stroke="var(--copper)" stroke-width="1.8" />
+            <line x1="270" y1="170" x2="155" y2="285" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3,3" />
+            <line x1="270" y1="170" x2="105" y2="125" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3,3" />
+
+            <!-- Node 1: Top - Dân cư -->
+            <g transform="translate(270, 52)">
+              <circle r="22" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+              <text y="5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">01</text>
+              <text y="-30" text-anchor="middle" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Dân cư</text>
+            </g>
+
+            <!-- Node 2: Right - Nghề nghiệp -->
+            <g transform="translate(435, 125)">
+              <circle r="22" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+              <text y="5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">02</text>
+              <text x="32" y="5" text-anchor="start" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Nghề nghiệp</text>
+            </g>
+
+            <!-- Node 3: Bottom Right - Giai cấp (HIGHLIGHTED) -->
+            <g transform="translate(385, 285)">
+              <circle r="26" fill="var(--copper)" stroke="#faf6ee" stroke-width="2" />
+              <circle r="32" fill="none" stroke="var(--copper)" stroke-width="1.2" stroke-dasharray="3,2" />
+              <text y="6" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" font-family="MLNBookSans">03</text>
+              <text x="40" y="5" text-anchor="start" font-size="18" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">Giai cấp</text>
+              <text x="40" y="24" text-anchor="start" font-size="11" font-weight="700" fill="var(--gold)" letter-spacing="0.08em" font-family="MLNBookSans">TRỌNG TÂM</text>
+            </g>
+
+            <!-- Node 4: Bottom Left - Dân tộc -->
+            <g transform="translate(155, 285)">
+              <circle r="22" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+              <text y="5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">04</text>
+              <text x="-32" y="5" text-anchor="end" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Dân tộc</text>
+            </g>
+
+            <!-- Node 5: Left - Tôn giáo -->
+            <g transform="translate(105, 125)">
+              <circle r="22" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+              <text y="5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--copper)" font-family="MLNBookSans">05</text>
+              <text x="-32" y="5" text-anchor="end" font-size="16" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Tôn giáo</text>
+            </g>
+
+            <!-- CENTER NODE: Cơ cấu xã hội -->
+            <g transform="translate(270, 170)">
+              <circle r="48" fill="#faf6ee" stroke="var(--gold)" stroke-width="2" />
+              <circle r="54" fill="none" stroke="var(--rule)" stroke-width="1" />
+              <text y="-6" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="0.14em" fill="var(--copper)" font-family="MLNBookSans">TRUNG TÂM</text>
+              <text y="14" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">CƠ CẤU XÃ HỘI</text>
+            </g>
+          </svg>
         </div>
       `;
       break;
     }
 
+    // PAGE 04: Four Dimensions (Linework Quadrant, No Boxes)
     case 'four-dimensions': {
       diagramHTML = `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 560px;">
-          ${page.labels.map((dim, idx) => `
-            <div class="tag-box" style="padding: 22px 18px; border-top: 4px solid var(--gold);">
-              <div style="font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 8px;">CHIỀU KÍCH 0${idx + 1}</div>
-              <div style="font-size: 18px; font-weight: 700; color: var(--ink); line-height: 1.35;">${dim}</div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-      break;
-    }
+        <div style="width: 100%; max-width: 540px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px 36px; padding: 20px 0; position: relative;">
+          <!-- Quadrant central thin axis lines -->
+          <div style="position: absolute; top: 12px; bottom: 12px; left: 50%; width: 1px; background: var(--rule);"></div>
+          <div style="position: absolute; left: 12px; right: 12px; top: 50%; height: 1px; background: var(--rule);"></div>
 
-    case 'orbital': {
-      diagramHTML = `
-        <div style="display: flex; flex-direction: column; gap: 18px; max-width: 550px;">
-          <div class="tag-box" style="border: 2px solid var(--copper); background: #fdfaf4; padding: 24px; text-align: center;">
-            <div style="font-size: 13px; font-weight: 700; color: var(--copper); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px;">TÂM ĐIỂM HỆ THỐNG</div>
-            <div style="font-size: 26px; font-weight: 700; color: var(--ink);">CƠ CẤU XÃ HỘI – GIAI CẤP</div>
-            <div style="font-size: 15px; color: var(--ink-soft); margin-top: 6px;">Giữ vị trí quan trọng hàng đầu</div>
-          </div>
-          <div style="display: flex; justify-content: center; align-items: center; gap: 8px; color: var(--copper); font-size: 18px; font-weight: 700;">
-            <span>▲ Tác động qua lại hai chiều ▼</span>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div class="tag-box" style="padding: 14px; text-align: center; font-size: 15px; font-weight: 700;">Dân tộc & Tôn giáo</div>
-            <div class="tag-box" style="padding: 14px; text-align: center; font-size: 15px; font-weight: 700;">Dân cư & Nghề nghiệp</div>
-          </div>
-        </div>
-      `;
-      break;
-    }
-
-    case 'flow': {
-      diagramHTML = `
-        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 540px;">
-          ${(page.labels || ['Cơ cấu kinh tế', 'Lao động & nghề nghiệp', 'Cơ cấu XH–GC']).map((step, idx, arr) => `
-            <div class="tag-box" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 22px;">
-              <div style="display: flex; align-items: center; gap: 14px;">
-                <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--copper); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">
-                  ${idx + 1}
-                </div>
-                <div style="font-size: 18px; font-weight: 700; color: var(--ink);">${step}</div>
+          ${(page.labels || []).map((dim, idx) => `
+            <div style="padding: 12px 18px;">
+              <div style="font-size: 13px; font-weight: 700; color: var(--copper); letter-spacing: 0.14em; margin-bottom: 8px;">
+                0${idx + 1} / QUAN HỆ
               </div>
-              ${idx < arr.length - 1 ? '<div style="color: var(--copper); font-weight: 700; font-size: 20px;">↓</div>' : '<div style="color: var(--gold); font-size: 14px; font-weight: 700;">ĐÍCH ĐẾN</div>'}
+              <div style="font-size: 19px; font-weight: 700; color: var(--ink); line-height: 1.4;">
+                ${dim}
+              </div>
             </div>
           `).join('')}
         </div>
@@ -273,57 +314,175 @@ function renderPageHTML(page) {
       break;
     }
 
-    case 'branching': {
+    // PAGE 05 & 06: Orbital Diagrams
+    // Page 05: Outward influence (Centrifugal / Influence outward)
+    // Page 06: Reciprocal influence (Bidirectional arrows)
+    case 'orbital': {
+      const isPage6 = page.number === 6;
+      const arrowSymbol = isPage6 ? '↔' : '→';
+
       diagramHTML = `
-        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 540px;">
-          <div style="font-size: 14px; font-weight: 700; color: var(--copper); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px;">Các Tiêu Chí Phân Hóa</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            ${(page.labels || ['Nghề nghiệp', 'Trình độ', 'Thu nhập', 'Vị thế']).map((crit) => `
-              <div class="tag-box" style="padding: 16px; border-left: 4px solid var(--gold);">
-                <div style="font-size: 16px; font-weight: 700; color: var(--ink);">${crit}</div>
+        <div style="width: 100%; max-width: 550px; display: flex; flex-direction: column; align-items: center;">
+          <svg viewBox="0 0 540 360" width="540" height="360" style="overflow: visible;">
+            <defs>
+              <marker id="arrow-gold" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="var(--copper)" />
+              </marker>
+              <marker id="arrow-gold-rev" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M 8 1.5 L 0 5 L 8 8.5 z" fill="var(--copper)" />
+              </marker>
+            </defs>
+
+            <!-- Concentric orbital rings -->
+            <ellipse cx="270" cy="180" rx="130" ry="75" fill="none" stroke="rgba(170, 133, 77, 0.2)" stroke-dasharray="3,3" />
+            <ellipse cx="270" cy="180" rx="210" ry="120" fill="none" stroke="rgba(170, 133, 77, 0.3)" stroke-width="1.2" />
+
+            <!-- Connecting Rays with directional markers -->
+            <!-- Top: Dân cư -->
+            <line x1="270" y1="120" x2="270" y2="72" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isPage6 ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
+            <!-- Right: Nghề nghiệp -->
+            <line x1="365" y1="180" x2="425" y2="180" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isPage6 ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
+            <!-- Bottom: Tôn giáo -->
+            <line x1="270" y1="240" x2="270" y2="288" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isPage6 ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
+            <!-- Left: Dân tộc -->
+            <line x1="175" y1="180" x2="115" y2="180" stroke="var(--copper)" stroke-width="1.5" marker-end="url(#arrow-gold)" ${isPage6 ? 'marker-start="url(#arrow-gold-rev)"' : ''} />
+
+            <!-- Orbital Peripheral Nodes -->
+            <!-- Node: Dân cư -->
+            <g transform="translate(270, 48)">
+              <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+              <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Dân cư</text>
+            </g>
+
+            <!-- Node: Nghề nghiệp -->
+            <g transform="translate(450, 180)">
+              <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+              <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Nghề nghiệp</text>
+            </g>
+
+            <!-- Node: Tôn giáo -->
+            <g transform="translate(270, 312)">
+              <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+              <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Tôn giáo</text>
+            </g>
+
+            <!-- Node: Dân tộc -->
+            <g transform="translate(90, 180)">
+              <circle r="20" fill="#faf6ee" stroke="var(--gold)" stroke-width="1.5" />
+              <text y="5" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">Dân tộc</text>
+            </g>
+
+            <!-- CENTER ORBITAL NUCLEUS: Cơ cấu xã hội – giai cấp -->
+            <g transform="translate(270, 180)">
+              <circle r="52" fill="#faf6ee" stroke="var(--copper)" stroke-width="2" />
+              <circle r="60" fill="none" stroke="var(--copper)" stroke-width="1" stroke-dasharray="4,2" />
+              <text y="-8" text-anchor="middle" font-size="11" font-weight="700" letter-spacing="0.12em" fill="var(--copper)" font-family="MLNBookSans">VỊ TRÍ HÀNG ĐẦU</text>
+              <text y="10" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="MLNBookSans">CƠ CẤU XH – GC</text>
+            </g>
+          </svg>
+
+          <!-- Editorial subtitle under diagram -->
+          <div style="margin-top: 10px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--copper); text-transform: uppercase;">
+            ${isPage6 ? 'Tác động qua lại hai chiều (Reciprocal)' : 'Tác động chi phối lan tỏa (Outward Influence)'}
+          </div>
+        </div>
+      `;
+      break;
+    }
+
+    // PAGE 07 & 08: Flow / Sequential Transition
+    case 'flow': {
+      const steps = page.labels || ['Cơ cấu kinh tế', 'Lao động & nghề nghiệp', 'Cơ cấu XH–GC'];
+      diagramHTML = `
+        <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 12px 0;">
+          ${steps.map((step, idx, arr) => `
+            <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--rule);">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <span style="font-size: 13px; font-weight: 700; color: var(--copper); letter-spacing: 0.1em;">
+                  BƯỚC 0${idx + 1}
+                </span>
+                <span style="font-size: 19px; font-weight: 700; color: var(--ink);">
+                  ${step}
+                </span>
+              </div>
+              <div style="font-size: 18px; color: var(--gold); font-weight: 700;">
+                ${idx < arr.length - 1 ? '↓' : '●'}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      break;
+    }
+
+    // PAGE 09 & 10: Branching / Diversification (Linework Tree, ZERO academic text)
+    case 'branching': {
+      const items = page.labels || ['Nghề nghiệp', 'Trình độ', 'Thu nhập', 'Vị thế'];
+      diagramHTML = `
+        <div style="width: 100%; max-width: 540px; display: flex; flex-direction: column; align-items: center; padding: 10px 0;">
+          <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: var(--copper); text-transform: uppercase; margin-bottom: 16px;">
+            CÁC TIÊU CHÍ PHÂN HÓA NỘI BỘ
+          </div>
+          <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px;">
+            ${items.map((crit, idx) => `
+              <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-left: 2px solid var(--gold);">
+                <span style="font-size: 12px; font-weight: 700; color: var(--copper);">0${idx + 1}</span>
+                <span style="font-size: 17px; font-weight: 700; color: var(--ink);">${crit}</span>
               </div>
             `).join('')}
           </div>
-          <div class="tag-box" style="margin-top: 8px; background: rgba(170, 133, 77, 0.08); border: 1px dashed var(--gold); padding: 16px;">
-            <div style="font-size: 14px; color: var(--ink-soft); line-height: 1.5;">Nền kinh tế nhiều thành phần mở ra cơ hội phát triển cho các tầng lớp mới: doanh nhân, lao động tự do, chuyên gia công nghệ.</div>
-          </div>
         </div>
       `;
       break;
     }
 
+    // PAGE 11 & 12: Convergence / Dual Trends (ZERO hard-coded claims)
     case 'convergence': {
       diagramHTML = `
-        <div style="display: flex; flex-direction: column; gap: 18px; max-width: 540px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div class="tag-box" style="border-top: 4px solid #3c825a; padding: 20px;">
-              <div style="font-size: 13px; font-weight: 700; color: #3c825a; margin-bottom: 6px;">MẶT THỐNG NHẤT</div>
-              <div style="font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 8px;">Liên minh & Hợp tác</div>
-              <div style="font-size: 14px; color: var(--ink-soft); line-height: 1.4;">Chung mục tiêu xây dựng đất nước phồn vinh, độc lập và dân chủ.</div>
+        <div style="width: 100%; max-width: 540px; display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 16px 0;">
+          <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; position: relative;">
+            <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--rule);"></div>
+            
+            <div style="padding: 10px 16px; text-align: center;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--gold); text-transform: uppercase; margin-bottom: 8px;">
+                MẶT THỐNG NHẤT
+              </div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--ink);">
+                Hợp tác & Liên minh
+              </div>
             </div>
-            <div class="tag-box" style="border-top: 4px solid var(--copper); padding: 20px;">
-              <div style="font-size: 13px; font-weight: 700; color: var(--copper); margin-bottom: 6px;">MẶT KHÁC BIỆT</div>
-              <div style="font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 8px;">Khác biệt & Căng thẳng</div>
-              <div style="font-size: 14px; color: var(--ink-soft); line-height: 1.4;">Khác biệt về địa vị, phương thức hưởng thụ và lợi ích cục bộ.</div>
+
+            <div style="padding: 10px 16px; text-align: center;">
+              <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.14em; color: var(--copper); text-transform: uppercase; margin-bottom: 8px;">
+                MẶT KHÁC BIỆT
+              </div>
+              <div style="font-size: 20px; font-weight: 700; color: var(--ink);">
+                Khác biệt & Đấu tranh
+              </div>
             </div>
           </div>
-          <div class="tag-box" style="padding: 16px 22px; text-align: center; border: 1px solid var(--gold); background: #fdfaf4;">
-            <div style="font-size: 16px; font-weight: 700; color: var(--copper);">Từng bước xích lại gần nhau — Thu hẹp khoảng cách bất hợp lý</div>
+
+          <div style="display: flex; align-items: center; gap: 16px; width: 100%; justify-content: center; padding-top: 12px; border-top: 1px dashed var(--rule);">
+            <span style="font-size: 18px; color: var(--copper); font-weight: 700;">→</span>
+            <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.08em; color: var(--copper); text-transform: uppercase;">
+              Từng bước xích lại gần nhau
+            </span>
+            <span style="font-size: 18px; color: var(--copper); font-weight: 700;">←</span>
           </div>
         </div>
       `;
       break;
     }
 
+    // PAGE 13: Synthesis (Interlinked Sequence, Clean Editorial)
     case 'synthesis': {
+      const pts = page.labels || ['Kinh tế thay đổi', 'Cơ cấu XH–GC thay đổi', 'Lợi ích vừa thống nhất vừa khác biệt'];
       diagramHTML = `
-        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 540px;">
-          ${(page.labels || ['1. Kinh tế', '2. Cơ cấu XH', '3. Lợi ích']).map((pt, i) => `
-            <div class="tag-box" style="display: flex; align-items: center; gap: 16px; padding: 20px;">
-              <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--copper); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700;">
-                0${i + 1}
-              </div>
-              <div style="font-size: 19px; font-weight: 700; color: var(--ink);">${pt}</div>
+        <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 20px; padding: 16px 0;">
+          ${pts.map((pt, i) => `
+            <div style="display: flex; align-items: baseline; gap: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--rule);">
+              <span style="font-size: 22px; font-weight: 700; color: var(--copper);">0${i + 1}</span>
+              <span style="font-size: 20px; font-weight: 700; color: var(--ink); line-height: 1.35;">${pt}</span>
             </div>
           `).join('')}
         </div>
@@ -331,15 +490,17 @@ function renderPageHTML(page) {
       break;
     }
 
+    // PAGE 14: Bridge / Question-only Transition to Book II
+    // MUST NOT assert any answer or necessity of alliance
     case 'transition': {
       diagramHTML = `
-        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; max-width: 520px; margin: auto; padding: 40px 24px;">
-          <div style="font-size: 72px; color: var(--copper); line-height: 1; margin-bottom: 24px; font-weight: 700;">?</div>
-          <div class="tag-box" style="border: 2px solid var(--gold); padding: 30px; background: #fdfaf4;">
-            <div style="font-size: 13px; font-weight: 700; color: var(--copper); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px;">CẦU NỐI SANG QUYỂN II</div>
-            <div style="font-size: 24px; font-weight: 700; color: var(--ink); line-height: 1.45;">
-              Nội dung cơ cấu xã hội – giai cấp đặt nền tảng tất yếu cho việc nghiên cứu liên minh giai cấp, tầng lớp.
-            </div>
+        <div style="width: 100%; max-width: 520px; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 20px;">
+          <div style="font-size: 64px; color: var(--copper); font-weight: 700; margin-bottom: 24px; line-height: 1;">
+            ?
+          </div>
+          <div style="width: 48px; height: 1px; background: var(--gold); margin-bottom: 24px;"></div>
+          <div style="font-size: 14px; font-weight: 700; letter-spacing: 0.16em; color: var(--copper); text-transform: uppercase;">
+            CÂU HỎI MỞ RA QUYỂN II
           </div>
         </div>
       `;
@@ -362,7 +523,10 @@ function renderPageHTML(page) {
       <div class="page-frame"></div>
       <div class="page-frame-inner"></div>
       <div class="content-container ${paddingClass}">
-        <div class="kicker-pill">${page.kicker}</div>
+        <div class="kicker-line">
+          <span class="kicker-text">${page.kicker}</span>
+          <div class="kicker-rule"></div>
+        </div>
         <h1 class="headline">${page.headline}</h1>
         ${page.body ? `<div class="body-copy">${page.body}</div>` : ''}
         <div class="diagram-stage">
@@ -392,27 +556,25 @@ function renderCoverFrontHTML(data) {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 48px;
+          padding: 44px;
         }
         .cover-box {
           width: 100%;
           height: 100%;
-          border: 2px solid var(--gold);
-          border-radius: 16px;
+          border: 1px solid var(--rule);
+          border-radius: 4px;
           padding: 64px 48px;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
           position: relative;
-          background: radial-gradient(circle at 50% 25%, #fbf8f2 0%, #efe7d8 70%, #dfd2bd 100%);
-          box-shadow: inset 0 0 60px rgba(170, 133, 77, 0.1);
+          background: radial-gradient(circle at 50% 25%, #fbf8f2 0%, #efe7d8 65%, #decfae 100%);
         }
-        .cover-inner-border {
+        .cover-frame-inner {
           position: absolute;
-          inset: 12px;
-          border: 1px dashed rgba(168, 102, 67, 0.35);
-          border-radius: 10px;
+          inset: 8px;
+          border: 1px solid rgba(170, 133, 77, 0.25);
           pointer-events: none;
         }
       </style>
@@ -420,30 +582,39 @@ function renderCoverFrontHTML(data) {
     <body>
       <div class="paper-bg"></div>
       <div class="cover-box">
-        <div class="cover-inner-border"></div>
-        <div style="font-size: 14px; font-weight: 700; letter-spacing: 0.18em; color: var(--copper); text-transform: uppercase; margin-bottom: 28px;">
+        <div class="cover-frame-inner"></div>
+        
+        <!-- Header Series -->
+        <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.2em; color: var(--copper); text-transform: uppercase; margin-bottom: 24px;">
           ${data.series}
         </div>
-        <div style="width: 64px; height: 2px; background: var(--copper); margin-bottom: 40px;"></div>
+        <div style="width: 48px; height: 1.5px; background: var(--copper); margin-bottom: 44px;"></div>
         
-        <div style="font-size: 16px; font-weight: 700; color: var(--gold); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 12px;">
+        <!-- Academic Hierarchy -->
+        <div style="font-size: 15px; font-weight: 700; color: var(--gold); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 12px;">
           ${data.discipline}
         </div>
-        <div style="font-size: 20px; font-weight: 700; color: var(--copper); margin-bottom: 36px;">
+        <div style="font-size: 14px; font-weight: 700; color: var(--ink-soft); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 32px;">
+          CHƯƠNG 5
+        </div>
+
+        <div style="font-size: 22px; font-weight: 700; color: var(--copper); letter-spacing: 0.12em; margin-bottom: 28px;">
           ${data.volume}
         </div>
 
-        <h1 style="font-size: 44px; font-weight: 700; line-height: 1.25; color: var(--ink); margin-bottom: 36px; max-width: 560px;">
+        <!-- Book Title: Strictly CƠ CẤU XÃ HỘI – GIAI CẤP -->
+        <h1 style="font-size: 46px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 36px; max-width: 540px; text-transform: uppercase;">
           ${data.title}
         </h1>
 
-        <div style="font-size: 16px; color: var(--ink-soft); line-height: 1.5; max-width: 480px; margin-bottom: auto;">
+        <div style="width: 32px; height: 1px; background: var(--rule); margin-bottom: 28px;"></div>
+
+        <div style="font-size: 16px; color: var(--ink-soft); line-height: 1.5; max-width: 460px; margin-bottom: auto;">
           ${data.chapter}
         </div>
 
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: auto; padding-top: 36px;">
-          <div style="width: 40px; height: 1px; background: var(--rule);"></div>
-          <div style="font-size: 13px; letter-spacing: 0.06em; color: var(--ink-soft);">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: auto; padding-top: 32px;">
+          <div style="font-size: 13px; letter-spacing: 0.08em; color: var(--ink-soft);">
             Bộ Giáo dục và Đào tạo · Năm 2021
           </div>
         </div>
@@ -465,13 +636,13 @@ function renderCoverBackHTML(data) {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 48px;
+          padding: 44px;
         }
         .back-box {
           width: 100%;
           height: 100%;
           border: 1px solid var(--rule);
-          border-radius: 16px;
+          border-radius: 4px;
           padding: 64px 48px;
           display: flex;
           flex-direction: column;
@@ -485,7 +656,7 @@ function renderCoverBackHTML(data) {
     <body>
       <div class="paper-bg"></div>
       <div class="back-box">
-        <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase;">
+        <div style="font-size: 13px; font-weight: 700; letter-spacing: 0.16em; color: var(--gold); text-transform: uppercase;">
           TỔNG KẾT XUẤT BẢN
         </div>
 

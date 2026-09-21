@@ -4,6 +4,10 @@ import {
   book1EditorialPages,
 } from '../../src/content/magazine/book1Editorial';
 import { getMagazineVolume } from '../../src/experiences/magazine/magazineModel';
+import {
+  coverFront as renderCoverFront,
+  pages as renderPages,
+} from '../../scripts/magazine/book1EditorialRenderData.mjs';
 
 describe('Book I editorial content', () => {
   it('contains exactly fourteen numbered interior pages', () => {
@@ -52,5 +56,27 @@ describe('Book I editorial content', () => {
     ]);
     const editorialIds = book1EditorialPages.map((p) => p.id);
     expect(volumePageIds).toEqual(editorialIds);
+  });
+
+  it('enforces deep parity between typed editorial model and render data', () => {
+    const volume = getMagazineVolume(0)!;
+    expect(renderCoverFront.title).toBe('Cơ cấu xã hội – giai cấp');
+    expect(volume.title).toBe(renderCoverFront.title);
+    expect(renderPages).toHaveLength(book1EditorialPages.length);
+
+    for (let i = 0; i < book1EditorialPages.length; i++) {
+      const source = book1EditorialPages[i];
+      const target = renderPages[i];
+
+      expect(target.id).toBe(source.id);
+      expect(target.number).toBe(source.number);
+      expect(target.kicker).toBe(source.kicker);
+      expect(target.headline).toBe(source.headline);
+      expect(target.body).toBe(source.body);
+      expect(target.labels).toEqual(source.labels);
+      expect(target.footer).toBe(source.footer);
+      expect(target.layout).toBe(source.layout);
+      expect(target.sourceIds).toEqual(source.sourceIds);
+    }
   });
 });
