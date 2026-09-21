@@ -38,3 +38,26 @@ export interface MagazineVolume {
   coverBack: MagazinePageContent;
   theme: MagazineTheme;
 }
+
+export type MagazineEditorialLayout =
+  | 'definition'
+  | 'constellation'
+  | 'four-dimensions'
+  | 'orbital'
+  | 'flow'
+  | 'branching'
+  | 'convergence'
+  | 'synthesis'
+  | 'transition';
+
+export interface Book1EditorialPage {
+  number: number;
+  id: string;
+  kicker: string;
+  headline: string;
+  body?: string;
+  labels?: string[];
+  footer?: string;
+  layout: MagazineEditorialLayout;
+  sourceIds: string[];
+}
