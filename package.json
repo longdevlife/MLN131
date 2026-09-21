@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "render:book1": "node scripts/magazine/renderBook1Editorial.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
