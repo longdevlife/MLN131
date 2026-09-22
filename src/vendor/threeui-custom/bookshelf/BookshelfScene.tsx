@@ -1,11 +1,25 @@
 import React, { useRef, useState, useEffect } from 'react';
 // @ts-expect-error - vendored ThreeUI renderer
 import { createBookshelfRenderer } from './bookshelfRenderer.js';
+import { ensureBookshelfFonts } from './fontLoader';
+import { usePresentationStore } from '../../../state/presentationStore';
 
 declare global {
   interface Window {
     bookshelfRendererCreated?: number;
     bookshelfRendererDisposed?: number;
+    __BOOKSHELF_DEBUG__?: {
+      getSnapshot: () => {
+        mode: 'hero' | 'opening' | 'detail' | 'closing';
+        selectedIndex: number;
+        settled: boolean;
+      } | null;
+      getBookScreenPosition: (index: number) => {
+        x: number;
+        y: number;
+        visible: boolean;
+      } | null;
+    };
   }
 }
 
@@ -28,6 +42,7 @@ export interface BookshelfSceneProps {
   className?: string;
   onSelectBook?: (index: number, book: BookRecord) => void;
   onOpenBook?: (index: number, book: BookRecord) => void;
+  onModeChange?: (mode: 'hero' | 'opening' | 'detail' | 'closing') => void;
   initialIndex?: number;
 }
 
@@ -35,6 +50,7 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
   className = '',
   onSelectBook,
   onOpenBook,
+  onModeChange,
   initialIndex = 0,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -43,15 +59,57 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
   const [status, setStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Diagnostic & stable attributes
+  const [mode, setMode] = useState<'hero' | 'opening' | 'detail' | 'closing'>('hero');
+  const [selectedIndex, setSelectedIndex] = useState(initialIndex);
+  const [isSettled, setIsSettled] = useState(true);
+
   // Stable callbacks using refs to prevent renderer recreation
   const onSelectBookRef = useRef(onSelectBook);
   onSelectBookRef.current = onSelectBook;
   const onOpenBookRef = useRef(onOpenBook);
   onOpenBookRef.current = onOpenBook;
+  const onModeChangeRef = useRef(onModeChange);
+  onModeChangeRef.current = onModeChange;
 
-  // Track initial index without triggering renderer re-creation
-  const initialIndexRef = useRef(initialIndex);
+  // Stale initial index fix: desiredIndexRef refreshed on EVERY render
+  const desiredIndexRef = useRef(initialIndex);
+  desiredIndexRef.current = initialIndex;
+
   const isFirstMount = useRef(true);
+  const dispatchedIntentRef = useRef<object | null>(null);
+
+  // Unified pending navigation intent listener from presentationStore
+  const pendingNav = usePresentationStore((state) => state.pendingBookshelfNavigation);
+
+  useEffect(() => {
+    if (pendingNav && rendererRef.current?.requestNavigation) {
+      // Keep the Zustand intent as a mirror until the renderer confirms that
+      // this exact object has physically resolved. Identity matters: a newer
+      // intent may arrive between the renderer settling and this effect running.
+      dispatchedIntentRef.current = pendingNav;
+      rendererRef.current.requestNavigation(pendingNav);
+    }
+  }, [pendingNav]);
+
+  // Helper to sync container attributes directly without unnecessary React re-renders
+  const updateContainerAttrs = (attrs: {
+    mode?: string;
+    selectedIndex?: number;
+    settled?: boolean;
+  }) => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (attrs.mode !== undefined) {
+      el.setAttribute('data-bookshelf-mode', attrs.mode);
+    }
+    if (attrs.selectedIndex !== undefined) {
+      el.setAttribute('data-bookshelf-selected-index', String(attrs.selectedIndex));
+    }
+    if (attrs.settled !== undefined) {
+      el.setAttribute('data-bookshelf-settled', String(attrs.settled));
+    }
+  };
 
   // Initialize renderer exactly once per mount
   useEffect(() => {
@@ -66,43 +124,155 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
       window.bookshelfRendererCreated = (window.bookshelfRendererCreated || 0) + 1;
     }
 
-    try {
-      const renderer = createBookshelfRenderer(container, canvas, {
-        initialIndex: initialIndexRef.current,
-        onReady: () => {
-          if (!disposed) setStatus('ready');
-        },
-        onError: (err: string | Error) => {
+    const initRenderer = async () => {
+      try {
+        await ensureBookshelfFonts();
+        if (disposed) return;
+
+        const renderer = createBookshelfRenderer(container, canvas, {
+          initialIndex: desiredIndexRef.current,
+          onReady: () => {
+            if (!disposed) {
+              setStatus('ready');
+              updateContainerAttrs({
+                mode: 'hero',
+                selectedIndex: desiredIndexRef.current ?? 0,
+                settled: true,
+              });
+              if (rendererRef.current && desiredIndexRef.current !== undefined) {
+                rendererRef.current.selectVolume(desiredIndexRef.current, true);
+                setSelectedIndex(desiredIndexRef.current);
+
+                // An intent may have arrived while fonts/WebGL were booting.
+                // Hand the latest one to the renderer after initial placement.
+                const queuedIntent =
+                  usePresentationStore.getState().pendingBookshelfNavigation;
+                if (queuedIntent) {
+                  dispatchedIntentRef.current = queuedIntent;
+                  rendererRef.current.requestNavigation?.(queuedIntent);
+                }
+              }
+            }
+          },
+          onError: (err: string | Error) => {
+            if (!disposed) {
+              setErrorMessage(typeof err === 'string' ? err : err.message);
+              setStatus('unavailable');
+            }
+          },
+          onModeChange: (newMode: 'hero' | 'opening' | 'detail' | 'closing') => {
+            if (!disposed) {
+              setMode(newMode);
+              updateContainerAttrs({ mode: newMode });
+              onModeChangeRef.current?.(newMode);
+            }
+          },
+          onSelectionChange: (info: { index: number; total: number; title: string }) => {
+            if (!disposed) {
+              setSelectedIndex(info.index);
+              updateContainerAttrs({ selectedIndex: info.index });
+              if (onSelectBookRef.current) {
+                onSelectBookRef.current(info.index, info as any);
+              }
+            }
+          },
+          onSettledChange: (settled: boolean) => {
+            if (!disposed) {
+              setIsSettled(settled);
+              updateContainerAttrs({ settled });
+
+              const store = usePresentationStore.getState();
+              if (settled) {
+                const intent = store.pendingBookshelfNavigation;
+                if (
+                  intent === dispatchedIntentRef.current &&
+                  (intent?.type === 'select' ||
+                    intent?.type === 'close-to-library')
+                ) {
+                  dispatchedIntentRef.current = null;
+                  store.clearPendingBookshelfNavigation();
+                }
+              }
+
+              usePresentationStore.getState().setShelfSettled(settled);
+              if (settled) {
+                usePresentationStore.getState().flushPendingPresenterSync();
+              }
+            }
+          },
+          onOpenBook: (index: number, book: any) => {
+            if (!disposed && onOpenBookRef.current) {
+              const store = usePresentationStore.getState();
+              const intent = store.pendingBookshelfNavigation;
+              if (
+                intent === dispatchedIntentRef.current &&
+                intent?.type === 'open-book' &&
+                intent.index === index
+              ) {
+                dispatchedIntentRef.current = null;
+                store.clearPendingBookshelfNavigation();
+              }
+
+              onOpenBookRef.current(index, book);
+              usePresentationStore.getState().flushPendingPresenterSync();
+            }
+          },
+          onOpenCover: () => {
+            if (!disposed) {
+              const store = usePresentationStore.getState();
+              const intent = store.pendingBookshelfNavigation;
+              if (
+                intent === dispatchedIntentRef.current &&
+                intent?.type === 'open-cover'
+              ) {
+                dispatchedIntentRef.current = null;
+                store.clearPendingBookshelfNavigation();
+              }
+
+              // Renderer calls onOpenCover at the physical safe point before it
+              // emits a separate settled=true event. Mark that safe point in the
+              // store first so openCover cannot re-queue itself.
+              usePresentationStore.getState().setShelfSettled(true);
+              usePresentationStore.getState().openCover();
+              usePresentationStore.getState().flushPendingPresenterSync();
+            }
+          },
+        });
+
+        rendererRef.current = renderer;
+
+        // Expose ONLY read-only diagnostics to window.__BOOKSHELF_DEBUG__
+        if (typeof window !== 'undefined') {
+          window.__BOOKSHELF_DEBUG__ = {
+            getSnapshot: () => {
+              if (!rendererRef.current) return null;
+              return rendererRef.current.getSnapshot?.() ?? {
+                mode,
+                selectedIndex,
+                settled: isSettled,
+              };
+            },
+            getBookScreenPosition: (idx: number) => {
+              return rendererRef.current?.getBookScreenPosition?.(idx) ?? null;
+            },
+          };
+        }
+
+        renderer.ready?.catch((err: any) => {
           if (!disposed) {
-            setErrorMessage(typeof err === 'string' ? err : err.message);
+            setErrorMessage(err instanceof Error ? err.message : 'Unknown renderer error');
             setStatus('unavailable');
           }
-        },
-        onSelectionChange: (info: { index: number; total: number; title: string }) => {
-          if (!disposed && onSelectBookRef.current) {
-            onSelectBookRef.current(info.index, info as any);
-          }
-        },
-        onOpenBook: (index: number, book: any) => {
-          if (!disposed && onOpenBookRef.current) {
-            onOpenBookRef.current(index, book);
-          }
-        },
-      });
-
-      rendererRef.current = renderer;
-
-      renderer.ready?.catch((err: any) => {
+        });
+      } catch (err: any) {
         if (!disposed) {
-          setErrorMessage(err instanceof Error ? err.message : 'Unknown renderer error');
+          setErrorMessage(err instanceof Error ? err.message : 'Failed to initialize 3D Bookshelf');
           setStatus('unavailable');
         }
-      });
-    } catch (err: any) {
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to initialize 3D Bookshelf');
-      setStatus('unavailable');
-      return;
-    }
+      }
+    };
+
+    initRenderer();
 
     const resizeObserver = new ResizeObserver(() => {
       rendererRef.current?.resize?.();
@@ -113,8 +283,12 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
       disposed = true;
       if (typeof window !== 'undefined') {
         window.bookshelfRendererDisposed = (window.bookshelfRendererDisposed || 0) + 1;
+        delete window.__BOOKSHELF_DEBUG__;
       }
       resizeObserver.disconnect();
+      // Ensure store does not retain stale non-hero mode or settled false when unmounting
+      usePresentationStore.getState().setBookshelfMode('hero');
+      usePresentationStore.getState().setShelfSettled(true);
       try {
         rendererRef.current?.dispose?.();
         rendererRef.current = null;
@@ -124,14 +298,22 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
     };
   }, []); // Run ONCE on mount
 
-  // Sync volume change without re-creating WebGL renderer
+  // Sync volume change without re-creating WebGL renderer (NORMAL SELECTION MUST BE SMOOTH: immediate = false)
   useEffect(() => {
     if (isFirstMount.current) {
       isFirstMount.current = false;
       return;
     }
     if (rendererRef.current?.selectVolume) {
-      rendererRef.current.selectVolume(initialIndex, false);
+      // A semantic intent is already owned by the renderer; do not issue a
+      // duplicate prop-sync command that could replace it.
+      if (usePresentationStore.getState().pendingBookshelfNavigation) return;
+
+      const currentVol = rendererRef.current.getSelectedVolume?.();
+      if (currentVol !== initialIndex) {
+        rendererRef.current.selectVolume(initialIndex, false);
+        setSelectedIndex(initialIndex);
+      }
     }
   }, [initialIndex]);
 
@@ -140,6 +322,9 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
       className={`bookshelf-wrapper ${className}`}
       ref={containerRef}
       data-state={status}
+      data-bookshelf-mode={mode}
+      data-bookshelf-selected-index={selectedIndex}
+      data-bookshelf-settled={String(isSettled)}
       tabIndex={0}
       style={{
         position: 'relative',

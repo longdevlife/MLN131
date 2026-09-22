@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { usePresentationStore } from '../state/presentationStore';
+import { chapters } from '../content/chapters';
 
 export function useKeyboardNavigation() {
   const next = usePresentationStore((state) => state.next);
@@ -19,21 +20,63 @@ export function useKeyboardNavigation() {
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
         return;
       }
-      if (viewMode === 'library') {
+      const state = usePresentationStore.getState();
+
+      if (state.experienceMode === 'magazine') {
+        switch (e.code) {
+          case 'Space':
+          case 'ArrowRight':
+          case 'PageDown':
+            e.preventDefault();
+            state.next();
+            return;
+          case 'ArrowLeft':
+          case 'PageUp':
+            e.preventDefault();
+            state.prev();
+            return;
+          case 'Escape':
+          case 'KeyO':
+            e.preventDefault();
+            state.closeMagazine();
+            return;
+          case 'KeyB':
+            e.preventDefault();
+            toggleBlackout();
+            return;
+          case 'KeyF':
+            e.preventDefault();
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen?.().catch(() => {});
+              setFullscreen(true);
+            } else {
+              document.exitFullscreen?.().catch(() => {});
+              setFullscreen(false);
+            }
+            return;
+          default:
+            return;
+        }
+      }
+
+      const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+
+      if (isLibrary) {
         if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
           e.preventDefault();
-          usePresentationStore.setState((s) => ({ chapterIndex: Math.min(s.chapterIndex + 1, 3) }));
+          const nextIdx = Math.min(state.selectedBook + 1, chapters.length - 1);
+          state.selectBook(nextIdx);
           return;
         }
         if (e.code === 'ArrowLeft' || e.code === 'ArrowUp') {
           e.preventDefault();
-          usePresentationStore.setState((s) => ({ chapterIndex: Math.max(s.chapterIndex - 1, 0) }));
+          const prevIdx = Math.max(state.selectedBook - 1, 0);
+          state.selectBook(prevIdx);
           return;
         }
         if (e.code === 'Space' || e.code === 'Enter') {
           e.preventDefault();
-          const curIndex = usePresentationStore.getState().chapterIndex;
-          usePresentationStore.getState().openChapter(curIndex);
+          state.openBook(state.selectedBook);
           return;
         }
       }
@@ -43,38 +86,39 @@ export function useKeyboardNavigation() {
         case 'ArrowRight':
         case 'PageDown':
           e.preventDefault();
-          next();
+          state.next();
           break;
 
         case 'ArrowLeft':
         case 'PageUp':
           e.preventDefault();
-          prev();
+          state.prev();
           break;
 
         case 'Digit1':
           e.preventDefault();
-          jumpToChapter(0);
+          if (isLibrary) {
+            state.openBook(0);
+          } else {
+            jumpToChapter(0);
+          }
           break;
 
         case 'Digit2':
           e.preventDefault();
-          jumpToChapter(1);
+          if (isLibrary) state.openBook(1);
+          else jumpToChapter(1);
           break;
 
         case 'Digit3':
           e.preventDefault();
-          jumpToChapter(2);
-          break;
-
-        case 'Digit4':
-          e.preventDefault();
-          jumpToChapter(3);
+          if (isLibrary) state.openBook(2);
+          else jumpToChapter(2);
           break;
 
         case 'KeyO':
           e.preventDefault();
-          openLibrary();
+          state.openLibrary();
           break;
 
         case 'KeyF':
@@ -100,19 +144,32 @@ export function useKeyboardNavigation() {
 
         case 'Home':
           e.preventDefault();
-          openCover();
+          state.openCover();
           break;
 
         case 'Escape':
           e.preventDefault();
-          if (usePresentationStore.getState().isSourceDrawerOpen) {
-            usePresentationStore.getState().closeSourceDrawer();
+          if (state.isSourceDrawerOpen) {
+            state.closeSourceDrawer();
             return;
           }
-          if (viewMode === 'chapter') {
-            openLibrary();
-          } else if (viewMode === 'library') {
-            openCover();
+          if (isLibrary) {
+            if (state.qualityTier === 'safe') {
+              state.openCover();
+              return;
+            }
+            if (state.bookshelfMode && state.bookshelfMode !== 'hero') {
+              // Bookshelf detail/opening/closing owns the first Escape!
+              state.requestBookshelfNavigation({ type: 'close-to-library' });
+              const closeBtn = document.getElementById('close-detail') as HTMLButtonElement | null;
+              closeBtn?.click();
+              return;
+            }
+          }
+          if (state.viewMode === 'chapter') {
+            state.openLibrary();
+          } else if (state.viewMode === 'library' || state.experienceMode === 'library') {
+            state.openCover();
           }
           break;
 

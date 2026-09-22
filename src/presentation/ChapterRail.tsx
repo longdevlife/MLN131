@@ -5,10 +5,13 @@ import { Library, Maximize, Minimize, ShieldCheck } from 'lucide-react';
 
 export const ChapterRail: React.FC = () => {
   const viewMode = usePresentationStore((state) => state.viewMode);
+  const experienceMode = usePresentationStore((state) => state.experienceMode);
+  const selectedBook = usePresentationStore((state) => state.selectedBook);
   const chapterIndex = usePresentationStore((state) => state.chapterIndex);
   const isFullscreen = usePresentationStore((state) => state.isFullscreen);
   const qualityTier = usePresentationStore((state) => state.qualityTier);
   const openLibrary = usePresentationStore((state) => state.openLibrary);
+  const openBook = usePresentationStore((state) => state.openBook);
   const jumpToChapter = usePresentationStore((state) => state.jumpToChapter);
   const setFullscreen = usePresentationStore((state) => state.setFullscreen);
   const setQualityTier = usePresentationStore((state) => state.setQualityTier);
@@ -25,6 +28,10 @@ export const ChapterRail: React.FC = () => {
 
   const toggleSafeMode = () => {
     setQualityTier(qualityTier === 'safe' ? 'high' : 'safe');
+  };
+
+  const handleLibraryClick = () => {
+    openLibrary();
   };
 
   return (
@@ -51,7 +58,7 @@ export const ChapterRail: React.FC = () => {
       {/* Return to library button */}
       <button
         type="button"
-        onClick={openLibrary}
+        onClick={handleLibraryClick}
         title="Quay lại Thư viện (phím O / Esc)"
         style={{
           display: 'flex',
@@ -74,17 +81,30 @@ export const ChapterRail: React.FC = () => {
 
       <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.15)', margin: '0 4px' }} />
 
-      {/* 4 Books / Chapters */}
+      {/* 3 Books / Magazine Volumes */}
       <div style={{ display: 'flex', gap: '6px' }}>
         {chapters.map((ch, idx) => {
-          const isActive = viewMode === 'chapter' && chapterIndex === idx;
+          const isLibrary = experienceMode === 'library' || viewMode === 'library';
+          const isMagazine = experienceMode === 'magazine';
+          const isActive = (isLibrary || isMagazine)
+            ? selectedBook === idx
+            : (viewMode === 'chapter' && chapterIndex === idx);
+
+          const handleBookClick = () => {
+            if (isLibrary || isMagazine) {
+              openBook(idx);
+            } else {
+              jumpToChapter(idx);
+            }
+          };
 
           return (
             <button
               key={ch.id}
               type="button"
-              onClick={() => jumpToChapter(idx)}
+              onClick={handleBookClick}
               title={`Quyển ${ch.roman}: ${ch.title} (phím ${idx + 1})`}
+              aria-label={`Quyển ${ch.roman}: ${ch.title}`}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -109,7 +129,7 @@ export const ChapterRail: React.FC = () => {
               >
                 {ch.roman}
               </span>
-              <span className="chapter-rail-title" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span className="chapter-rail-title">
                 {ch.shortTitle}
               </span>
             </button>

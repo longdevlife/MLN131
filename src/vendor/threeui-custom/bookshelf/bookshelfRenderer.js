@@ -3,6 +3,7 @@ import { OrbitControls as na } from "./three165/OrbitControls.js";
 import { RoomEnvironment as aa } from "./three165/RoomEnvironment.js";
 import { RoundedBoxGeometry as Et } from "./three165/RoundedBoxGeometry.js";
 import { RectAreaLightUniformsLib as ia } from "./three165/RectAreaLightUniformsLib.js";
+import { normalizeVietnameseText, fitTextToWidth, fitSingleLineText } from "./typographyUtils";
 function fa(Nr, m, He = {}) {
   let jt = !1;
   const S = [
@@ -41,14 +42,14 @@ function fa(Nr, m, He = {}) {
     },
     {
       id: "part-2",
-      title: "Tính tất yếu của liên minh",
+      title: "Liên minh giai cấp, tầng lớp",
       roman: "II",
-      discipline: "Cơ sở lý luận & thực tiễn",
-      note: "Yêu cầu khách quan về kinh tế, chính trị và văn hóa - xã hội.",
+      discipline: "Cơ sở & nội dung liên minh",
+      note: "Tính tất yếu và các phương diện kinh tế, chính trị, văn hóa – xã hội.",
       deck: "Tính tất yếu và nội dung của liên minh giai cấp công nhân với giai cấp nông dân và tầng lớp trí thức trong thời kỳ quá độ.",
       binding: "Burnt-orange cloth · antique-gold foil",
       format: "156 × 228 mm · Giáo trình 2021",
-      theme: "Tính tất yếu của liên minh",
+      theme: "Liên minh giai cấp, tầng lớp",
       motif: "Interlaced paths",
       motifKey: "paths",
       paletteLabel: "Burnt orange · cream · gold",
@@ -74,10 +75,10 @@ function fa(Nr, m, He = {}) {
     },
     {
       id: "part-3",
-      title: "Việt Nam hiện nay",
+      title: "Cơ cấu & liên minh ở Việt Nam",
       roman: "III",
-      discipline: "Thực tiễn & Biến đổi",
-      note: "Đặc điểm cơ cấu và liên minh trong bối cảnh đổi mới.",
+      discipline: "Thực tiễn & phương hướng",
+      note: "Cơ cấu xã hội – giai cấp, liên minh và phương hướng củng cố ở Việt Nam.",
       deck: "Cơ cấu xã hội - giai cấp và liên minh giai cấp, tầng lớp trong thời kỳ đổi mới và phát triển kinh tế thị trường định hướng XHCN tại Việt Nam.",
       binding: "Forest-emerald cloth · warm-gold foil",
       format: "152 × 222 mm · Giáo trình 2021",
@@ -105,39 +106,6 @@ function fa(Nr, m, He = {}) {
       chapters: ["Công nhân", "Nông dân", "Trí thức", "Doanh nhân"],
       seed: 27
     },
-    {
-      id: "part-4",
-      title: "Phương hướng & giải pháp",
-      roman: "IV",
-      discipline: "Định hướng chiến lược",
-      note: "Hệ thống giải pháp tăng cường liên minh và đồng thuận xã hội.",
-      deck: "Phương hướng và các giải pháp cơ bản nhằm tăng cường khối đại đoàn kết toàn dân tộc và liên minh giai cấp trong giai đoạn hiện nay.",
-      binding: "Crimson velvet cloth · muted-gold foil",
-      format: "150 × 220 mm · Giáo trình 2021",
-      theme: "Phương hướng & Giải pháp",
-      motif: "Modules",
-      motifKey: "modules",
-      paletteLabel: "Crimson · gold · parchment",
-      color: "#5c1d24",
-      foil: "#dfb15b",
-      palette: {
-        paper: "#3d1116",
-        paperDeep: "#240a0d",
-        paperPale: "#f5ece8",
-        ink: "#fdf2f2",
-        inkSoft: "#cfb4b6",
-        wall: "#1b1214",
-        shelf: "#351b18",
-        shelfDark: "#1a0c0a",
-        light: "#ffe6c7",
-        fill: "#bd7880"
-      },
-      width: 1.02,
-      height: 1.54,
-      depth: 0.26,
-      chapters: ["Kinh tế", "Chính trị", "Văn hóa", "Xã hội"],
-      seed: 33
-    }
   ];
   const Vr = "", Yr = "";
   let qt = !1;
@@ -147,7 +115,7 @@ function fa(Nr, m, He = {}) {
   const y = Nr, Ht = y.querySelector("#loading"), Fr = y.querySelector("#fallback-status"), zo = y.querySelector("#browse-ui"), Xe = y.querySelector("#detail-panel"), Jr = y.querySelector("#selection-title"), Or = y.querySelector("#selection-note"), Br = y.querySelector("#counter"), Qr = y.querySelector("#palette-label"), Xt = y.querySelector("#markers"), Io = y.querySelector("#previous"), Do = y.querySelector("#next"), ie = y.querySelector("#inspect"), Ut = y.querySelector("#close-detail"), Ko = y.querySelector("#reset-view"), it = y.querySelector("#toggle-book"), st = y.querySelector("#previous-page"), lt = y.querySelector("#next-page"), $r = y.querySelector("#page-label"), _r = y.querySelector("#page-counter"), en = document.querySelector(".detail-controls .microcopy"), tn = y.querySelector("#detail-eyebrow"), on = y.querySelector("#detail-title"), rn = y.querySelector("#detail-deck"), nn = y.querySelector("#detail-binding"), an = y.querySelector("#detail-format"), sn = y.querySelector("#detail-theme"), ln = y.querySelector("#detail-motif"), Ce = y.querySelector("#live-region"), Ue = y.querySelector("#pointer-label"), cn = y.querySelector("#pointer-label-index"), pn = y.querySelector("#pointer-label-title"), Zt = window.matchMedia("(prefers-reduced-motion: reduce)");
   Ht.hidden = !1;
   const A = l.MathUtils.clamp, k = l.MathUtils.damp, ue = l.MathUtils.lerp, Ze = (e) => e * e * (3 - 2 * e), ct = (e) => e * e * e * (e * (e * 6 - 15) + 10), We = (e, o) => (e % o + o) % o, ge = (e) => String(e).padStart(2, "0");
-  let X = Zt.matches, D, R, L, z, Wt, W, pt = [], ko = [], ee = 0, Nt = performance.now(), b = "hero", te = 0, oe = 0, V = 0, O = 0, Vt = -1, Ne = 0, dt = ie, u = null, K = !1, me = !1, H = 0, Ve = !1, Ae = !1, G = Math.max(1, y.clientWidth), Se = Math.max(1, y.clientHeight), Ye = 0, se = 0, Ge = G * 0.6, Mo = !1, ft = !1;
+  let X = Zt.matches, D, R, L, z, Wt, W, pt = [], ko = [], ee = 0, Nt = performance.now(), b = "hero", te = 0, oe = 0, V = 0, O = 0, Vt = -1, Ne = 0, dt = ie, u = null, K = !1, me = !1, H = 0, Ve = !1, Ae = !1, G = Math.max(1, y.clientWidth), Se = Math.max(1, y.clientHeight), Ye = 0, se = 0, Ge = G * 0.6, Mo = !1, ft = !1, pendingNavigation = null, _lastSettledReported = null;
   const B = {
     floor: null,
     wall: null,
@@ -349,17 +317,77 @@ function fa(Nr, m, He = {}) {
       const i = r() * o.width, d = r() * o.height, s = 4 + r() * 22;
       t.strokeStyle = r() > 0.5 ? "rgba(255,255,255,0.024)" : "rgba(0,0,0,0.025)", t.lineWidth = 0.6 + r() * 0.8, t.beginPath(), t.moveTo(i, d), t.lineTo(i + s, d + (r() - 0.5) * 2), t.stroke();
     }
-    t.strokeStyle = e.foil, t.globalAlpha = 0.72, t.lineWidth = 2, t.strokeRect(42, 42, o.width - 84, o.height - 84), t.strokeRect(55, 55, o.width - 110, o.height - 110), t.globalAlpha = 1, $t(t, e, o.width, o.height), t.fillStyle = e.foil, t.textAlign = "center", t.textBaseline = "middle", t.font = '500 18px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "4px", t.fillText(`GIÁO TRÌNH CHƯƠNG V  /  TẬP ${e.roman}`, o.width / 2, 92);
-    const n = e.title.length > 10 ? 72 : 88;
-    return t.font = `400 ${n}px "Iowan Old Style", Baskerville, Georgia, serif`, t.fillText(e.title, o.width / 2, o.height * 0.72), t.font = '500 16px Inter, "Helvetica Neue", Arial, sans-serif', t.fillText(e.discipline.toUpperCase(), o.width / 2, o.height * 0.79), Q(new l.CanvasTexture(o));
+    t.strokeStyle = e.foil, t.globalAlpha = 0.72, t.lineWidth = 2, t.strokeRect(42, 42, o.width - 84, o.height - 84), t.strokeRect(55, 55, o.width - 110, o.height - 110), t.globalAlpha = 1, $t(t, e, o.width, o.height), t.fillStyle = e.foil, t.textAlign = "center", t.textBaseline = "middle";
+    t.font = '500 18px MLNBookSans, sans-serif';
+    t.fillText(`GIÁO TRÌNH CHƯƠNG V  /  TẬP ${e.roman}`, o.width / 2, 92);
+    const normTitle = normalizeVietnameseText(e.title);
+    const normDiscipline = normalizeVietnameseText(e.discipline);
+    const fittedTitle = fitTextToWidth(t, normTitle, {
+      maxWidth: 610,
+      maxLines: 2,
+      startSize: 68,
+      minSize: 42,
+      lineHeight: 1.12,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 700
+    });
+    if (!fittedTitle.fits) {
+      console.warn(`[Bookshelf:Typography] Front cover title "${normTitle}" exceeded bounds (fits=false). Rendering all lines without dropping words.`);
+    }
+    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
+    const centerY = o.height * 0.72;
+    const startY = centerY - ((fittedTitle.lines.length - 1) * fittedTitle.lineHeightPx * 0.5);
+    fittedTitle.lines.forEach((line, idx) => {
+      t.fillText(line, o.width / 2, startY + idx * fittedTitle.lineHeightPx);
+    });
+    const fittedDiscipline = fitSingleLineText(t, normDiscipline.toUpperCase(), {
+      maxWidth: 580,
+      startSize: 16,
+      minSize: 12,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 500
+    });
+    t.font = `500 ${fittedDiscipline.fontSize}px MLNBookSans, sans-serif`;
+    t.fillText(fittedDiscipline.text, o.width / 2, o.height * 0.80);
+    return Q(new l.CanvasTexture(o));
   }
   function Cn(e) {
     const o = document.createElement("canvas");
     o.width = 768, o.height = 1152;
     const t = o.getContext("2d"), r = S.indexOf(e) + 1;
-    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.textAlign = "left", t.textBaseline = "alphabetic", t.font = '500 15px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "2.8px", t.fillText(`GIÁO TRÌNH CHƯƠNG V  /  TẬP ${ge(r)}`, 58, 70), t.globalAlpha = 0.7, t.lineWidth = 1, t.beginPath(), t.moveTo(58, 86), t.lineTo(164, 86), t.stroke(), t.globalAlpha = 1;
-    const a = e.title.length > 10 ? 64 : 78;
-    return t.font = `400 ${a}px "Iowan Old Style", Baskerville, Georgia, serif`, t.fillText(e.title, 58, 1020), t.font = '500 14px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "2.4px", t.fillText(e.discipline.toUpperCase(), 60, 1066), Q(new l.CanvasTexture(o));
+    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.textAlign = "left", t.textBaseline = "alphabetic";
+    t.font = '500 15px MLNBookSans, sans-serif';
+    t.fillText(`GIÁO TRÌNH CHƯƠNG V  /  TẬP ${ge(r)}`, 58, 70);
+    t.globalAlpha = 0.7, t.lineWidth = 1, t.beginPath(), t.moveTo(58, 86), t.lineTo(164, 86), t.stroke(), t.globalAlpha = 1;
+    const normTitle = normalizeVietnameseText(e.title);
+    const normDiscipline = normalizeVietnameseText(e.discipline);
+    const fittedTitle = fitTextToWidth(t, normTitle, {
+      maxWidth: 610,
+      maxLines: 2,
+      startSize: 64,
+      minSize: 42,
+      lineHeight: 1.12,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 700
+    });
+    if (!fittedTitle.fits) {
+      console.warn(`[Bookshelf:Typography] Secondary title "${normTitle}" exceeded bounds (fits=false). Rendering all lines without dropping words.`);
+    }
+    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
+    const startY = 1010 - ((fittedTitle.lines.length - 1) * fittedTitle.lineHeightPx);
+    fittedTitle.lines.forEach((line, idx) => {
+      t.fillText(line, 58, startY + idx * fittedTitle.lineHeightPx);
+    });
+    const fittedDiscipline = fitSingleLineText(t, normDiscipline.toUpperCase(), {
+      maxWidth: 610,
+      startSize: 14,
+      minSize: 11,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 500
+    });
+    t.font = `500 ${fittedDiscipline.fontSize}px MLNBookSans, sans-serif`;
+    t.fillText(fittedDiscipline.text, 60, 1060);
+    return Q(new l.CanvasTexture(o));
   }
   function An(e) {
     const o = document.createElement("canvas");
@@ -446,7 +474,19 @@ function fa(Nr, m, He = {}) {
     const r = t.getContext("2d"), a = ye(o ? pe(`${e.id}-printed-page`) + e.seed : pe("working-volumes-paper-stock"));
     if (to(r, t.width, t.height, a), o) {
       const c = new l.Color(e.palette.ink), i = Math.round(c.r * 255), d = Math.round(c.g * 255), s = Math.round(c.b * 255);
-      r.fillStyle = `rgba(${i},${d},${s},0.2)`, r.textAlign = "left", r.textBaseline = "alphabetic", r.font = '500 15px Inter, "Helvetica Neue", Arial, sans-serif', r.letterSpacing = "2px", r.fillText(e.title.toUpperCase(), 84, 98), r.fillRect(84, 121, 190, 2);
+      r.fillStyle = `rgba(${i},${d},${s},0.2)`, r.textAlign = "left", r.textBaseline = "alphabetic";
+      const normTnTitle = normalizeVietnameseText(e.title).toUpperCase();
+      const fittedTnTitle = fitSingleLineText(r, normTnTitle, {
+        maxWidth: 580,
+        startSize: 15,
+        minSize: 11,
+        fontFamily: 'MLNBookSans',
+        fontWeight: 500,
+      });
+      r.font = `500 ${fittedTnTitle.fontSize}px MLNBookSans, sans-serif`;
+      r.letterSpacing = "2px";
+      r.fillText(fittedTnTitle.text, 84, 98);
+      r.fillRect(84, 121, Math.max(190, Math.min(580, fittedTnTitle.width)), 2);
       for (let h = 0; h < 2; h += 1) {
         const x = 84 + h * 316;
         for (let f = 0; f < 34; f += 1) {
@@ -454,7 +494,7 @@ function fa(Nr, m, He = {}) {
           r.globalAlpha = 0.22 + a() * 0.11, r.fillRect(x, g, C, 1.45);
         }
       }
-      r.globalAlpha = 0.32, r.font = '400 17px "Iowan Old Style", Baskerville, Georgia, serif', r.fillText(e.roman, t.width - 104, t.height - 72), r.globalAlpha = 1;
+      r.globalAlpha = 0.32, r.font = '400 17px MLNBookSans, sans-serif', r.fillText(e.roman, t.width - 104, t.height - 72), r.globalAlpha = 1;
     }
     const n = Q(new l.CanvasTexture(t));
     return o || (_t = n), n;
@@ -491,13 +531,36 @@ function fa(Nr, m, He = {}) {
       const s = c.getContext("2d");
       s.scale(0.75, 0.75);
       const h = ye(pe(`${e.id}-leaf-${n}`) + e.seed);
-      if (to(s, i, d, h), s.fillStyle = r, s.strokeStyle = r, s.textAlign = "left", s.textBaseline = "alphabetic", s.globalAlpha = 0.58, s.font = '500 10px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "1.8px", s.fillText(`WORKING VOLUMES  /  ${e.roman}`, 48, 48), s.textAlign = "right", s.fillText(ge(n + 1), i - 48, 48), s.textAlign = "left", s.fillRect(48, 64, i - 96, 1), s.globalAlpha = 1, n === 0)
-        s.font = '500 12px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2.3px", s.fillText(e.discipline.toUpperCase(), 54, 174), s.font = `400 ${e.title.length > 10 ? 48 : 58}px "Iowan Old Style", Baskerville, Georgia, serif`, s.letterSpacing = "0px", de(s, e.title, 52, 246, 18, 58, 2), s.globalAlpha = 0.55, s.font = '400 22px "Iowan Old Style", Baskerville, Georgia, serif', de(s, e.note, 54, 462, 36, 30, 4);
-      else if (n === 1 || n === 3) {
+      if (to(s, i, d, h), s.fillStyle = r, s.strokeStyle = r, s.textAlign = "left", s.textBaseline = "alphabetic", s.globalAlpha = 0.58, s.font = '500 10px MLNBookSans, sans-serif', s.letterSpacing = "1.8px", s.fillText(`WORKING VOLUMES  /  ${e.roman}`, 48, 48), s.textAlign = "right", s.fillText(ge(n + 1), i - 48, 48), s.textAlign = "left", s.fillRect(48, 64, i - 96, 1), s.globalAlpha = 1, n === 0) {
+        const normDiscipline = normalizeVietnameseText(e.discipline).toUpperCase();
+        const fittedDiscipline = fitSingleLineText(s, normDiscipline, {
+          maxWidth: 400,
+          startSize: 12,
+          minSize: 9,
+          fontFamily: 'MLNBookSans',
+          fontWeight: 500,
+        });
+        s.font = `500 ${fittedDiscipline.fontSize}px MLNBookSans, sans-serif`;
+        s.letterSpacing = "2.3px";
+        s.fillText(fittedDiscipline.text, 54, 174);
+        const fittedLeafTitle = fitTextToWidth(s, normalizeVietnameseText(e.title), {
+          maxWidth: 400,
+          maxLines: 2,
+          startSize: 52,
+          minSize: 36,
+          fontFamily: 'MLNBookSans'
+        });
+        s.font = `400 ${fittedLeafTitle.fontSize}px MLNBookSans, sans-serif`;
+        s.letterSpacing = "0px";
+        fittedLeafTitle.lines.forEach((ln, idx) => {
+          s.fillText(ln, 52, 246 + idx * fittedLeafTitle.lineHeightPx);
+        });
+        s.globalAlpha = 0.55, s.font = '400 22px MLNBookSans, sans-serif', de(s, normalizeVietnameseText(e.note), 54, 462, 36, 30, 4);
+      } else if (n === 1 || n === 3) {
         const f = n === 1 ? 0 : 1;
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText(`CHAPTER ${ge(f + 1)}`, 54, 166), s.font = '400 49px "Iowan Old Style", Baskerville, Georgia, serif', s.letterSpacing = "0px", de(s, e.chapters[f], 52, 244, 18, 54, 3), s.globalAlpha = 0.52, s.font = '400 20px "Iowan Old Style", Baskerville, Georgia, serif', de(
+        s.font = '500 11px MLNBookSans, sans-serif', s.letterSpacing = "2px", s.fillText(`CHAPTER ${ge(f + 1)}`, 54, 166), s.font = '400 49px MLNBookSans, sans-serif', s.letterSpacing = "0px", de(s, normalizeVietnameseText(e.chapters[f]), 52, 244, 18, 54, 3), s.globalAlpha = 0.52, s.font = '400 20px MLNBookSans, sans-serif', de(
           s,
-          f === 0 ? e.note : e.deck,
+          normalizeVietnameseText(f === 0 ? e.note : e.deck),
           54,
           438,
           42,
@@ -505,9 +568,10 @@ function fa(Nr, m, He = {}) {
           6
         );
       } else if (n === 2)
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("PLATE 01  /  SYSTEM MOTIF", 54, 146), s.save(), s.globalAlpha = 0.58, $t(s, { ...e, foil: r }, i, d * 0.92), s.restore(), s.globalAlpha = 0.48, s.font = '400 17px "Iowan Old Style", Baskerville, Georgia, serif', de(s, e.theme, 54, 650, 44, 24, 3);
+        s.font = '500 11px MLNBookSans, sans-serif', s.letterSpacing = "2px", s.fillText("PLATE 01  /  SYSTEM MOTIF", 54, 146), s.save(), s.globalAlpha = 0.58, $t(s, { ...e, foil: r }, i, d * 0.92), s.restore(), s.globalAlpha = 0.48, s.font = '400 17px MLNBookSans, sans-serif', de(s, normalizeVietnameseText(e.theme), 54, 650, 44, 24, 3);
       else if (n === 4) {
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText(`NOTES  /  ${e.chapters[1].toUpperCase()}`, 54, 138), s.globalAlpha = 0.44;
+        const normChapter1 = normalizeVietnameseText(e.chapters[1]).toUpperCase();
+        s.font = '500 11px MLNBookSans, sans-serif', s.letterSpacing = "2px", s.fillText(`NOTES  /  ${normChapter1}`, 54, 138), s.globalAlpha = 0.44;
         for (let f = 0; f < 2; f += 1) {
           const g = 54 + f * 214;
           for (let v = 0; v < 24; v += 1) {
@@ -515,11 +579,11 @@ function fa(Nr, m, He = {}) {
             s.fillRect(g, 190 + v * 18, C, 1.25);
           }
         }
-        s.globalAlpha = 0.78, s.strokeRect(54, 654, 404, 54), s.font = '500 10px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "1.4px", s.fillText(e.motif.toUpperCase(), 70, 686);
+        s.globalAlpha = 0.78, s.strokeRect(54, 654, 404, 54), s.font = '500 10px MLNBookSans, sans-serif', s.letterSpacing = "1.4px", s.fillText(e.motif.toUpperCase(), 70, 686);
       } else if (n === 5)
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("CHAPTER 03", 54, 166), s.font = '400 49px "Iowan Old Style", Baskerville, Georgia, serif', s.letterSpacing = "0px", de(s, e.chapters[2], 52, 244, 18, 54, 3), s.globalAlpha = 0.52, s.font = '400 20px "Iowan Old Style", Baskerville, Georgia, serif', de(s, e.deck, 54, 438, 42, 28, 6);
+        s.font = '500 11px MLNBookSans, sans-serif', s.letterSpacing = "2px", s.fillText("CHAPTER 03", 54, 166), s.font = '400 49px MLNBookSans, sans-serif', s.letterSpacing = "0px", de(s, normalizeVietnameseText(e.chapters[2]), 52, 244, 18, 54, 3), s.globalAlpha = 0.52, s.font = '400 20px MLNBookSans, sans-serif', de(s, normalizeVietnameseText(e.deck), 54, 438, 42, 28, 6);
       else if (n === 6) {
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("PLATE 02  /  TECHNICAL SYSTEM", 54, 146), s.save(), s.translate(i * 0.5, 380), s.globalAlpha = 0.55;
+        s.font = '500 11px MLNBookSans, sans-serif', s.letterSpacing = "2px", s.fillText("PLATE 02  /  TECHNICAL SYSTEM", 54, 146), s.save(), s.translate(i * 0.5, 380), s.globalAlpha = 0.55;
         for (let f = 0; f < 5; f += 1) {
           const g = 38 + f * 34;
           s.beginPath(), s.arc(0, 0, g, 0, Math.PI * 2), s.stroke();
@@ -528,17 +592,17 @@ function fa(Nr, m, He = {}) {
           const g = f * Math.PI * 0.25;
           s.beginPath(), s.moveTo(Math.cos(g) * 36, Math.sin(g) * 36), s.lineTo(Math.cos(g) * 176, Math.sin(g) * 176), s.stroke();
         }
-        s.restore(), s.globalAlpha = 0.48, s.font = '400 17px "Iowan Old Style", Baskerville, Georgia, serif', de(s, e.theme, 54, 650, 44, 24, 3);
+        s.restore(), s.globalAlpha = 0.48, s.font = '400 17px MLNBookSans, sans-serif', de(s, normalizeVietnameseText(e.theme), 54, 650, 44, 24, 3);
       } else
-        s.font = '500 11px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "2px", s.fillText("COLOPHON", 54, 164), s.font = '400 32px "Iowan Old Style", Baskerville, Georgia, serif', s.letterSpacing = "0px", s.fillText(e.title, 54, 230), s.globalAlpha = 0.58, s.font = '400 18px "Iowan Old Style", Baskerville, Georgia, serif', de(
+        s.font = '500 11px MLNBookSans, sans-serif', s.letterSpacing = "2px", s.fillText("COLOPHON", 54, 164), s.font = '400 32px MLNBookSans, sans-serif', s.letterSpacing = "0px", s.fillText(normalizeVietnameseText(e.title), 54, 230), s.globalAlpha = 0.58, s.font = '400 18px MLNBookSans, sans-serif', de(
           s,
-          `${e.binding}. ${e.format}. Conceived as an original editorial study for Working Volumes.`,
+          normalizeVietnameseText(`${e.binding}. ${e.format}. Conceived as an original editorial study for Working Volumes.`),
           54,
           306,
           44,
           28,
           7
-        ), s.globalAlpha = 0.74, s.font = '500 10px Inter, "Helvetica Neue", Arial, sans-serif', s.letterSpacing = "1.8px", s.fillText(`SPECIMEN ${e.roman} / ${e.seed}  ·  IMAGINED EDITION`, 54, 676);
+        ), s.globalAlpha = 0.74, s.font = '500 10px MLNBookSans, sans-serif', s.letterSpacing = "1.8px", s.fillText(`SPECIMEN ${e.roman} / ${e.seed}  ·  IMAGINED EDITION`, 54, 676);
       s.globalAlpha = 0.62, s.fillRect(48, d - 48, i - 96, 1), s.globalAlpha = 1;
       const x = Q(new l.CanvasTexture(c), {
         anisotropy: 16
@@ -633,7 +697,27 @@ function fa(Nr, m, He = {}) {
     const o = document.createElement("canvas");
     o.width = 384, o.height = 1536;
     const t = o.getContext("2d");
-    return t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.lineWidth = 2.4, t.strokeRect(34, 38, o.width - 68, o.height - 76), t.textAlign = "center", t.textBaseline = "middle", t.font = '500 24px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "5px", t.fillText(e.roman, o.width * 0.5, 118), t.save(), t.translate(o.width * 0.5, o.height * 0.5), t.rotate(Math.PI / 2), t.font = `400 ${e.title.length > 10 ? 58 : 68}px "Iowan Old Style", Baskerville, Georgia, serif`, t.letterSpacing = "0px", t.fillText(e.title, 0, 0), t.restore(), t.beginPath(), t.arc(o.width * 0.5, o.height - 120, 24, 0, Math.PI * 2), t.stroke(), t.beginPath(), t.moveTo(o.width * 0.5 - 24, o.height - 120), t.lineTo(o.width * 0.5 + 24, o.height - 120), t.stroke(), Q(new l.CanvasTexture(o));
+    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.lineWidth = 2.4, t.strokeRect(34, 38, o.width - 68, o.height - 76), t.textAlign = "center", t.textBaseline = "middle";
+    t.font = '500 24px MLNBookSans, sans-serif';
+    t.fillText(e.roman, o.width * 0.5, 118);
+
+    const normTitle = normalizeVietnameseText(e.title);
+    const fittedSpine = fitSingleLineText(t, normTitle, {
+      maxWidth: 960,
+      startSize: 58,
+      minSize: 34,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 700
+    });
+
+    t.save(), t.translate(o.width * 0.5, o.height * 0.5), t.rotate(Math.PI / 2);
+    t.font = `700 ${fittedSpine.fontSize}px MLNBookSans, sans-serif`;
+    t.fillText(fittedSpine.text, 0, 0);
+    t.restore();
+
+    t.beginPath(), t.arc(o.width * 0.5, o.height - 120, 24, 0, Math.PI * 2), t.stroke();
+    t.beginPath(), t.moveTo(o.width * 0.5 - 24, o.height - 120), t.lineTo(o.width * 0.5 + 24, o.height - 120), t.stroke();
+    return Q(new l.CanvasTexture(o));
   }
   function kn(e) {
     const o = document.createElement("canvas");
@@ -660,10 +744,48 @@ function fa(Nr, m, He = {}) {
     const o = document.createElement("canvas");
     o.width = 768, o.height = 1152;
     const t = o.getContext("2d");
-    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.textAlign = "left", t.textBaseline = "alphabetic", t.font = '500 16px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "3px", t.fillText(`WORKING VOLUMES  /  ${e.roman}`, 68, 82), t.globalAlpha = 0.72, t.fillRect(68, 108, 176, 2), t.globalAlpha = 1, t.lineWidth = 1.5;
+    t.clearRect(0, 0, o.width, o.height), t.fillStyle = "#ffffff", t.strokeStyle = "#ffffff", t.textAlign = "left", t.textBaseline = "alphabetic";
+    t.font = '500 16px MLNBookSans, sans-serif';
+    t.fillText(`WORKING VOLUMES  /  ${e.roman}`, 68, 82);
+    t.globalAlpha = 0.72, t.fillRect(68, 108, 176, 2), t.globalAlpha = 1, t.lineWidth = 1.5;
     for (let r = 0; r < 5; r += 1)
       t.globalAlpha = 0.24 - r * 0.032, t.beginPath(), t.arc(548, 374, 74 + r * 38, 0, Math.PI * 2), t.stroke();
-    return t.globalAlpha = 1, t.beginPath(), t.moveTo(348, 374), t.lineTo(704, 374), t.moveTo(548, 174), t.lineTo(548, 574), t.stroke(), t.font = `400 ${e.title.length > 10 ? 52 : 62}px "Iowan Old Style", Baskerville, Georgia, serif`, t.letterSpacing = "0px", t.fillText(e.title, 68, 956), t.font = '500 15px Inter, "Helvetica Neue", Arial, sans-serif', t.letterSpacing = "2.6px", t.fillText(e.discipline.toUpperCase(), 70, 1004), t.globalAlpha = 0.68, t.fillRect(68, 1040, 632, 1.5), t.globalAlpha = 1, t.textAlign = "right", t.fillText("AN IMAGINED EDITION", 700, 1080), Q(new l.CanvasTexture(o));
+    t.globalAlpha = 1, t.beginPath(), t.moveTo(348, 374), t.lineTo(704, 374), t.moveTo(548, 174), t.lineTo(548, 574), t.stroke();
+
+    const normTitle = normalizeVietnameseText(e.title);
+    const normDiscipline = normalizeVietnameseText(e.discipline);
+    const fittedTitle = fitTextToWidth(t, normTitle, {
+      maxWidth: 610,
+      maxLines: 2,
+      startSize: 58,
+      minSize: 38,
+      lineHeight: 1.12,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 700
+    });
+
+    if (!fittedTitle.fits) {
+      console.warn(`[Bookshelf:Typography] Working volume title "${normTitle}" exceeded bounds (fits=false). Rendering all lines without dropping words.`);
+    }
+    t.font = `700 ${fittedTitle.fontSize}px MLNBookSans, sans-serif`;
+    const startY = 956 - ((fittedTitle.lines.length - 1) * fittedTitle.lineHeightPx);
+    fittedTitle.lines.forEach((line, idx) => {
+      t.fillText(line, 68, startY + idx * fittedTitle.lineHeightPx);
+    });
+
+    const fittedDiscipline = fitSingleLineText(t, normDiscipline.toUpperCase(), {
+      maxWidth: 610,
+      startSize: 15,
+      minSize: 11,
+      fontFamily: 'MLNBookSans',
+      fontWeight: 500
+    });
+    t.font = `500 ${fittedDiscipline.fontSize}px MLNBookSans, sans-serif`;
+    t.fillText(fittedDiscipline.text, 70, 1004);
+
+    t.globalAlpha = 0.68, t.fillRect(68, 1040, 632, 1.5), t.globalAlpha = 1, t.textAlign = "right";
+    t.fillText("AN IMAGINED EDITION", 700, 1080);
+    return Q(new l.CanvasTexture(o));
   }
   function T(e, o, t, r = !0, a = !0) {
     const n = new l.Mesh(e, o);
@@ -1509,9 +1631,10 @@ function fa(Nr, m, He = {}) {
     const t = Math.round(V), r = We(t, S.length);
     let a = e - r;
     a > S.length / 2 && (a -= S.length), a < -S.length / 2 && (a += S.length), V = t + a, dt = o, mt(e, !0), U();
+    checkAndNotifySettled();
   }
   function Ie(e, o) {
-    b === "hero" && (V = Math.round(V) + e, dt = o, mt(We(Math.round(V), S.length), !0), U());
+    b === "hero" && (V = Math.round(V) + e, dt = o, mt(We(Math.round(V), S.length), !0), U(), checkAndNotifySettled());
   }
   function Vn() {
     const e = Math.round(V), o = We(e, S.length);
@@ -1712,6 +1835,44 @@ function fa(Nr, m, He = {}) {
   function br() {
     $.ndc.set(3, 3), Ve = !1, me = !1, _e(-1), p.active || m.classList.remove("has-page-hover", "has-closed-book-hover");
   }
+  function isShelfSettled() {
+    const diff = Math.abs(oe - V);
+    return diff < 1e-3 && b === "hero" && Ne <= 0;
+  }
+  function checkAndNotifySettled() {
+    const physicallySettled = isShelfSettled();
+
+    // If motion has settled and there is a queued navigation, consume it first!
+    if (physicallySettled && pendingNavigation) {
+      const nav = pendingNavigation;
+      pendingNavigation = null;
+
+      if (nav.type === "open-book") {
+        He.onOpenBook?.(nav.index, S[nav.index]);
+        return;
+      } else if (nav.type === "open-cover") {
+        He.onOpenCover?.();
+        return;
+      } else if (nav.type === "close-to-library") {
+        // Safe close-to-library completed, nothing more to rotate
+      } else {
+        // "select" intent: initiates a new rotation
+        ar(nav.index);
+        if (_lastSettledReported !== false) {
+          _lastSettledReported = false;
+          He.onSettledChange?.(false);
+        }
+        return;
+      }
+    }
+
+    // Only report settled=true when no pending navigation remains and shelf is truly settled
+    const trulySettled = isShelfSettled() && !pendingNavigation;
+    if (trulySettled !== _lastSettledReported) {
+      _lastSettledReported = trulySettled;
+      He.onSettledChange?.(trulySettled);
+    }
+  }
   function yr(e) {
     if (b === "detail" && !K && e.button === 0) {
       if (!M.allowClick || (M.allowClick = !1, De(e), !lr())) return;
@@ -1721,20 +1882,28 @@ function fa(Nr, m, He = {}) {
     if (b !== "hero" || e.button !== 0) return;
     De(e);
     const o = sr();
-    o < 0 || (e.preventDefault(), ar(o, m), xe(m));
+    if (o < 0) return;
+    e.preventDefault();
+    const centeredIndex = We(Math.round(V), S.length);
+    if (o !== centeredIndex || !isShelfSettled()) {
+      ar(o, m);
+    } else {
+      xe(m);
+    }
   }
   function vr(e) {
     if (b !== "hero") return;
     e.preventDefault();
     const o = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    V += A(o * 22e-4, -0.72, 0.72), Ne = 0.14, U();
+    V += A(o * 22e-4, -0.72, 0.72), Ne = 0.14, U(), checkAndNotifySettled();
   }
   function xe(e = ie) {
-    b === "hero" && (b = "opening", te = 0, K = !1, me = !1, H = 0, Te(), dt = e === m ? Xt.children[O] || ie : e instanceof HTMLElement ? e : ie, u = pt[O], u.contactShadow.visible = !1, Wn(u.data), Qe(!1), Xe.inert = !1, Xe.setAttribute("aria-hidden", "false"), zo.inert = !0, y.classList.add("mode-detail", "is-opening"), Ue.setAttribute("aria-hidden", "true"), _e(-1), u.root.updateWorldMatrix(!0, !0), u.root.matrixWorld.decompose(
+    if (b !== "hero") return;
+    b = "opening", te = 0, K = !1, me = !1, H = 0, Te(), dt = e === m ? Xt.children[O] || ie : e instanceof HTMLElement ? e : ie, u = pt[O], u.contactShadow.visible = !1, Wn(u.data), Qe(!1), Xe.inert = !1, Xe.setAttribute("aria-hidden", "false"), zo.inert = !0, y.classList.add("mode-detail", "is-opening"), Ue.setAttribute("aria-hidden", "true"), _e(-1), u.root.updateWorldMatrix(!0, !0), u.root.matrixWorld.decompose(
       Yt,
       Gt,
       Ft
-    ), Ho.copy(L.position), Xo.copy(ce), Uo.copy(W.position), Eo.copy(u.motion.position), jo.copy(u.motion.quaternion), $o = se, R.add(u.root), u.root.position.copy(Yt), u.root.quaternion.copy(Gt), u.root.scale.copy(Ft), Pe(), z.enabled = !1, Ce.textContent = `Opening a closed copy of ${u.data.title}. Drag the cover, click the book, or use Open book to begin reading.`, X && wr(), U());
+    ), Ho.copy(L.position), Xo.copy(ce), Uo.copy(W.position), Eo.copy(u.motion.position), jo.copy(u.motion.quaternion), $o = se, R.add(u.root), u.root.position.copy(Yt), u.root.quaternion.copy(Gt), u.root.scale.copy(Ft), Pe(), z.enabled = !1, Ce.textContent = `Opening a closed copy of ${u.data.title}. Drag the cover, click the book, or use Open book to begin reading.`, He.onModeChange?.("opening"), checkAndNotifySettled(), X && wr(), U();
   }
   function xr(e) {
     const o = ct(A(e, 0, 1)), t = ct(A(e / 0.68, 0, 1));
@@ -1773,16 +1942,17 @@ function fa(Nr, m, He = {}) {
     ), se = ue($o, Ye, o), Pe(), L.lookAt(ce);
   }
   function wr() {
-    u && (xr(1), b = "detail", te = 1, He.onModeChange?.("detail"), He.onOpenBook?.(O, S[O]), z.target.copy(Je), z.enabled = !0, z.enableDamping = !X, z.update(), Qe(!1), y.classList.remove("is-opening"), Ut.focus({ preventScroll: !0 }));
+    u && (xr(1), b = "detail", te = 1, He.onModeChange?.("detail"), checkAndNotifySettled(), He.onOpenBook?.(O, S[O]), z.target.copy(Je), z.enabled = !0, z.enableDamping = !X, z.update(), Qe(!1), y.classList.remove("is-opening"), Ut.focus({ preventScroll: !0 }));
   }
   function so() {
-    b === "detail" && (Ke(), Te(), b = "closing", te = 0, K = !1, me = !1, H = 0, m.classList.remove("has-page-hover", "has-closed-book-hover"), Qe(!1), z.enabled = !1, No.copy(u.root.position), Vo.copy(u.root.quaternion), Yo.copy(u.root.scale), Go.copy(u.motion.position), Fo.copy(u.motion.quaternion), Jo.copy(L.position), Jt.copy(z.target), Oo.copy(W.position), _o = se, ce.copy(Jt), y.classList.remove("is-opening"), Vn(), Wo.set(
+    if (b !== "detail" && b !== "opening") return;
+    Ke(), Te(), b = "closing", te = 0, K = !1, me = !1, H = 0, m.classList.remove("has-page-hover", "has-closed-book-hover"), Qe(!1), z.enabled = !1, No.copy(u.root.position), Vo.copy(u.root.quaternion), Yo.copy(u.root.scale), Go.copy(u.motion.position), Fo.copy(u.motion.quaternion), Jo.copy(L.position), Jt.copy(z.target), Oo.copy(W.position), _o = se, ce.copy(Jt), y.classList.remove("is-opening"), Vn(), Wo.set(
       0,
       Ot + u.base.height * 0.5 + 0.15,
       0.37
     ), pt.forEach((e, o) => {
       e !== u && e.root.parent === W && ir(e, o);
-    }), y.classList.remove("mode-detail"), Xe.setAttribute("aria-hidden", "true"), Xe.inert = !0, Ce.textContent = `Returning ${u.data.title} to the shelf.`, X && Ar(), U());
+    }), y.classList.remove("mode-detail"), Xe.setAttribute("aria-hidden", "true"), Xe.inert = !0, Ce.textContent = `Returning ${u.data.title} to the shelf.`, He.onModeChange?.("closing"), checkAndNotifySettled(), X && Ar(), U();
   }
   function Cr(e) {
     const o = ct(A(e, 0, 1)), t = ct(
@@ -1823,7 +1993,36 @@ function fa(Nr, m, He = {}) {
     ), se = ue(_o, 0, o), Pe(), L.lookAt(ce);
   }
   function Ar() {
-    u && (Cr(1), W.attach(u.root), ir(u, O), u.contactShadow.visible = !0, z.target.copy(le), zo.inert = !1, b = "hero", te = 0, He.onModeChange?.("shelf"), u = null, Ce.textContent = `${S[O].title} returned to the shelf.`, requestAnimationFrame(() => dt?.focus?.({ preventScroll: !0 })));
+    u && (
+      Cr(1),
+      W.attach(u.root),
+      ir(u, O),
+      u.contactShadow.visible = !0,
+      z.target.copy(le),
+      zo.inert = !1,
+      b = "hero",
+      te = 0,
+      He.onModeChange?.("hero"),
+      u = null,
+      Ce.textContent = `${S[O].title} returned to the shelf.`,
+      requestAnimationFrame(() => dt?.focus?.({ preventScroll: !0 }))
+    );
+    checkAndNotifySettled();
+    if (pendingNavigation) {
+      const nav = pendingNavigation;
+      if (nav.type === "open-book") {
+        if (isShelfSettled()) {
+          pendingNavigation = null;
+          He.onOpenBook?.(nav.index, S[nav.index]);
+        }
+      } else if (nav.type === "close-to-library") {
+        pendingNavigation = null;
+        // Safe close-to-library completed: physical book returned, mode is hero, remain at current book O
+      } else {
+        pendingNavigation = null;
+        ar(nav.index);
+      }
+    }
   }
   function Lr() {
     b === "detail" && (L.position.copy(ht), z.target.copy(Je), z.update(), Ce.textContent = `Inspection view reset for ${S[O].title}.`, U());
@@ -1831,8 +2030,11 @@ function fa(Nr, m, He = {}) {
   function Jn(e, o) {
     if (b === "hero") {
       oe = X ? V : k(oe, V, 9.5, e), Math.abs(oe - V) < 5e-4 && (oe = V), Ne > 0 && (Ne -= e, Ne <= 0 && (V = Math.round(V)));
-      const t = We(Math.round(oe), S.length);
-      t !== O && mt(t, !1);
+      const isTargetSettled = Math.abs(oe - V) < 1e-3;
+      if (isTargetSettled || Ne > 0 || p.active) {
+        const t = We(Math.round(oe), S.length);
+        t !== O && mt(t, !1);
+      }
     }
     pt.forEach((t, r) => {
       if (t.root.parent !== W) return;
@@ -1880,13 +2082,31 @@ function fa(Nr, m, He = {}) {
     });
   }
   function On(e) {
-    b === "opening" ? (te = Math.min(
-      1,
-      te + e / vn
-    ), xr(te), no(u, e, 0), te >= 1 && wr()) : b === "closing" ? (te = Math.min(
-      1,
-      te + e / xn
-    ), Cr(te), no(u, e, 0), te >= 1 && Ar()) : b === "hero" && (W.position.y = k(W.position.y, 0, 10, e), W.position.z = k(W.position.z, 0, 10, e), L.position.x = k(L.position.x, Le.x, 8, e), L.position.y = k(L.position.y, Le.y, 8, e), L.position.z = k(L.position.z, Le.z, 8, e), ce.copy(le), se = 0, Pe(), L.lookAt(le));
+    if (b === "opening") {
+      te = Math.min(1, te + e / vn);
+      xr(te);
+      no(u, e, 0);
+      if (te >= 1) {
+        wr();
+      }
+    } else if (b === "closing") {
+      te = Math.min(1, te + e / xn);
+      Cr(te);
+      no(u, e, 0);
+      if (te >= 1) {
+        Ar();
+      }
+    } else if (b === "hero") {
+      W.position.y = k(W.position.y, 0, 10, e);
+      W.position.z = k(W.position.z, 0, 10, e);
+      L.position.x = k(L.position.x, Le.x, 8, e);
+      L.position.y = k(L.position.y, Le.y, 8, e);
+      L.position.z = k(L.position.z, Le.z, 8, e);
+      ce.copy(le);
+      se = 0;
+      Pe();
+      L.lookAt(le);
+    }
   }
   function Bn(e) {
     if (X) return;
@@ -1894,7 +2114,9 @@ function fa(Nr, m, He = {}) {
     o && (o.rotation.y = e * 0.012, o.position.y = Math.sin(e * 0.17) * 0.025);
   }
   function U() {
-    !ee && !Ae && (ee = requestAnimationFrame($n));
+    if (!ee && !Ae) {
+      ee = requestAnimationFrame($n);
+    }
   }
   function Qn() {
     return p.active && p.kind === "cover-open" ? Ze(p.progress) : K ? p.active && p.kind === "cover-close" ? 1 - Ze(p.progress) : 1 : 0;
@@ -1911,14 +2133,17 @@ function fa(Nr, m, He = {}) {
       o
     )), z.update(), no(u, o, Qn())), D.render(R, L);
     const a = Math.abs(oe - V) > 5e-4 || Ne > 0;
+    checkAndNotifySettled();
     (!X || b === "opening" || b === "closing" || a || r) && !Ae && U();
   }
   function yt() {
     G = Math.max(1, y.clientWidth), Se = Math.max(1, y.clientHeight), or(), D.setSize(G, Se, !1), D.setPixelRatio(Math.min(window.devicePixelRatio || 1, G < 820 ? 1.5 : 2)), L.aspect = G / Se, L.updateProjectionMatrix(), b === "hero" ? (L.position.copy(Le), ce.copy(le), se = 0, Pe(), L.lookAt(le)) : b === "detail" && u && (u.root.position.copy(Fe), u.root.scale.setScalar(rr()), ce.copy(Je), se = Ye, Pe(), Lr()), U();
   }
   function Tr(e) {
-    if (e.key === "Escape" && b === "detail") {
-      e.preventDefault(), so();
+    if (e.key === "Escape" && (b === "detail" || b === "opening" || b === "closing")) {
+      e.preventDefault();
+      e.stopPropagation();
+      so();
       return;
     }
     if (b === "detail" && !e.metaKey && !e.ctrlKey && !e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
@@ -1981,10 +2206,6 @@ function fa(Nr, m, He = {}) {
       () => !1
     );
     try {
-      await document.fonts.load("600 82px Inter");
-    } catch {
-    }
-    try {
       qt = !1;
     } catch {
       qt = !1;
@@ -2012,9 +2233,27 @@ function fa(Nr, m, He = {}) {
     oe = _initialVol;
     mt(_initialVol, !0);
     yt();
-    m.addEventListener("pointermove", mr), m.addEventListener("pointerleave", br), m.addEventListener("click", yr), m.addEventListener("pointerdown", dr, { capture: !0 }), m.addEventListener("pointermove", fr, { capture: !0 }), m.addEventListener("pointerup", ke, { capture: !0 }), m.addEventListener("pointercancel", ke, { capture: !0 }), m.addEventListener("lostpointercapture", ke, { capture: !0 }), m.addEventListener("pointerdown", hr, { capture: !0 }), m.addEventListener("pointermove", gr, { capture: !0 }), m.addEventListener("pointerup", Me, { capture: !0 }), m.addEventListener("pointercancel", Me, { capture: !0 }), m.addEventListener("lostpointercapture", Me, { capture: !0 }), window.addEventListener("pointerup", bt), window.addEventListener("pointercancel", bt), y.addEventListener("wheel", vr, { passive: !1 }), m.addEventListener("webglcontextlost", Ir), window.addEventListener("resize", yt), y.addEventListener("keydown", Tr), window.addEventListener("blur", Pr), document.addEventListener("visibilitychange", Sr), Zt.addEventListener("change", zr), onPrevClick = () => Ie(-1, Io), onNextClick = () => Ie(1, Do), onInspectClick = () => xe(ie), onCloseDetailClick = so, onToggleBookClick = () => ve(!K), onPrevPageClick = () => ze(-1), onNextPageClick = () => ze(1), onResetViewClick = Lr, Io.addEventListener("click", onPrevClick), Do.addEventListener("click", onNextClick), ie.addEventListener("click", onInspectClick), Ut.addEventListener("click", onCloseDetailClick), it.addEventListener("click", onToggleBookClick), st.addEventListener("click", onPrevPageClick), lt.addEventListener("click", onNextPageClick), Ko.addEventListener("click", onResetViewClick), D.render(R, L), Ht.hidden = !0, y.classList.add("webgl-ready"), U(), He.onReady?.(), e.then((t) => {
+    m.addEventListener("pointermove", mr), m.addEventListener("pointerleave", br), m.addEventListener("click", yr), m.addEventListener("pointerdown", dr, { capture: !0 }), m.addEventListener("pointermove", fr, { capture: !0 }), m.addEventListener("pointerup", ke, { capture: !0 }), m.addEventListener("pointercancel", ke, { capture: !0 }), m.addEventListener("lostpointercapture", ke, { capture: !0 }), m.addEventListener("pointerdown", hr, { capture: !0 }), m.addEventListener("pointermove", gr, { capture: !0 }), m.addEventListener("pointerup", Me, { capture: !0 }), m.addEventListener("pointercancel", Me, { capture: !0 }), m.addEventListener("lostpointercapture", Me, { capture: !0 }), window.addEventListener("pointerup", bt), window.addEventListener("pointercancel", bt), y.addEventListener("wheel", vr, { passive: !1 }), m.addEventListener("webglcontextlost", Ir), window.addEventListener("resize", yt), y.addEventListener("keydown", Tr), window.addEventListener("blur", Pr), document.addEventListener("visibilitychange", Sr), Zt.addEventListener("change", zr), onPrevClick = () => Ie(-1, Io), onNextClick = () => Ie(1, Do), onInspectClick = () => xe(ie), onCloseDetailClick = so, onToggleBookClick = () => ve(!K), onPrevPageClick = () => ze(-1), onNextPageClick = () => ze(1), onResetViewClick = Lr, Io.addEventListener("click", onPrevClick), Do.addEventListener("click", onNextClick), ie.addEventListener("click", onInspectClick), Ut.addEventListener("click", onCloseDetailClick), it.addEventListener("click", onToggleBookClick), st.addEventListener("click", onPrevPageClick), lt.addEventListener("click", onNextPageClick), Ko.addEventListener("click", onResetViewClick), D.render(R, L), Ht.hidden = !0, y.classList.add("webgl-ready"), U(), checkAndNotifySettled(), He.onReady?.(), e.then((t) => {
       !t || Ae || !D || (Rt = !0, qn());
     });
+  }
+  function getBookScreenPosition(index) {
+    if (!D || !L || !m || !pt) return null;
+    const targetIdx = We(index, S.length);
+    const target = pt[targetIdx];
+    if (!target) return null;
+    target.root.updateWorldMatrix(!0, !0);
+    const rect = m.getBoundingClientRect();
+    const vec = new l.Vector3();
+    target.root.getWorldPosition(vec);
+    vec.project(L);
+    const x = rect.left + (vec.x * 0.5 + 0.5) * rect.width;
+    const y = rect.top + (-vec.y * 0.5 + 0.5) * rect.height;
+    return {
+      x,
+      y,
+      visible: vec.z < 1 && x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
+    };
   }
   return {
     ready: ea().catch((e) => {
@@ -2030,7 +2269,7 @@ function fa(Nr, m, He = {}) {
       b === "hero" && D && xe(m);
     },
     close: () => {
-      b === "detail" && D && so();
+      (b === "detail" || b === "opening") && D && so();
     },
     previousVolume: () => {
       b === "hero" && D && Ie(-1, m);
@@ -2049,18 +2288,84 @@ function fa(Nr, m, He = {}) {
     },
     dispose: _n,
     selectVolume: (index, immediate = false) => {
-      if (!D || jt) return;
+      if (!D || jt) return { accepted: false, queued: false };
       const targetIdx = We(index, S.length);
+      // Latest user intent wins: cancel any older pending navigation
+      pendingNavigation = null;
+
+      if (b !== "hero") {
+        pendingNavigation = { type: "select", index: targetIdx };
+        if (b === "opening" || b === "detail") {
+          so();
+        }
+        return { accepted: false, queued: true };
+      }
       if (immediate) {
         V = targetIdx;
         oe = targetIdx;
         mt(targetIdx, !0);
         U();
-      } else {
-        ar(targetIdx);
+        checkAndNotifySettled();
+        return { accepted: true, queued: false };
       }
+      ar(targetIdx);
+      return { accepted: true, queued: false };
     },
-    getSelectedVolume: () => O
+    requestNavigation: (intent) => {
+      if (!D || jt) return { accepted: false, queued: false };
+      const type = intent.type || "select";
+      const targetIdx = intent.index !== undefined ? We(intent.index, S.length) : O;
+      // Latest user intent wins: replace any older pending navigation
+      pendingNavigation = null;
+
+      if (b !== "hero") {
+        pendingNavigation = { type, index: targetIdx };
+        if (b === "opening" || b === "detail") {
+          so();
+        }
+        return { accepted: false, queued: true };
+      }
+      if (type === "open-book") {
+        if (targetIdx !== O) {
+          pendingNavigation = { type, index: targetIdx };
+          ar(targetIdx);
+          return { accepted: false, queued: true };
+        }
+        if (!isShelfSettled()) {
+          pendingNavigation = { type, index: targetIdx };
+          return { accepted: false, queued: true };
+        }
+        He.onOpenBook?.(targetIdx, S[targetIdx]);
+        return { accepted: true, queued: false };
+      }
+      if (type === "open-cover") {
+        if (!isShelfSettled()) {
+          pendingNavigation = { type, index: targetIdx };
+          return { accepted: false, queued: true };
+        }
+        He.onOpenCover?.();
+        return { accepted: true, queued: false };
+      }
+      if (type === "close-to-library") {
+        if (!isShelfSettled()) {
+          pendingNavigation = { type, index: targetIdx };
+          return { accepted: false, queued: true };
+        }
+        return { accepted: true, queued: false };
+      }
+      ar(targetIdx);
+      return { accepted: true, queued: false };
+    },
+    getMode: () => b,
+    isSettled: () => isShelfSettled(),
+    isShelfSettled: () => isShelfSettled(),
+    getSelectedVolume: () => O,
+    getSnapshot: () => ({
+      mode: b,
+      selectedIndex: O,
+      settled: isShelfSettled(),
+    }),
+    getBookScreenPosition
   };
 }
 export {

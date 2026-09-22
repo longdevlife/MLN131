@@ -7,33 +7,44 @@ import { SafeStage } from '../scenes/safe/SafeStage';
 import { SafeBookshelf } from '../scenes/safe/SafeBookshelf';
 import { ThreeUIOrbitalScene } from '../scenes/threeui/ThreeUIOrbitalScene';
 import { ThreeUIStructureFlowScene } from '../scenes/threeui/ThreeUIStructureFlowScene';
+import { MagazineExperience } from '../experiences/magazine/MagazineExperience';
 
 export const VisualStage: React.FC = () => {
   const viewMode = usePresentationStore((state) => state.viewMode);
+  const experienceMode = usePresentationStore((state) => state.experienceMode);
+  const selectedBook = usePresentationStore((state) => state.selectedBook);
   const chapterIndex = usePresentationStore((state) => state.chapterIndex);
   const beatIndex = usePresentationStore((state) => state.beatIndex);
   const qualityTier = usePresentationStore((state) => state.qualityTier);
-  const openChapter = usePresentationStore((state) => state.openChapter);
+  const openBook = usePresentationStore((state) => state.openBook);
   const currentScene = usePresentationStore(selectCurrentScene);
 
-  if (viewMode === 'cover') {
+  if (experienceMode === 'cover' || (viewMode === 'cover' && experienceMode !== 'magazine')) {
     return null;
   }
 
+  // Exclusive Magazine Mode
+  if (experienceMode === 'magazine') {
+    return <MagazineExperience />;
+  }
+
   // 3D Library Lobby View
-  if (viewMode === 'library') {
+  if (experienceMode === 'library' || viewMode === 'library') {
     if (qualityTier === 'safe') {
       return <SafeBookshelf />;
     }
 
     return (
       <BookshelfScene
-        initialIndex={chapterIndex}
+        initialIndex={selectedBook ?? chapterIndex}
         onOpenBook={(index) => {
-          openChapter(index);
+          openBook(index, true);
         }}
         onSelectBook={(index) => {
-          usePresentationStore.setState({ chapterIndex: index });
+          usePresentationStore.setState({ selectedBook: index, chapterIndex: index });
+        }}
+        onModeChange={(mode) => {
+          usePresentationStore.getState().setBookshelfMode(mode);
         }}
       />
     );

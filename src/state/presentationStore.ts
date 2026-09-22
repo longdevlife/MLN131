@@ -1,11 +1,51 @@
 import { create } from 'zustand';
 import { chapters } from '../content/chapters';
+import type { MagazineViewMode } from '../experiences/magazine/magazineTypes';
+import {
+  clampMagazinePage,
+  getMagazinePageCount,
+  getMagazineVolume,
+} from '../experiences/magazine/magazineModel';
 
 export type ViewMode = 'cover' | 'library' | 'chapter';
+export type ExperienceMode =
+  | 'cover'
+  | 'library'
+  | 'magazine'
+  | 'interactive'
+  | 'museum';
 export type QualityTier = 'high' | 'medium' | 'safe';
+export type BookshelfMode = 'hero' | 'opening' | 'detail' | 'closing';
+export type BookshelfNavigationIntent =
+  | { type: 'select'; index: number }
+  | { type: 'open-book'; index: number }
+  | { type: 'close-to-library' }
+  | { type: 'open-cover' }
+  | null;
+
+export interface PresenterSyncPayload {
+  viewMode?: ViewMode;
+  experienceMode?: ExperienceMode;
+  selectedBook?: number;
+  chapterIndex?: number;
+  sceneIndex?: number;
+  beatIndex?: number;
+  isBlackout?: boolean;
+  magazinePage?: number;
+  magazineViewMode?: MagazineViewMode;
+}
 
 export interface PresentationState {
   viewMode: ViewMode;
+  experienceMode: ExperienceMode;
+  selectedBook: number;
+  bookshelfMode: BookshelfMode;
+  isShelfSettled: boolean;
+  pendingBookshelfNavigation: BookshelfNavigationIntent;
+  pendingQualityTier: QualityTier | null;
+  pendingPresenterSync: PresenterSyncPayload | null;
+  magazinePage: number;
+  magazineViewMode: MagazineViewMode;
   chapterIndex: number;
   sceneIndex: number;
   beatIndex: number;
@@ -21,11 +61,22 @@ export interface PresentationState {
   openSourceDrawer: () => void;
   closeSourceDrawer: () => void;
   toggleSourceDrawer: () => void;
+  setBookshelfMode: (mode: BookshelfMode) => void;
+  setShelfSettled: (settled: boolean) => void;
+  requestBookshelfNavigation: (intent: BookshelfNavigationIntent) => void;
+  clearPendingBookshelfNavigation: () => void;
+  flushPendingPresenterSync: () => void;
   // Navigation actions
   startPresentation: () => void;
   openCover: () => void;
   openLibrary: () => void;
   openChapter: (chapterIndex: number, sceneIndex?: number) => void;
+  openBook: (index: number, fromRenderer?: boolean) => void;
+  selectBook: (index: number) => void;
+  closeMagazine: () => void;
+  setMagazinePage: (page: number) => void;
+  setMagazineViewMode: (mode: MagazineViewMode) => void;
+  toggleMagazineViewMode: () => void;
   next: () => void;
   prev: () => void;
   jumpToChapter: (index: number) => void;
@@ -37,6 +88,7 @@ export interface PresentationState {
   setQualityTier: (tier: QualityTier) => void;
   setReducedMotion: (value: boolean) => void;
   setTransitioning: (value: boolean) => void;
+  applyPresenterSync: (msg: PresenterSyncPayload) => void;
 }
 
 // Check safe mode from query params
@@ -50,6 +102,15 @@ const getInitialSafeMode = (): QualityTier => {
 
 export const usePresentationStore = create<PresentationState>((set, get) => ({
   viewMode: 'cover',
+  experienceMode: 'cover',
+  selectedBook: 0,
+  bookshelfMode: 'hero',
+  isShelfSettled: true,
+  pendingBookshelfNavigation: null,
+  pendingQualityTier: null,
+  pendingPresenterSync: null,
+  magazinePage: 0,
+  magazineViewMode: 'showcase',
   chapterIndex: 0,
   sceneIndex: 0,
   beatIndex: 0,
@@ -67,18 +128,164 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   openSourceDrawer: () => set({ isSourceDrawerOpen: true }),
   closeSourceDrawer: () => set({ isSourceDrawerOpen: false }),
   toggleSourceDrawer: () => set((state) => ({ isSourceDrawerOpen: !state.isSourceDrawerOpen })),
+  setBookshelfMode: (mode: BookshelfMode) => set({ bookshelfMode: mode }),
+  setShelfSettled: (settled: boolean) => {
+    const state = get();
+
+    // Renderer is the owner of navigation completion. Deferred quality can only
+    // apply after the mirrored navigation intent has been explicitly resolved.
+    if (
+      settled &&
+      state.pendingBookshelfNavigation === null &&
+      state.pendingQualityTier
+    ) {
+      set({
+        isShelfSettled: true,
+        qualityTier: state.pendingQualityTier,
+        pendingQualityTier: null,
+      });
+      return;
+    }
+
+    set({ isShelfSettled: settled });
+  },
+  requestBookshelfNavigation: (intent: BookshelfNavigationIntent) =>
+    set({
+      pendingBookshelfNavigation: intent,
+      // A newer local/user intent supersedes an older deferred presenter command.
+      pendingPresenterSync: null,
+    }),
+  clearPendingBookshelfNavigation: () =>
+    set({ pendingBookshelfNavigation: null }),
+  flushPendingPresenterSync: () => {
+    const deferred = get().pendingPresenterSync;
+    if (!deferred) return;
+    set({ pendingPresenterSync: null });
+    get().applyPresenterSync(deferred);
+  },
 
   startPresentation: () => {
-    set({ viewMode: 'library', direction: 1 });
+    set({ experienceMode: 'library', viewMode: 'library', bookshelfMode: 'hero', direction: 1 });
   },
 
   openCover: () => {
-    set({ viewMode: 'cover', direction: -1 });
+    const state = get();
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+    if (
+      isLibrary &&
+      state.qualityTier !== 'safe' &&
+      (state.bookshelfMode !== 'hero' || !state.isShelfSettled)
+    ) {
+      state.requestBookshelfNavigation({ type: 'open-cover' });
+      return;
+    }
+    set({ experienceMode: 'cover', viewMode: 'cover', bookshelfMode: 'hero', direction: -1 });
   },
 
   openLibrary: () => {
-    set({ viewMode: 'library', direction: -1 });
+    const state = get();
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
+      state.requestBookshelfNavigation({ type: 'close-to-library' });
+      return;
+    }
+    set({
+      experienceMode: 'library',
+      viewMode: 'library',
+      bookshelfMode: 'hero',
+      chapterIndex: state.selectedBook,
+      direction: -1,
+    });
   },
+
+  openBook: (index: number, fromRenderer = false) => {
+    const state = get();
+    const selectedBook = Math.max(0, Math.min(chapters.length - 1, index));
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+
+    if (!fromRenderer && isLibrary && state.qualityTier !== 'safe') {
+      const mustCenterTarget = state.selectedBook !== selectedBook;
+      if (state.bookshelfMode !== 'hero' || !state.isShelfSettled || mustCenterTarget) {
+        set({ selectedBook, chapterIndex: selectedBook });
+        state.requestBookshelfNavigation({ type: 'open-book', index: selectedBook });
+        return;
+      }
+    }
+
+    const volume = getMagazineVolume(selectedBook);
+
+    if (!volume) {
+      set({
+        experienceMode: 'library',
+        viewMode: 'library',
+        selectedBook,
+        chapterIndex: selectedBook,
+        magazinePage: 0,
+      });
+      return;
+    }
+
+    set({
+      experienceMode: 'magazine',
+      viewMode: 'chapter',
+      selectedBook,
+      chapterIndex: selectedBook,
+      magazinePage: 0,
+      magazineViewMode: 'showcase',
+      direction: 1,
+    });
+  },
+
+  selectBook: (index: number) => {
+    const state = get();
+    const selectedBook = Math.max(0, Math.min(chapters.length - 1, index));
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+
+    if (isLibrary && state.qualityTier !== 'safe') {
+      if (state.bookshelfMode !== 'hero') {
+        state.requestBookshelfNavigation({ type: 'select', index: selectedBook });
+        return;
+      }
+      if (!state.isShelfSettled) {
+        state.requestBookshelfNavigation({ type: 'select', index: selectedBook });
+        set({ selectedBook, chapterIndex: selectedBook });
+        return;
+      }
+    }
+
+    set({
+      selectedBook,
+      chapterIndex: selectedBook,
+      experienceMode: 'library',
+      viewMode: 'library',
+      pendingBookshelfNavigation: null,
+    });
+  },
+
+  closeMagazine: () => {
+    set({
+      experienceMode: 'library',
+      viewMode: 'library',
+      bookshelfMode: 'hero',
+      chapterIndex: get().selectedBook,
+      magazinePage: 0,
+      direction: -1,
+    });
+  },
+
+  setMagazinePage: (page: number) => {
+    const volume = getMagazineVolume(get().selectedBook);
+    if (!volume) return;
+    const clamped = clampMagazinePage(volume, page);
+    set({ magazinePage: clamped });
+  },
+
+  setMagazineViewMode: (mode: MagazineViewMode) => set({ magazineViewMode: mode }),
+
+  toggleMagazineViewMode: () =>
+    set((state) => ({
+      magazineViewMode: state.magazineViewMode === 'showcase' ? 'reading' : 'showcase',
+    })),
 
   openChapter: (chapterIndex: number, sceneIndex = 0) => {
     const validChapterIndex = Math.max(0, Math.min(chapters.length - 1, chapterIndex));
@@ -86,16 +293,20 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     if (!targetChapter || targetChapter.scenes.length === 0) {
       // Empty chapter guard: remain in Library, keep book selected/highlighted, do not enter chapter view
       set({
+        experienceMode: 'library',
         viewMode: 'library',
         chapterIndex: validChapterIndex,
+        selectedBook: validChapterIndex,
         sceneIndex: 0,
         beatIndex: 0,
       });
       return;
     }
     set({
+      experienceMode: 'interactive',
       viewMode: 'chapter',
       chapterIndex: validChapterIndex,
+      selectedBook: validChapterIndex,
       sceneIndex,
       beatIndex: 0,
       direction: 1,
@@ -109,24 +320,24 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       return;
     }
 
-    if (state.viewMode === 'cover') {
-      set({ viewMode: 'library', direction: 1 });
+    if (state.experienceMode === 'magazine') {
+      const volume = getMagazineVolume(state.selectedBook);
+      if (volume) {
+        const maxPage = getMagazinePageCount(volume) - 1;
+        if (state.magazinePage < maxPage) {
+          set({ magazinePage: state.magazinePage + 1 });
+        }
+      }
       return;
     }
 
-    if (state.viewMode === 'library') {
-      const targetChapter = chapters[state.chapterIndex];
-      if (!targetChapter || targetChapter.scenes.length === 0) {
-        // Empty chapter guard: remain in library, keep book selected/highlighted
-        return;
-      }
-      set({
-        viewMode: 'chapter',
-        chapterIndex: state.chapterIndex,
-        sceneIndex: 0,
-        beatIndex: 0,
-        direction: 1,
-      });
+    if (state.viewMode === 'cover' || state.experienceMode === 'cover') {
+      set({ experienceMode: 'library', viewMode: 'library', bookshelfMode: 'hero', direction: 1 });
+      return;
+    }
+
+    if (state.experienceMode === 'library' || state.viewMode === 'library') {
+      get().openBook(state.chapterIndex);
       return;
     }
 
@@ -158,8 +369,10 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     // Transition back to Library with Book II selected/highlighted
     if (state.chapterIndex === 0) {
       set({
+        experienceMode: 'library',
         viewMode: 'library',
         chapterIndex: 1,
+        selectedBook: 1,
         sceneIndex: 0,
         beatIndex: 0,
         direction: 1,
@@ -173,8 +386,10 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       const nextChapter = chapters[nextChapterIndex];
       if (!nextChapter || nextChapter.scenes.length === 0) {
         set({
+          experienceMode: 'library',
           viewMode: 'library',
           chapterIndex: nextChapterIndex,
+          selectedBook: nextChapterIndex,
           sceneIndex: 0,
           beatIndex: 0,
           direction: 1,
@@ -183,6 +398,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       }
       set({
         chapterIndex: nextChapterIndex,
+        selectedBook: nextChapterIndex,
         sceneIndex: 0,
         beatIndex: 0,
         direction: 1,
@@ -191,7 +407,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     }
 
     // Reached the end of presentation, return to library overview
-    set({ viewMode: 'library', direction: 1 });
+    set({ experienceMode: 'library', viewMode: 'library', direction: 1 });
   },
 
   prev: () => {
@@ -201,10 +417,19 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       return;
     }
 
-    if (state.viewMode === 'cover') return;
+    if (state.experienceMode === 'magazine') {
+      if (state.magazinePage > 0) {
+        set({ magazinePage: state.magazinePage - 1 });
+      } else {
+        get().closeMagazine();
+      }
+      return;
+    }
 
-    if (state.viewMode === 'library') {
-      set({ viewMode: 'cover', direction: -1 });
+    if (state.viewMode === 'cover' || state.experienceMode === 'cover') return;
+
+    if (state.viewMode === 'library' || state.experienceMode === 'library') {
+      get().openCover();
       return;
     }
 
@@ -229,7 +454,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
 
     // If at first scene and first beat of chapter
     // Return to library lobby
-    set({ viewMode: 'library', direction: -1 });
+    set({ experienceMode: 'library', viewMode: 'library', direction: -1 });
   },
 
   jumpToChapter: (index: number) => {
@@ -238,16 +463,20 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     if (!targetChapter || targetChapter.scenes.length === 0) {
       // Empty chapter guard: remain in Library, keep book selected/highlighted, do not enter chapter view
       set({
+        experienceMode: 'library',
         viewMode: 'library',
         chapterIndex: validIndex,
+        selectedBook: validIndex,
         sceneIndex: 0,
         beatIndex: 0,
       });
       return;
     }
     set({
+      experienceMode: 'interactive',
       viewMode: 'chapter',
       chapterIndex: validIndex,
+      selectedBook: validIndex,
       sceneIndex: 0,
       beatIndex: 0,
       direction: 1,
@@ -259,8 +488,10 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       const sIdx = chapters[cIdx].scenes.findIndex((s) => s.id === sceneId);
       if (sIdx !== -1) {
         set({
+          experienceMode: 'interactive',
           viewMode: 'chapter',
           chapterIndex: cIdx,
+          selectedBook: cIdx,
           sceneIndex: sIdx,
           beatIndex: 0,
           direction: 1,
@@ -274,12 +505,85 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   toggleBlackout: () => set((state) => ({ isBlackout: !state.isBlackout })),
   resetScene: () => set({ beatIndex: 0 }),
   setFullscreen: (value: boolean) => set({ isFullscreen: value }),
-  setQualityTier: (tier: QualityTier) => set({ qualityTier: tier }),
+  setQualityTier: (tier: QualityTier) => {
+    const state = get();
+
+    // Selecting the currently-active tier is also a valid latest intent: it
+    // cancels an older deferred quality switch that has not committed yet.
+    if (state.qualityTier === tier) {
+      if (state.pendingQualityTier && state.pendingQualityTier !== tier) {
+        set({ pendingQualityTier: null });
+      }
+      return;
+    }
+
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+    if (
+      isLibrary &&
+      state.qualityTier !== 'safe' &&
+      (state.bookshelfMode !== 'hero' || !state.isShelfSettled)
+    ) {
+      set({ pendingQualityTier: tier });
+      state.requestBookshelfNavigation({ type: 'close-to-library' });
+      return;
+    }
+
+    set({ qualityTier: tier, pendingQualityTier: null });
+  },
+
   setReducedMotion: (value: boolean) => set({ reducedMotion: value }),
   setTransitioning: (value: boolean) => set({ isTransitioning: value }),
+  applyPresenterSync: (msg) => {
+    const state = get();
+    const isLibrary =
+      state.experienceMode === 'library' || state.viewMode === 'library';
+    const shelfUnsafe =
+      isLibrary &&
+      state.qualityTier !== 'safe' &&
+      (state.bookshelfMode !== 'hero' || !state.isShelfSettled);
+
+    if (shelfUnsafe) {
+      // Route the physical shelf to a safe boundary first. Persist the complete
+      // presenter payload so page/scene/beat data is not lost while deferring.
+      if (msg.experienceMode === 'cover' || msg.viewMode === 'cover') {
+        state.openCover();
+      } else if (
+        msg.experienceMode === 'magazine' &&
+        msg.selectedBook !== undefined
+      ) {
+        state.openBook(msg.selectedBook);
+      } else if (
+        msg.selectedBook !== undefined &&
+        msg.selectedBook !== state.selectedBook
+      ) {
+        state.selectBook(msg.selectedBook);
+      } else {
+        state.requestBookshelfNavigation({ type: 'close-to-library' });
+      }
+
+      // Navigation actions above intentionally clear stale presenter work.
+      // Re-attach this newest remote snapshot after the latest intent is queued.
+      set({ pendingPresenterSync: { ...msg } });
+      return;
+    }
+
+    set({
+      pendingPresenterSync: null,
+      ...(msg.viewMode ? { viewMode: msg.viewMode } : {}),
+      ...(msg.experienceMode ? { experienceMode: msg.experienceMode } : {}),
+      ...(msg.chapterIndex !== undefined ? { chapterIndex: msg.chapterIndex } : {}),
+      ...(msg.sceneIndex !== undefined ? { sceneIndex: msg.sceneIndex } : {}),
+      ...(msg.beatIndex !== undefined ? { beatIndex: msg.beatIndex } : {}),
+      ...(msg.isBlackout !== undefined ? { isBlackout: msg.isBlackout } : {}),
+      ...(msg.selectedBook !== undefined ? { selectedBook: msg.selectedBook } : {}),
+      ...(msg.magazinePage !== undefined ? { magazinePage: msg.magazinePage } : {}),
+      ...(msg.magazineViewMode ? { magazineViewMode: msg.magazineViewMode } : {}),
+    });
+  },
 }));
 
 if (typeof window !== 'undefined') {
   (window as any).__store = usePresentationStore;
+  (window as any).__PRESENTATION_STORE__ = usePresentationStore;
 }
 

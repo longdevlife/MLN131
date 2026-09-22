@@ -13,6 +13,7 @@ import { usePerformanceTier } from '../hooks/usePerformanceTier';
 
 export const PresentationShell: React.FC = () => {
   const viewMode = usePresentationStore((state) => state.viewMode);
+  const experienceMode = usePresentationStore((state) => state.experienceMode);
   usePerformanceTier();
 
   useEffect(() => {
@@ -25,13 +26,7 @@ export const PresentationShell: React.FC = () => {
   const channel = useMemo(() => {
     return new PresentationChannel((msg: PresentationSyncMessage) => {
       if (msg.type === 'SYNC_STATE') {
-        usePresentationStore.setState({
-          viewMode: msg.viewMode,
-          chapterIndex: msg.chapterIndex,
-          sceneIndex: msg.sceneIndex,
-          beatIndex: msg.beatIndex,
-          isBlackout: msg.isBlackout,
-        });
+        usePresentationStore.getState().applyPresenterSync(msg);
       }
     });
   }, []);
@@ -39,6 +34,9 @@ export const PresentationShell: React.FC = () => {
   useEffect(() => {
     return () => channel.close();
   }, [channel]);
+
+  const isLegacyPresentation =
+    experienceMode === 'cover' || experienceMode === 'library';
 
   return (
     <div
@@ -56,19 +54,19 @@ export const PresentationShell: React.FC = () => {
       <KeyboardController />
 
       {/* Progress Bar */}
-      <ProgressBar />
+      {isLegacyPresentation && <ProgressBar />}
 
       {/* Top Chapter Navigation Dock */}
-      {viewMode !== 'cover' && <ChapterRail />}
+      {experienceMode === 'library' && <ChapterRail />}
 
       {/* Cover Screen */}
-      {viewMode === 'cover' && <CoverScreen />}
+      {experienceMode === 'cover' && <CoverScreen />}
 
-      {/* 3D Visual Stage (Bookshelf or R3F or Safe Stage) */}
+      {/* 3D Visual Stage (Bookshelf or Magazine or R3F or Safe Stage) */}
       <VisualStage />
 
       {/* Semantic Content Overlay */}
-      <ContentOverlay />
+      {experienceMode !== 'magazine' && viewMode !== 'cover' && <ContentOverlay />}
 
       {/* Blackout Layer for key B */}
       <BlackoutLayer />

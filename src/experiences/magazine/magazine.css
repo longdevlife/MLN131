@@ -1,0 +1,129 @@
+.magazine-experience {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #0B0D10;
+  overflow: hidden;
+  user-select: none;
+  z-index: 50;
+}
+
+.magazine-canvas-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+.magazine-chrome {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 32px;
+  z-index: 10;
+}
+
+.magazine-chrome-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.magazine-btn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(18, 22, 28, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(200, 168, 106, 0.3);
+  border-radius: 9999px;
+  color: #F1E7D2;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.magazine-btn:hover:not(:disabled) {
+  background: rgba(30, 36, 46, 0.9);
+  border-color: #C8A86A;
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
+.magazine-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.magazine-volume-header {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.magazine-volume-title {
+  color: #C8A86A;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.magazine-volume-subtitle {
+  color: rgba(241, 231, 210, 0.6);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.magazine-chrome-bottom {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.magazine-controls-bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+  background: rgba(18, 22, 28, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(200, 168, 106, 0.25);
+  border-radius: 9999px;
+}
+
+.magazine-page-indicator {
+  color: #F1E7D2;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 0 8px;
+  min-width: 90px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .magazine-chrome {
+    padding: 16px;
+  }
+  .magazine-volume-header {
+    display: none;
+  }
+}

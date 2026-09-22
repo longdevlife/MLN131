@@ -1,3 +1,6 @@
+import type { ExperienceMode } from '../state/presentationStore';
+import type { MagazineViewMode } from '../experiences/magazine/magazineTypes';
+
 export interface PresentationSyncMessage {
   type: 'SYNC_STATE' | 'ACTION';
   viewMode: 'cover' | 'library' | 'chapter';
@@ -8,6 +11,10 @@ export interface PresentationSyncMessage {
   action?: string;
   payload?: any;
   timestamp: number;
+  experienceMode?: ExperienceMode;
+  selectedBook?: number;
+  magazinePage?: number;
+  magazineViewMode?: MagazineViewMode;
 }
 
 const CHANNEL_NAME = 'mln-presentation-channel';
@@ -35,6 +42,10 @@ export class PresentationChannel {
     beatIndex: number;
     isBlackout: boolean;
     action?: string;
+    experienceMode?: ExperienceMode;
+    selectedBook?: number;
+    magazinePage?: number;
+    magazineViewMode?: MagazineViewMode;
   }) {
     if (this.channel) {
       this.channel.postMessage({

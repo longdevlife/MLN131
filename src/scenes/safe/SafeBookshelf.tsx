@@ -4,7 +4,7 @@ import { usePresentationStore } from '../../state/presentationStore';
 import { BookOpen } from 'lucide-react';
 
 export const SafeBookshelf: React.FC = () => {
-  const openChapter = usePresentationStore((state) => state.openChapter);
+  const openBook = usePresentationStore((state) => state.openBook);
 
   return (
     <div
@@ -25,16 +25,16 @@ export const SafeBookshelf: React.FC = () => {
       <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
         <h2
           style={{
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'var(--font-serif)',
             fontSize: '2.4rem',
             color: '#F5F0E8',
             margin: '0 0 0.5rem 0',
           }}
         >
-          Thư viện Giáo trình (4 Quyển)
+          Thư viện Giáo trình (3 Quyển)
         </h2>
         <p style={{ color: '#C8A86A', fontSize: '1rem', margin: 0 }}>
-          Chọn một quyển để mở nội dung bài giảng
+          Chọn một quyển để mở magazine tương ứng
         </p>
       </div>
 
@@ -50,7 +50,7 @@ export const SafeBookshelf: React.FC = () => {
         {chapters.map((ch, idx) => (
           <div
             key={ch.id}
-            onClick={() => openChapter(idx)}
+            onClick={() => openBook(idx)}
             style={{
               background: ch.color,
               border: `2px solid ${ch.foil}`,
@@ -87,7 +87,7 @@ export const SafeBookshelf: React.FC = () => {
               </div>
               <h3
                 style={{
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: 'var(--font-serif)',
                   fontSize: '1.5rem',
                   color: '#F5F0E8',
                   margin: '0 0 0.75rem 0',

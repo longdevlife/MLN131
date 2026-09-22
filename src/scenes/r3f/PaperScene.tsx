@@ -172,7 +172,7 @@ export const PaperScene: React.FC<PaperSceneProps> = ({ beatIndex = 0 }) => {
             style={{
               width: '230px',
               color: '#3A2118',
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'var(--font-serif)',
               pointerEvents: 'none',
               userSelect: 'none',
               lineHeight: 1.45,
