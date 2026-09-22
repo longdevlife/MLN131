@@ -27,7 +27,9 @@ export interface PresentationState {
   experienceMode: ExperienceMode;
   selectedBook: number;
   bookshelfMode: BookshelfMode;
+  isShelfSettled: boolean;
   pendingBookshelfNavigation: BookshelfNavigationIntent;
+  pendingQualityTier: QualityTier | null;
   magazinePage: number;
   magazineViewMode: MagazineViewMode;
   chapterIndex: number;
@@ -46,6 +48,7 @@ export interface PresentationState {
   closeSourceDrawer: () => void;
   toggleSourceDrawer: () => void;
   setBookshelfMode: (mode: BookshelfMode) => void;
+  setShelfSettled: (settled: boolean) => void;
   requestBookshelfNavigation: (intent: BookshelfNavigationIntent) => void;
   clearPendingBookshelfNavigation: () => void;
   // Navigation actions
@@ -86,7 +89,9 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   experienceMode: 'cover',
   selectedBook: 0,
   bookshelfMode: 'hero',
+  isShelfSettled: true,
   pendingBookshelfNavigation: null,
+  pendingQualityTier: null,
   magazinePage: 0,
   magazineViewMode: 'showcase',
   chapterIndex: 0,
@@ -106,7 +111,20 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   openSourceDrawer: () => set({ isSourceDrawerOpen: true }),
   closeSourceDrawer: () => set({ isSourceDrawerOpen: false }),
   toggleSourceDrawer: () => set((state) => ({ isSourceDrawerOpen: !state.isSourceDrawerOpen })),
-  setBookshelfMode: (mode: BookshelfMode) => set({ bookshelfMode: mode }),
+  setBookshelfMode: (mode: BookshelfMode) => {
+    const state = get();
+    if (mode === 'hero' && state.pendingQualityTier) {
+      const targetTier = state.pendingQualityTier;
+      set({
+        bookshelfMode: 'hero',
+        qualityTier: targetTier,
+        pendingQualityTier: null,
+      });
+      return;
+    }
+    set({ bookshelfMode: mode });
+  },
+  setShelfSettled: (settled: boolean) => set({ isShelfSettled: settled }),
   requestBookshelfNavigation: (intent: BookshelfNavigationIntent) =>
     set({ pendingBookshelfNavigation: intent }),
   clearPendingBookshelfNavigation: () =>
@@ -117,21 +135,43 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   },
 
   openCover: () => {
+    const state = get();
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
+      state.requestBookshelfNavigation({ type: 'close-to-library' });
+      return;
+    }
     set({ experienceMode: 'cover', viewMode: 'cover', bookshelfMode: 'hero', direction: -1 });
   },
 
   openLibrary: () => {
+    const state = get();
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
+      state.requestBookshelfNavigation({ type: 'close-to-library' });
+      return;
+    }
     set({
       experienceMode: 'library',
       viewMode: 'library',
       bookshelfMode: 'hero',
-      chapterIndex: get().selectedBook,
+      chapterIndex: state.selectedBook,
       direction: -1,
     });
   },
 
   openBook: (index: number) => {
+    const state = get();
     const selectedBook = Math.max(0, Math.min(3, index));
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+
+    if (isLibrary && state.qualityTier !== 'safe') {
+      if (state.bookshelfMode !== 'hero' || !state.isShelfSettled) {
+        state.requestBookshelfNavigation({ type: 'open-book', index: selectedBook });
+        return;
+      }
+    }
+
     const volume = getMagazineVolume(selectedBook);
 
     if (!volume) {
@@ -147,7 +187,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
 
     set({
       experienceMode: 'magazine',
-      viewMode: 'library',
+      viewMode: 'chapter',
       selectedBook,
       chapterIndex: selectedBook,
       magazinePage: 0,
@@ -157,7 +197,15 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   },
 
   selectBook: (index: number) => {
+    const state = get();
     const selectedBook = Math.max(0, Math.min(3, index));
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+
+    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
+      state.requestBookshelfNavigation({ type: 'select', index: selectedBook });
+      return;
+    }
+
     set({
       selectedBook,
       chapterIndex: selectedBook,
@@ -197,16 +245,20 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     if (!targetChapter || targetChapter.scenes.length === 0) {
       // Empty chapter guard: remain in Library, keep book selected/highlighted, do not enter chapter view
       set({
+        experienceMode: 'library',
         viewMode: 'library',
         chapterIndex: validChapterIndex,
+        selectedBook: validChapterIndex,
         sceneIndex: 0,
         beatIndex: 0,
       });
       return;
     }
     set({
+      experienceMode: 'interactive',
       viewMode: 'chapter',
       chapterIndex: validChapterIndex,
+      selectedBook: validChapterIndex,
       sceneIndex,
       beatIndex: 0,
       direction: 1,
@@ -231,8 +283,8 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       return;
     }
 
-    if (state.viewMode === 'cover') {
-      set({ viewMode: 'library', direction: 1 });
+    if (state.viewMode === 'cover' || state.experienceMode === 'cover') {
+      set({ experienceMode: 'library', viewMode: 'library', bookshelfMode: 'hero', direction: 1 });
       return;
     }
 
@@ -269,8 +321,10 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     // Transition back to Library with Book II selected/highlighted
     if (state.chapterIndex === 0) {
       set({
+        experienceMode: 'library',
         viewMode: 'library',
         chapterIndex: 1,
+        selectedBook: 1,
         sceneIndex: 0,
         beatIndex: 0,
         direction: 1,
@@ -284,8 +338,10 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       const nextChapter = chapters[nextChapterIndex];
       if (!nextChapter || nextChapter.scenes.length === 0) {
         set({
+          experienceMode: 'library',
           viewMode: 'library',
           chapterIndex: nextChapterIndex,
+          selectedBook: nextChapterIndex,
           sceneIndex: 0,
           beatIndex: 0,
           direction: 1,
@@ -294,6 +350,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       }
       set({
         chapterIndex: nextChapterIndex,
+        selectedBook: nextChapterIndex,
         sceneIndex: 0,
         beatIndex: 0,
         direction: 1,
@@ -302,7 +359,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     }
 
     // Reached the end of presentation, return to library overview
-    set({ viewMode: 'library', direction: 1 });
+    set({ experienceMode: 'library', viewMode: 'library', direction: 1 });
   },
 
   prev: () => {
@@ -321,10 +378,10 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       return;
     }
 
-    if (state.viewMode === 'cover') return;
+    if (state.viewMode === 'cover' || state.experienceMode === 'cover') return;
 
-    if (state.viewMode === 'library') {
-      set({ viewMode: 'cover', direction: -1 });
+    if (state.viewMode === 'library' || state.experienceMode === 'library') {
+      get().openCover();
       return;
     }
 
@@ -349,7 +406,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
 
     // If at first scene and first beat of chapter
     // Return to library lobby
-    set({ viewMode: 'library', direction: -1 });
+    set({ experienceMode: 'library', viewMode: 'library', direction: -1 });
   },
 
   jumpToChapter: (index: number) => {
@@ -358,16 +415,20 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     if (!targetChapter || targetChapter.scenes.length === 0) {
       // Empty chapter guard: remain in Library, keep book selected/highlighted, do not enter chapter view
       set({
+        experienceMode: 'library',
         viewMode: 'library',
         chapterIndex: validIndex,
+        selectedBook: validIndex,
         sceneIndex: 0,
         beatIndex: 0,
       });
       return;
     }
     set({
+      experienceMode: 'interactive',
       viewMode: 'chapter',
       chapterIndex: validIndex,
+      selectedBook: validIndex,
       sceneIndex: 0,
       beatIndex: 0,
       direction: 1,
@@ -379,8 +440,10 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       const sIdx = chapters[cIdx].scenes.findIndex((s) => s.id === sceneId);
       if (sIdx !== -1) {
         set({
+          experienceMode: 'interactive',
           viewMode: 'chapter',
           chapterIndex: cIdx,
+          selectedBook: cIdx,
           sceneIndex: sIdx,
           beatIndex: 0,
           direction: 1,
@@ -394,7 +457,19 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   toggleBlackout: () => set((state) => ({ isBlackout: !state.isBlackout })),
   resetScene: () => set({ beatIndex: 0 }),
   setFullscreen: (value: boolean) => set({ isFullscreen: value }),
-  setQualityTier: (tier: QualityTier) => set({ qualityTier: tier }),
+  setQualityTier: (tier: QualityTier) => {
+    const state = get();
+    if (state.qualityTier === tier) return;
+
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
+      set({ pendingQualityTier: tier });
+      state.requestBookshelfNavigation({ type: 'close-to-library' });
+      return;
+    }
+
+    set({ qualityTier: tier, pendingQualityTier: null, bookshelfMode: 'hero' });
+  },
   setReducedMotion: (value: boolean) => set({ reducedMotion: value }),
   setTransitioning: (value: boolean) => set({ isTransitioning: value }),
 }));

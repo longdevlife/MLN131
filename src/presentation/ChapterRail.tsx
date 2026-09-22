@@ -7,14 +7,12 @@ export const ChapterRail: React.FC = () => {
   const viewMode = usePresentationStore((state) => state.viewMode);
   const experienceMode = usePresentationStore((state) => state.experienceMode);
   const selectedBook = usePresentationStore((state) => state.selectedBook);
-  const bookshelfMode = usePresentationStore((state) => state.bookshelfMode);
   const chapterIndex = usePresentationStore((state) => state.chapterIndex);
   const isFullscreen = usePresentationStore((state) => state.isFullscreen);
   const qualityTier = usePresentationStore((state) => state.qualityTier);
   const openLibrary = usePresentationStore((state) => state.openLibrary);
   const openBook = usePresentationStore((state) => state.openBook);
   const selectBook = usePresentationStore((state) => state.selectBook);
-  const requestBookshelfNavigation = usePresentationStore((state) => state.requestBookshelfNavigation);
   const jumpToChapter = usePresentationStore((state) => state.jumpToChapter);
   const setFullscreen = usePresentationStore((state) => state.setFullscreen);
   const setQualityTier = usePresentationStore((state) => state.setQualityTier);
@@ -34,11 +32,6 @@ export const ChapterRail: React.FC = () => {
   };
 
   const handleLibraryClick = () => {
-    const isLibrary = experienceMode === 'library' || viewMode === 'library';
-    if (isLibrary && bookshelfMode !== 'hero') {
-      requestBookshelfNavigation({ type: 'close-to-library' });
-      return;
-    }
     openLibrary();
   };
 
@@ -97,18 +90,10 @@ export const ChapterRail: React.FC = () => {
 
           const handleBookClick = () => {
             if (isLibrary) {
-              if (bookshelfMode !== 'hero') {
-                if (idx === 0) {
-                  requestBookshelfNavigation({ type: 'open-book', index: 0 });
-                } else {
-                  requestBookshelfNavigation({ type: 'select', index: idx });
-                }
+              if (idx === 0) {
+                openBook(0);
               } else {
-                if (idx === 0) {
-                  openBook(0);
-                } else {
-                  selectBook(idx);
-                }
+                selectBook(idx);
               }
             } else {
               jumpToChapter(idx);

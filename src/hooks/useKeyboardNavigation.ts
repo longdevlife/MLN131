@@ -58,23 +58,19 @@ export function useKeyboardNavigation() {
         }
       }
 
-      const isLibrary = state.experienceMode === 'library' || viewMode === 'library';
+      const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
 
       if (isLibrary) {
         if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
           e.preventDefault();
-          usePresentationStore.setState((s) => {
-            const nextIdx = Math.min(s.chapterIndex + 1, 3);
-            return { chapterIndex: nextIdx, selectedBook: nextIdx };
-          });
+          const nextIdx = Math.min(state.selectedBook + 1, 3);
+          state.selectBook(nextIdx);
           return;
         }
         if (e.code === 'ArrowLeft' || e.code === 'ArrowUp') {
           e.preventDefault();
-          usePresentationStore.setState((s) => {
-            const prevIdx = Math.max(s.chapterIndex - 1, 0);
-            return { chapterIndex: prevIdx, selectedBook: prevIdx };
-          });
+          const prevIdx = Math.max(state.selectedBook - 1, 0);
+          state.selectBook(prevIdx);
           return;
         }
         if (e.code === 'Space' || e.code === 'Enter') {
@@ -89,13 +85,13 @@ export function useKeyboardNavigation() {
         case 'ArrowRight':
         case 'PageDown':
           e.preventDefault();
-          next();
+          state.next();
           break;
 
         case 'ArrowLeft':
         case 'PageUp':
           e.preventDefault();
-          prev();
+          state.prev();
           break;
 
         case 'Digit1':
@@ -110,7 +106,7 @@ export function useKeyboardNavigation() {
         case 'Digit2':
           e.preventDefault();
           if (isLibrary) {
-            state.openBook(1);
+            state.selectBook(1);
           } else {
             jumpToChapter(1);
           }
@@ -119,7 +115,7 @@ export function useKeyboardNavigation() {
         case 'Digit3':
           e.preventDefault();
           if (isLibrary) {
-            state.openBook(2);
+            state.selectBook(2);
           } else {
             jumpToChapter(2);
           }
@@ -128,7 +124,7 @@ export function useKeyboardNavigation() {
         case 'Digit4':
           e.preventDefault();
           if (isLibrary) {
-            state.openBook(3);
+            state.selectBook(3);
           } else {
             jumpToChapter(3);
           }
@@ -136,7 +132,7 @@ export function useKeyboardNavigation() {
 
         case 'KeyO':
           e.preventDefault();
-          openLibrary();
+          state.openLibrary();
           break;
 
         case 'KeyF':
@@ -162,28 +158,32 @@ export function useKeyboardNavigation() {
 
         case 'Home':
           e.preventDefault();
-          openCover();
+          state.openCover();
           break;
 
         case 'Escape':
           e.preventDefault();
-          if (usePresentationStore.getState().isSourceDrawerOpen) {
-            usePresentationStore.getState().closeSourceDrawer();
+          if (state.isSourceDrawerOpen) {
+            state.closeSourceDrawer();
             return;
           }
           if (isLibrary) {
-            const shelfMode = usePresentationStore.getState().bookshelfMode;
-            if (shelfMode && shelfMode !== 'hero') {
+            if (state.qualityTier === 'safe') {
+              state.openCover();
+              return;
+            }
+            if (state.bookshelfMode && state.bookshelfMode !== 'hero') {
               // Bookshelf detail/opening/closing owns the first Escape!
+              state.requestBookshelfNavigation({ type: 'close-to-library' });
               const closeBtn = document.getElementById('close-detail') as HTMLButtonElement | null;
               closeBtn?.click();
               return;
             }
           }
-          if (viewMode === 'chapter') {
-            openLibrary();
-          } else if (viewMode === 'library') {
-            openCover();
+          if (state.viewMode === 'chapter') {
+            state.openLibrary();
+          } else if (state.viewMode === 'library' || state.experienceMode === 'library') {
+            state.openCover();
           }
           break;
 

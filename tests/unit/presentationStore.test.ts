@@ -7,6 +7,11 @@ describe('PresentationStore Navigation Engine', () => {
       viewMode: 'cover',
       experienceMode: 'cover',
       selectedBook: 0,
+      bookshelfMode: 'hero',
+      isShelfSettled: true,
+      pendingBookshelfNavigation: null,
+      pendingQualityTier: null,
+      qualityTier: 'high',
       magazinePage: 0,
       magazineViewMode: 'showcase',
       chapterIndex: 0,
@@ -251,6 +256,87 @@ describe('PresentationStore Navigation Engine', () => {
     const state = usePresentationStore.getState();
     expect(state.selectedBook).toBe(0);
     expect(state.experienceMode).toBe('magazine');
+  });
+
+  it('synchronizes experienceMode and viewMode to avoid split-brain states', () => {
+    const store = usePresentationStore.getState();
+    // Start at cover
+    store.openCover();
+    expect(store.experienceMode).toBe('cover');
+    expect(store.viewMode).toBe('cover');
+
+    // next() from cover
+    store.next();
+    expect(usePresentationStore.getState().experienceMode).toBe('library');
+    expect(usePresentationStore.getState().viewMode).toBe('library');
+
+    // prev() from library
+    usePresentationStore.getState().prev();
+    expect(usePresentationStore.getState().experienceMode).toBe('cover');
+    expect(usePresentationStore.getState().viewMode).toBe('cover');
+  });
+
+  it('centralizes non-hero safety guards: actions queue intents instead of early resetting or unmounting', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    usePresentationStore.setState({ bookshelfMode: 'detail', selectedBook: 1 });
+
+    // openLibrary() during detail
+    store.openLibrary();
+    let state = usePresentationStore.getState();
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'close-to-library' });
+    expect(state.bookshelfMode).toBe('detail'); // Not reset early
+
+    // selectBook(3) during detail
+    store.clearPendingBookshelfNavigation();
+    store.selectBook(3);
+    state = usePresentationStore.getState();
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'select', index: 3 });
+
+    // openBook(0) during detail
+    store.clearPendingBookshelfNavigation();
+    store.openBook(0);
+    state = usePresentationStore.getState();
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-book', index: 0 });
+    expect(state.experienceMode).toBe('library'); // Does NOT transition to magazine early
+
+    // openCover() during detail
+    store.clearPendingBookshelfNavigation();
+    store.openCover();
+    state = usePresentationStore.getState();
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'close-to-library' });
+    expect(state.experienceMode).toBe('library'); // Does NOT unmount to cover early
+  });
+
+  it('defers Safe Mode switch when non-hero until bookshelf settles back to hero', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    usePresentationStore.setState({ bookshelfMode: 'detail', qualityTier: 'high' });
+
+    // Attempt to switch to safe mode while in detail
+    store.setQualityTier('safe');
+    let state = usePresentationStore.getState();
+    expect(state.qualityTier).toBe('high'); // Still high
+    expect(state.pendingQualityTier).toBe('safe'); // Queued
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'close-to-library' });
+
+    // Renderer signals book returned to shelf (mode -> hero)
+    store.setBookshelfMode('hero');
+    state = usePresentationStore.getState();
+    expect(state.qualityTier).toBe('safe'); // Now safely switched
+    expect(state.pendingQualityTier).toBeNull();
+  });
+
+  it('queues Book I open-book intent when carousel is still moving (isShelfSettled=false)', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    usePresentationStore.setState({ bookshelfMode: 'hero', isShelfSettled: false });
+
+    // Click Book I while carousel is moving
+    store.openBook(0);
+    const state = usePresentationStore.getState();
+    expect(state.experienceMode).toBe('library'); // Does NOT unmount WebGL during animation
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-book', index: 0 });
   });
 });
 

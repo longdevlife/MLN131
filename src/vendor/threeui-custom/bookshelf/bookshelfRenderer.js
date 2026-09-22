@@ -1877,6 +1877,17 @@ function fa(Nr, m, He = {}) {
     if (currentSettled !== _lastSettledReported) {
       _lastSettledReported = currentSettled;
       He.onSettledChange?.(currentSettled);
+      if (currentSettled && pendingNavigation) {
+        const nav = pendingNavigation;
+        pendingNavigation = null;
+        if (nav.type === "open-book") {
+          He.onOpenBook?.(nav.index, S[nav.index]);
+        } else if (nav.type === "close-to-library") {
+          // Safe close-to-library completed: mode is hero, settled is true
+        } else {
+          ar(nav.index);
+        }
+      }
     }
   }
   function yr(e) {
@@ -2016,12 +2027,16 @@ function fa(Nr, m, He = {}) {
     checkAndNotifySettled();
     if (pendingNavigation) {
       const nav = pendingNavigation;
-      pendingNavigation = null;
       if (nav.type === "open-book") {
-        He.onOpenBook?.(nav.index, S[nav.index]);
+        if (isShelfSettled()) {
+          pendingNavigation = null;
+          He.onOpenBook?.(nav.index, S[nav.index]);
+        }
       } else if (nav.type === "close-to-library") {
+        pendingNavigation = null;
         // Safe close-to-library completed: physical book returned, mode is hero, remain at current book O
       } else {
+        pendingNavigation = null;
         ar(nav.index);
       }
     }
@@ -2322,6 +2337,10 @@ function fa(Nr, m, He = {}) {
         return { accepted: false, queued: true };
       }
       if (type === "open-book") {
+        if (!isShelfSettled()) {
+          pendingNavigation = { type, index: targetIdx };
+          return { accepted: false, queued: true };
+        }
         He.onOpenBook?.(targetIdx, S[targetIdx]);
         return { accepted: true, queued: false };
       }

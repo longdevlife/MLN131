@@ -168,6 +168,7 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
             if (!disposed) {
               setIsSettled(settled);
               updateContainerAttrs({ settled });
+              usePresentationStore.getState().setShelfSettled(settled);
             }
           },
           onOpenBook: (index: number, book: any) => {
@@ -224,6 +225,9 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
         delete window.__BOOKSHELF_DEBUG__;
       }
       resizeObserver.disconnect();
+      // Ensure store does not retain stale non-hero mode or settled false when unmounting
+      usePresentationStore.getState().setBookshelfMode('hero');
+      usePresentationStore.getState().setShelfSettled(true);
       try {
         rendererRef.current?.dispose?.();
         rendererRef.current = null;
