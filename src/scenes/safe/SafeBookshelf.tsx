@@ -34,7 +34,7 @@ export const SafeBookshelf: React.FC = () => {
           Thư viện Giáo trình (3 Quyển)
         </h2>
         <p style={{ color: '#C8A86A', fontSize: '1rem', margin: 0 }}>
-          Chọn một quyển để mở nội dung bài giảng
+          Chọn một quyển để mở magazine tương ứng
         </p>
       </div>
 

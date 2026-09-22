@@ -239,10 +239,11 @@ export const PresenterConsole: React.FC = () => {
                   }}
                 >
                   <p style={{ color: 'rgba(245, 240, 232, 0.85)', margin: 0 }}>
-                    {magazinePage === 0 && 'Bìa Quyển I: Giới thiệu chuyên đề Cơ cấu xã hội – giai cấp và liên minh giai cấp, tầng lớp.'}
-                    {magazinePage === 1 && 'Trang 1: Khái niệm và vị trí của cơ cấu xã hội – giai cấp trong hệ thống xã hội.'}
-                    {magazinePage === 2 && 'Trang 2: Sự biến đổi của cơ cấu xã hội – giai cấp trong thời kỳ quá độ lên CNXH.'}
-                    {magazinePage === 3 && 'Bìa sau: Tóm lược ý nghĩa thực tiễn và liên minh giai cấp tại Việt Nam.'}
+                    {magazinePage === 0
+                      ? `Bìa Quyển ${magazineVolume?.roman ?? '—'}: ${magazineVolume?.title ?? 'Tạp chí'}.`
+                      : magazinePage >= magazinePageCount - 1
+                        ? `Bìa sau Quyển ${magazineVolume?.roman ?? '—'}.`
+                        : `Đang trình chiếu spread ${magazinePage} của Quyển ${magazineVolume?.roman ?? '—'}.`}
                   </p>
                 </div>
               </div>

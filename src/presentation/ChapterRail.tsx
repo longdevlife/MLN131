@@ -85,10 +85,13 @@ export const ChapterRail: React.FC = () => {
       <div style={{ display: 'flex', gap: '6px' }}>
         {chapters.map((ch, idx) => {
           const isLibrary = experienceMode === 'library' || viewMode === 'library';
-          const isActive = isLibrary ? selectedBook === idx : (viewMode === 'chapter' && chapterIndex === idx);
+          const isMagazine = experienceMode === 'magazine';
+          const isActive = (isLibrary || isMagazine)
+            ? selectedBook === idx
+            : (viewMode === 'chapter' && chapterIndex === idx);
 
           const handleBookClick = () => {
-            if (isLibrary) {
+            if (isLibrary || isMagazine) {
               openBook(idx);
             } else {
               jumpToChapter(idx);
