@@ -29,8 +29,8 @@ export interface MagazineSheet {
 }
 
 export interface MagazineVolume {
-  id: 'part1' | 'part2' | 'part3' | 'part4';
-  roman: 'I' | 'II' | 'III' | 'IV';
+  id: 'part1' | 'part2' | 'part3';
+  roman: 'I' | 'II' | 'III';
   title: string;
   subtitle?: string;
   coverFront: MagazinePageContent;

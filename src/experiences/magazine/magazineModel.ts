@@ -1,5 +1,9 @@
 import type { MagazineVolume } from './magazineTypes';
 import { book1Volume } from './volumes/book1';
+import { book2Volume } from './volumes/book2';
+import { book3Volume } from './volumes/book3';
+
+export const magazineVolumes: MagazineVolume[] = [book1Volume, book2Volume, book3Volume];
 
 export interface MagazinePhysicalSheet {
   front: string;
@@ -7,10 +11,8 @@ export interface MagazinePhysicalSheet {
 }
 
 export function getMagazineVolume(index: number): MagazineVolume | null {
-  if (index === 0) {
-    return book1Volume;
-  }
-  return null;
+  if (!Number.isInteger(index)) return null;
+  return magazineVolumes[index] ?? null;
 }
 
 export function getMagazinePhysicalSheets(volume: MagazineVolume): MagazinePhysicalSheet[] {

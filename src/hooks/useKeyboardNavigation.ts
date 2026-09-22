@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { usePresentationStore } from '../state/presentationStore';
+import { chapters } from '../content/chapters';
 
 export function useKeyboardNavigation() {
   const next = usePresentationStore((state) => state.next);
@@ -63,7 +64,7 @@ export function useKeyboardNavigation() {
       if (isLibrary) {
         if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
           e.preventDefault();
-          const nextIdx = Math.min(state.selectedBook + 1, 3);
+          const nextIdx = Math.min(state.selectedBook + 1, chapters.length - 1);
           state.selectBook(nextIdx);
           return;
         }
@@ -105,29 +106,14 @@ export function useKeyboardNavigation() {
 
         case 'Digit2':
           e.preventDefault();
-          if (isLibrary) {
-            state.selectBook(1);
-          } else {
-            jumpToChapter(1);
-          }
+          if (isLibrary) state.openBook(1);
+          else jumpToChapter(1);
           break;
 
         case 'Digit3':
           e.preventDefault();
-          if (isLibrary) {
-            state.selectBook(2);
-          } else {
-            jumpToChapter(2);
-          }
-          break;
-
-        case 'Digit4':
-          e.preventDefault();
-          if (isLibrary) {
-            state.selectBook(3);
-          } else {
-            jumpToChapter(3);
-          }
+          if (isLibrary) state.openBook(2);
+          else jumpToChapter(2);
           break;
 
         case 'KeyO':

@@ -200,11 +200,13 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
 
   openBook: (index: number, fromRenderer = false) => {
     const state = get();
-    const selectedBook = Math.max(0, Math.min(3, index));
+    const selectedBook = Math.max(0, Math.min(chapters.length - 1, index));
     const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
 
     if (!fromRenderer && isLibrary && state.qualityTier !== 'safe') {
-      if (state.bookshelfMode !== 'hero' || !state.isShelfSettled) {
+      const mustCenterTarget = state.selectedBook !== selectedBook;
+      if (state.bookshelfMode !== 'hero' || !state.isShelfSettled || mustCenterTarget) {
+        set({ selectedBook, chapterIndex: selectedBook });
         state.requestBookshelfNavigation({ type: 'open-book', index: selectedBook });
         return;
       }
@@ -236,7 +238,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
 
   selectBook: (index: number) => {
     const state = get();
-    const selectedBook = Math.max(0, Math.min(3, index));
+    const selectedBook = Math.max(0, Math.min(chapters.length - 1, index));
     const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
 
     if (isLibrary && state.qualityTier !== 'safe') {

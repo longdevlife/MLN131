@@ -12,7 +12,6 @@ export const ChapterRail: React.FC = () => {
   const qualityTier = usePresentationStore((state) => state.qualityTier);
   const openLibrary = usePresentationStore((state) => state.openLibrary);
   const openBook = usePresentationStore((state) => state.openBook);
-  const selectBook = usePresentationStore((state) => state.selectBook);
   const jumpToChapter = usePresentationStore((state) => state.jumpToChapter);
   const setFullscreen = usePresentationStore((state) => state.setFullscreen);
   const setQualityTier = usePresentationStore((state) => state.setQualityTier);
@@ -82,7 +81,7 @@ export const ChapterRail: React.FC = () => {
 
       <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.15)', margin: '0 4px' }} />
 
-      {/* 4 Books / Chapters */}
+      {/* 3 Books / Magazine Volumes */}
       <div style={{ display: 'flex', gap: '6px' }}>
         {chapters.map((ch, idx) => {
           const isLibrary = experienceMode === 'library' || viewMode === 'library';
@@ -90,11 +89,7 @@ export const ChapterRail: React.FC = () => {
 
           const handleBookClick = () => {
             if (isLibrary) {
-              if (idx === 0) {
-                openBook(0);
-              } else {
-                selectBook(idx);
-              }
+              openBook(idx);
             } else {
               jumpToChapter(idx);
             }

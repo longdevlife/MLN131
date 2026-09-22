@@ -106,39 +106,6 @@ function fa(Nr, m, He = {}) {
       chapters: ["Công nhân", "Nông dân", "Trí thức", "Doanh nhân"],
       seed: 27
     },
-    {
-      id: "part-4",
-      title: "Phương hướng & giải pháp",
-      roman: "IV",
-      discipline: "Định hướng chiến lược",
-      note: "Hệ thống giải pháp tăng cường liên minh và đồng thuận xã hội.",
-      deck: "Phương hướng và các giải pháp cơ bản nhằm tăng cường khối đại đoàn kết toàn dân tộc và liên minh giai cấp trong giai đoạn hiện nay.",
-      binding: "Crimson velvet cloth · muted-gold foil",
-      format: "150 × 220 mm · Giáo trình 2021",
-      theme: "Phương hướng & Giải pháp",
-      motif: "Modules",
-      motifKey: "modules",
-      paletteLabel: "Crimson · gold · parchment",
-      color: "#5c1d24",
-      foil: "#dfb15b",
-      palette: {
-        paper: "#3d1116",
-        paperDeep: "#240a0d",
-        paperPale: "#f5ece8",
-        ink: "#fdf2f2",
-        inkSoft: "#cfb4b6",
-        wall: "#1b1214",
-        shelf: "#351b18",
-        shelfDark: "#1a0c0a",
-        light: "#ffe6c7",
-        fill: "#bd7880"
-      },
-      width: 1.02,
-      height: 1.54,
-      depth: 0.26,
-      chapters: ["Kinh tế", "Chính trị", "Văn hóa", "Xã hội"],
-      seed: 33
-    }
   ];
   const Vr = "", Yr = "";
   let qt = !1;
@@ -2359,6 +2326,11 @@ function fa(Nr, m, He = {}) {
         return { accepted: false, queued: true };
       }
       if (type === "open-book") {
+        if (targetIdx !== O) {
+          pendingNavigation = { type, index: targetIdx };
+          ar(targetIdx);
+          return { accepted: false, queued: true };
+        }
         if (!isShelfSettled()) {
           pendingNavigation = { type, index: targetIdx };
           return { accepted: false, queued: true };

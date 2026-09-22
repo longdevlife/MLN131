@@ -2,7 +2,6 @@ import { Canvas } from '@react-three/fiber';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { usePresentationStore } from '../../state/presentationStore';
 import { getMagazinePageCount, getMagazineVolume } from './magazineModel';
-import { book1Volume } from './volumes/book1';
 import { MagazineChrome } from './MagazineChrome';
 import { MagazineScene } from './MagazineScene';
 import './magazine.css';
@@ -17,8 +16,8 @@ export function MagazineExperience() {
   const setMagazinePage = usePresentationStore((s) => s.setMagazinePage);
   const toggleMagazineViewMode = usePresentationStore((s) => s.toggleMagazineViewMode);
 
-  const volume = getMagazineVolume(selectedBook) || book1Volume;
-  const pageCount = getMagazinePageCount(volume);
+  const volume = getMagazineVolume(selectedBook);
+  const pageCount = volume ? getMagazinePageCount(volume) : 0;
 
   const [cameraSettled, setCameraSettled] = useState(true);
   const [pageSettled, setPageSettled] = useState(true);
@@ -78,6 +77,8 @@ export function MagazineExperience() {
   };
 
   const isSettled = cameraSettled && pageSettled;
+
+  if (!volume) return null;
 
   return (
     <div

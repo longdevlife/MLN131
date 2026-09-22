@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { usePresentationStore } from '../state/presentationStore';
 import { chapters } from '../content/chapters';
+import { getMagazinePageCount, getMagazineVolume } from '../experiences/magazine/magazineModel';
 import { selectCurrentChapter, selectCurrentScene, selectCurrentBeat, selectNextScene } from '../state/selectors';
 import { PresentationChannel } from './broadcast';
 import {
@@ -29,6 +30,8 @@ export const PresenterConsole: React.FC = () => {
   const magazinePage = usePresentationStore((state) => state.magazinePage);
   const magazineViewMode = usePresentationStore((state) => state.magazineViewMode);
   const closeMagazine = usePresentationStore((state) => state.closeMagazine);
+  const magazineVolume = getMagazineVolume(selectedBook);
+  const magazinePageCount = magazineVolume ? getMagazinePageCount(magazineVolume) : 0;
 
   const currentChapter = usePresentationStore(selectCurrentChapter);
   const currentScene = usePresentationStore(selectCurrentScene);
@@ -195,7 +198,7 @@ export const PresenterConsole: React.FC = () => {
                   TẠP CHÍ 3D (ĐANG CHIẾU)
                 </span>
                 <span style={{ fontFamily: 'monospace', color: '#9FB3C9', fontSize: '0.85rem' }}>
-                  Trang: {magazinePage} / 3
+                  Trang: {magazinePage} / {Math.max(0, magazinePageCount - 1)}
                 </span>
               </div>
 
@@ -208,10 +211,10 @@ export const PresenterConsole: React.FC = () => {
                 }}
               >
                 <div style={{ color: '#C8A86A', fontSize: '0.9rem', marginBottom: '4px' }}>
-                  QUYỂN I
+                  QUYỂN {magazineVolume?.roman ?? '—'}
                 </div>
                 <h2 style={{ margin: '0 0 8px 0', fontSize: '1.8rem', fontFamily: 'serif', color: '#F5F0E8' }}>
-                  Cơ cấu xã hội – giai cấp
+                  {magazineVolume?.title ?? 'Tạp chí'}
                 </h2>
                 <p style={{ margin: 0, color: '#EDE4D6', opacity: 0.85 }}>
                   Chế độ: <strong style={{ color: '#C8A86A' }}>{magazineViewMode === 'reading' ? 'Reading' : 'Showcase'}</strong>
@@ -377,7 +380,7 @@ export const PresenterConsole: React.FC = () => {
                     Trang tạp chí kế tiếp:
                   </div>
                   <div style={{ fontSize: '1.05rem', color: '#F5F0E8', fontWeight: 600, marginTop: '4px' }}>
-                    {magazinePage < 3 ? `Trang ${magazinePage + 1} / 3` : 'Đã đến trang cuối (Bìa sau)'}
+                    {magazinePage < magazinePageCount - 1 ? `Vị trí ${magazinePage + 1} / ${Math.max(0, magazinePageCount - 1)}` : 'Đã đến bìa sau'}
                   </div>
                 </div>
               ) : (

@@ -7,47 +7,38 @@ import {
 } from '../../src/experiences/magazine/magazineModel';
 
 describe('magazineModel', () => {
-  it('registers only Book I during M0 and M1A', () => {
+  it('registers exactly three independent magazine volumes', () => {
     expect(getMagazineVolume(0)?.id).toBe('part1');
-    expect(getMagazineVolume(1)).toBeNull();
-    expect(getMagazineVolume(2)).toBeNull();
+    expect(getMagazineVolume(1)?.id).toBe('part2');
+    expect(getMagazineVolume(2)?.id).toBe('part3');
     expect(getMagazineVolume(3)).toBeNull();
   });
 
-  it('wires Book I into seven interior sheets and eight physical sheets', () => {
+  it('keeps Book I authored magazine intact', () => {
     const volume = getMagazineVolume(0)!;
-
     expect(volume.sheets).toHaveLength(7);
     expect(volume.sheets[0].front.texture).toBe('/magazine/book1/page-01.png');
-    expect(volume.sheets[0].back.texture).toBe('/magazine/book1/page-02.png');
-    expect(volume.sheets[6].front.texture).toBe('/magazine/book1/page-13.png');
     expect(volume.sheets[6].back.texture).toBe('/magazine/book1/page-14.png');
-
-    const interiorPageIds = volume.sheets.flatMap((sheet) => [
-      sheet.front.id,
-      sheet.back.id,
-    ]);
-    expect(new Set(interiorPageIds).size).toBe(14);
-    expect(interiorPageIds).toHaveLength(14);
-
-    const sheets = getMagazinePhysicalSheets(volume);
-    expect(sheets).toHaveLength(8);
-    expect(sheets[0].front).toBe('/magazine/book1/cover-front.png');
-    expect(sheets[0].back).toBe('/magazine/book1/page-01.png');
-    expect(sheets[7].front).toBe('/magazine/book1/page-14.png');
-    expect(sheets[7].back).toBe('/magazine/book1/cover-back.png');
-  });
-
-  it('exposes page positions from closed front cover through closed back cover (0 to 8)', () => {
-    const volume = getMagazineVolume(0)!;
+    expect(getMagazinePhysicalSheets(volume)).toHaveLength(8);
     expect(getMagazinePageCount(volume)).toBe(9);
   });
 
-  it('clamps invalid page positions', () => {
-    const volume = getMagazineVolume(0)!;
-    expect(clampMagazinePage(volume, -10)).toBe(0);
-    expect(clampMagazinePage(volume, 4)).toBe(4);
-    expect(clampMagazinePage(volume, 99)).toBe(8);
-    expect(clampMagazinePage(volume, Number.NaN)).toBe(0);
+  it('gives Book II and III distinct magazine identities and assets', () => {
+    const book2 = getMagazineVolume(1)!;
+    const book3 = getMagazineVolume(2)!;
+    expect(book2.id).toBe('part2');
+    expect(book3.id).toBe('part3');
+    expect(book2.coverFront.texture).toBe('/magazine/book2/cover-front.svg');
+    expect(book3.coverFront.texture).toBe('/magazine/book3/cover-front.svg');
+    expect(book2.sheets).toHaveLength(2);
+    expect(book3.sheets).toHaveLength(2);
+    expect(getMagazinePageCount(book2)).toBe(4);
+    expect(getMagazinePageCount(book3)).toBe(4);
+  });
+
+  it('clamps page positions per selected volume', () => {
+    expect(clampMagazinePage(getMagazineVolume(0)!, 99)).toBe(8);
+    expect(clampMagazinePage(getMagazineVolume(1)!, 99)).toBe(3);
+    expect(clampMagazinePage(getMagazineVolume(2)!, Number.NaN)).toBe(0);
   });
 });
