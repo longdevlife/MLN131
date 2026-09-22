@@ -176,6 +176,11 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
               onOpenBookRef.current(index, book);
             }
           },
+          onOpenCover: () => {
+            if (!disposed) {
+              usePresentationStore.getState().openCover();
+            }
+          },
         });
 
         rendererRef.current = renderer;

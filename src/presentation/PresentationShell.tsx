@@ -26,17 +26,7 @@ export const PresentationShell: React.FC = () => {
   const channel = useMemo(() => {
     return new PresentationChannel((msg: PresentationSyncMessage) => {
       if (msg.type === 'SYNC_STATE') {
-        usePresentationStore.setState({
-          viewMode: msg.viewMode,
-          chapterIndex: msg.chapterIndex,
-          sceneIndex: msg.sceneIndex,
-          beatIndex: msg.beatIndex,
-          isBlackout: msg.isBlackout,
-          ...(msg.experienceMode ? { experienceMode: msg.experienceMode } : {}),
-          ...(msg.selectedBook !== undefined ? { selectedBook: msg.selectedBook } : {}),
-          ...(msg.magazinePage !== undefined ? { magazinePage: msg.magazinePage } : {}),
-          ...(msg.magazineViewMode ? { magazineViewMode: msg.magazineViewMode } : {}),
-        });
+        usePresentationStore.getState().applyPresenterSync(msg);
       }
     });
   }, []);

@@ -20,6 +20,7 @@ export type BookshelfNavigationIntent =
   | { type: 'select'; index: number }
   | { type: 'open-book'; index: number }
   | { type: 'close-to-library' }
+  | { type: 'open-cover' }
   | null;
 
 export interface PresentationState {
@@ -73,6 +74,17 @@ export interface PresentationState {
   setQualityTier: (tier: QualityTier) => void;
   setReducedMotion: (value: boolean) => void;
   setTransitioning: (value: boolean) => void;
+  applyPresenterSync: (msg: {
+    viewMode?: ViewMode;
+    experienceMode?: ExperienceMode;
+    selectedBook?: number;
+    chapterIndex?: number;
+    sceneIndex?: number;
+    beatIndex?: number;
+    isBlackout?: boolean;
+    magazinePage?: number;
+    magazineViewMode?: MagazineViewMode;
+  }) => void;
 }
 
 // Check safe mode from query params
@@ -113,18 +125,86 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   toggleSourceDrawer: () => set((state) => ({ isSourceDrawerOpen: !state.isSourceDrawerOpen })),
   setBookshelfMode: (mode: BookshelfMode) => {
     const state = get();
-    if (mode === 'hero' && state.pendingQualityTier) {
-      const targetTier = state.pendingQualityTier;
-      set({
-        bookshelfMode: 'hero',
-        qualityTier: targetTier,
-        pendingQualityTier: null,
-      });
-      return;
+    if (mode === 'hero') {
+      if (state.pendingBookshelfNavigation?.type === 'open-cover') {
+        set({
+          bookshelfMode: 'hero',
+          pendingBookshelfNavigation: null,
+          experienceMode: 'cover',
+          viewMode: 'cover',
+          direction: -1,
+        });
+        return;
+      }
+      if (state.pendingBookshelfNavigation?.type === 'select') {
+        const targetBook = state.pendingBookshelfNavigation.index;
+        const targetTier = state.pendingQualityTier;
+        set({
+          bookshelfMode: 'hero',
+          selectedBook: targetBook,
+          chapterIndex: targetBook,
+          pendingBookshelfNavigation: null,
+          ...(targetTier ? { qualityTier: targetTier, pendingQualityTier: null } : {}),
+        });
+        return;
+      }
+      if (state.pendingQualityTier) {
+        const targetTier = state.pendingQualityTier;
+        set({
+          bookshelfMode: 'hero',
+          qualityTier: targetTier,
+          pendingQualityTier: null,
+        });
+        return;
+      }
     }
     set({ bookshelfMode: mode });
   },
-  setShelfSettled: (settled: boolean) => set({ isShelfSettled: settled }),
+  setShelfSettled: (settled: boolean) => {
+    const state = get();
+    if (settled && state.pendingBookshelfNavigation) {
+      const intent = state.pendingBookshelfNavigation;
+      if (intent.type === 'select') {
+        const targetTier = state.pendingQualityTier;
+        set({
+          selectedBook: intent.index,
+          chapterIndex: intent.index,
+          pendingBookshelfNavigation: null,
+          isShelfSettled: true,
+          ...(targetTier ? { qualityTier: targetTier, pendingQualityTier: null } : {}),
+        });
+        return;
+      }
+      if (intent.type === 'open-cover') {
+        set({
+          pendingBookshelfNavigation: null,
+          experienceMode: 'cover',
+          viewMode: 'cover',
+          direction: -1,
+          isShelfSettled: true,
+        });
+        return;
+      }
+      if (intent.type === 'open-book') {
+        set({
+          pendingBookshelfNavigation: null,
+          isShelfSettled: true,
+        });
+        get().openBook(intent.index);
+        return;
+      }
+      if (intent.type === 'close-to-library') {
+        const targetTier = state.pendingQualityTier;
+        set({
+          pendingBookshelfNavigation: null,
+          isShelfSettled: true,
+          ...(targetTier ? { qualityTier: targetTier, pendingQualityTier: null } : {}),
+        });
+        return;
+      }
+    }
+    set({ isShelfSettled: settled });
+  },
   requestBookshelfNavigation: (intent: BookshelfNavigationIntent) =>
     set({ pendingBookshelfNavigation: intent }),
   clearPendingBookshelfNavigation: () =>
@@ -138,7 +218,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     const state = get();
     const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
     if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
-      state.requestBookshelfNavigation({ type: 'close-to-library' });
+      state.requestBookshelfNavigation({ type: 'open-cover' });
       return;
     }
     set({ experienceMode: 'cover', viewMode: 'cover', bookshelfMode: 'hero', direction: -1 });
@@ -201,9 +281,16 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     const selectedBook = Math.max(0, Math.min(3, index));
     const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
 
-    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
-      state.requestBookshelfNavigation({ type: 'select', index: selectedBook });
-      return;
+    if (isLibrary && state.qualityTier !== 'safe') {
+      if (state.bookshelfMode !== 'hero') {
+        state.requestBookshelfNavigation({ type: 'select', index: selectedBook });
+        return;
+      }
+      if (!state.isShelfSettled) {
+        state.requestBookshelfNavigation({ type: 'select', index: selectedBook });
+        set({ selectedBook, chapterIndex: selectedBook });
+        return;
+      }
     }
 
     set({
@@ -211,6 +298,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       chapterIndex: selectedBook,
       experienceMode: 'library',
       viewMode: 'library',
+      pendingBookshelfNavigation: null,
     });
   },
 
@@ -468,10 +556,41 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
       return;
     }
 
-    set({ qualityTier: tier, pendingQualityTier: null, bookshelfMode: 'hero' });
+    set({ qualityTier: tier, pendingQualityTier: null });
   },
+
   setReducedMotion: (value: boolean) => set({ reducedMotion: value }),
   setTransitioning: (value: boolean) => set({ isTransitioning: value }),
+  applyPresenterSync: (msg) => {
+    const state = get();
+    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
+    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
+      if (msg.experienceMode === 'cover' || msg.viewMode === 'cover') {
+        state.openCover();
+        return;
+      }
+      if (msg.experienceMode === 'magazine' && msg.selectedBook !== undefined) {
+        state.openBook(msg.selectedBook);
+        return;
+      }
+      if (msg.selectedBook !== undefined && msg.selectedBook !== state.selectedBook) {
+        state.selectBook(msg.selectedBook);
+        return;
+      }
+    }
+
+    set({
+      ...(msg.viewMode ? { viewMode: msg.viewMode } : {}),
+      ...(msg.experienceMode ? { experienceMode: msg.experienceMode } : {}),
+      ...(msg.chapterIndex !== undefined ? { chapterIndex: msg.chapterIndex } : {}),
+      ...(msg.sceneIndex !== undefined ? { sceneIndex: msg.sceneIndex } : {}),
+      ...(msg.beatIndex !== undefined ? { beatIndex: msg.beatIndex } : {}),
+      ...(msg.isBlackout !== undefined ? { isBlackout: msg.isBlackout } : {}),
+      ...(msg.selectedBook !== undefined ? { selectedBook: msg.selectedBook } : {}),
+      ...(msg.magazinePage !== undefined ? { magazinePage: msg.magazinePage } : {}),
+      ...(msg.magazineViewMode ? { magazineViewMode: msg.magazineViewMode } : {}),
+    });
+  },
 }));
 
 if (typeof window !== 'undefined') {

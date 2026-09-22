@@ -304,7 +304,7 @@ describe('PresentationStore Navigation Engine', () => {
     store.clearPendingBookshelfNavigation();
     store.openCover();
     state = usePresentationStore.getState();
-    expect(state.pendingBookshelfNavigation).toEqual({ type: 'close-to-library' });
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-cover' });
     expect(state.experienceMode).toBe('library'); // Does NOT unmount to cover early
   });
 
@@ -337,6 +337,118 @@ describe('PresentationStore Navigation Engine', () => {
     const state = usePresentationStore.getState();
     expect(state.experienceMode).toBe('library'); // Does NOT unmount WebGL during animation
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-book', index: 0 });
+  });
+
+  // --- M0.4.4 SPECIFICATION TEST SUITE (A, B, C, D, E) ---
+
+  it('A: pending open-book I -> newer select III -> final intent III', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    usePresentationStore.setState({ bookshelfMode: 'hero', isShelfSettled: false, selectedBook: 0 });
+
+    // User clicks Book I while shelf is moving
+    store.openBook(0);
+    expect(usePresentationStore.getState().pendingBookshelfNavigation).toEqual({ type: 'open-book', index: 0 });
+
+    // User then selects Book III (index 2) before shelf settles -> latest intent wins
+    store.selectBook(2);
+    expect(usePresentationStore.getState().pendingBookshelfNavigation).toEqual({ type: 'select', index: 2 });
+    expect(usePresentationStore.getState().selectedBook).toBe(2);
+
+    // Shelf settles: select Book III is executed, Magazine does not open
+    store.setShelfSettled(true);
+    const state = usePresentationStore.getState();
+    expect(state.selectedBook).toBe(2);
+    expect(state.pendingBookshelfNavigation).toBeNull();
+    expect(state.experienceMode).toBe('library'); // Stays library, did not pop open Magazine for Book I
+  });
+
+  it('B: detail -> openCover -> close -> Cover', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    usePresentationStore.setState({ bookshelfMode: 'detail', selectedBook: 0 });
+
+    // In detail, user clicks Home / openCover
+    store.openCover();
+    let state = usePresentationStore.getState();
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-cover' });
+    expect(state.experienceMode).toBe('library'); // Still library while closing
+
+    // Physical book closes, renderer notifies hero mode
+    store.setBookshelfMode('hero');
+    state = usePresentationStore.getState();
+    expect(state.experienceMode).toBe('cover');
+    expect(state.viewMode).toBe('cover');
+    expect(state.pendingBookshelfNavigation).toBeNull();
+  });
+
+  it('C: pending Safe Mode -> newer Book IV navigation -> deterministic documented final state', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    usePresentationStore.setState({ bookshelfMode: 'detail', selectedBook: 1, qualityTier: 'high' });
+
+    // User requests safe mode while in detail
+    store.setQualityTier('safe');
+    let state = usePresentationStore.getState();
+    expect(state.pendingQualityTier).toBe('safe');
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'close-to-library' });
+
+    // While closing, user selects Book IV (index 3) - latest user intent wins
+    store.selectBook(3);
+    state = usePresentationStore.getState();
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'select', index: 3 });
+    expect(state.pendingQualityTier).toBe('safe');
+
+    // Physical shelf finishes closing to hero
+    store.setBookshelfMode('hero');
+    state = usePresentationStore.getState();
+    expect(state.bookshelfMode).toBe('hero');
+    expect(state.selectedBook).toBe(3); // Book IV selected
+    expect(state.qualityTier).toBe('safe'); // Safe mode applied with Book IV selected
+    expect(state.pendingQualityTier).toBeNull();
+    expect(state.pendingBookshelfNavigation).toBeNull();
+  });
+
+  it('D: settled=true is not emitted before chained pending navigation is resolved', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    usePresentationStore.setState({ bookshelfMode: 'hero', isShelfSettled: false });
+
+    // Queue a select navigation
+    store.requestBookshelfNavigation({ type: 'select', index: 3 });
+    expect(usePresentationStore.getState().pendingBookshelfNavigation).toEqual({ type: 'select', index: 3 });
+
+    // When settled signal arrives, store resolves the pending navigation and updates selectedBook
+    store.setShelfSettled(true);
+    const state = usePresentationStore.getState();
+    expect(state.selectedBook).toBe(3);
+    expect(state.pendingBookshelfNavigation).toBeNull();
+    expect(state.isShelfSettled).toBe(true);
+  });
+
+  it('E: Presenter sync during detail does not raw-transition experienceMode', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    usePresentationStore.setState({ bookshelfMode: 'detail', selectedBook: 1, experienceMode: 'library' });
+
+    // Remote presenter sync requests cover mode
+    store.applyPresenterSync({ experienceMode: 'cover', viewMode: 'cover' });
+    let state = usePresentationStore.getState();
+    // Must NOT abruptly switch experienceMode to cover mid-detail
+    expect(state.experienceMode).toBe('library');
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-cover' });
+
+    // Remote presenter sync requests magazine for book 0
+    store.applyPresenterSync({ experienceMode: 'magazine', selectedBook: 0 });
+    state = usePresentationStore.getState();
+    expect(state.experienceMode).toBe('library');
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-book', index: 0 });
+
+    // Remote presenter sync requests book 3
+    store.applyPresenterSync({ selectedBook: 3 });
+    state = usePresentationStore.getState();
+    expect(state.bookshelfMode).toBe('detail');
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'select', index: 3 });
   });
 });
 

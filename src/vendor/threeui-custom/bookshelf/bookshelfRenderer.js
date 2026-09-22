@@ -1873,21 +1873,37 @@ function fa(Nr, m, He = {}) {
     return diff < 1e-3 && b === "hero" && Ne <= 0;
   }
   function checkAndNotifySettled() {
-    const currentSettled = isShelfSettled();
-    if (currentSettled !== _lastSettledReported) {
-      _lastSettledReported = currentSettled;
-      He.onSettledChange?.(currentSettled);
-      if (currentSettled && pendingNavigation) {
-        const nav = pendingNavigation;
-        pendingNavigation = null;
-        if (nav.type === "open-book") {
-          He.onOpenBook?.(nav.index, S[nav.index]);
-        } else if (nav.type === "close-to-library") {
-          // Safe close-to-library completed: mode is hero, settled is true
-        } else {
-          ar(nav.index);
+    const physicallySettled = isShelfSettled();
+
+    // If motion has settled and there is a queued navigation, consume it first!
+    if (physicallySettled && pendingNavigation) {
+      const nav = pendingNavigation;
+      pendingNavigation = null;
+
+      if (nav.type === "open-book") {
+        He.onOpenBook?.(nav.index, S[nav.index]);
+        return;
+      } else if (nav.type === "open-cover") {
+        He.onOpenCover?.();
+        return;
+      } else if (nav.type === "close-to-library") {
+        // Safe close-to-library completed, nothing more to rotate
+      } else {
+        // "select" intent: initiates a new rotation
+        ar(nav.index);
+        if (_lastSettledReported !== false) {
+          _lastSettledReported = false;
+          He.onSettledChange?.(false);
         }
+        return;
       }
+    }
+
+    // Only report settled=true when no pending navigation remains and shelf is truly settled
+    const trulySettled = isShelfSettled() && !pendingNavigation;
+    if (trulySettled !== _lastSettledReported) {
+      _lastSettledReported = trulySettled;
+      He.onSettledChange?.(trulySettled);
     }
   }
   function yr(e) {
@@ -2307,6 +2323,9 @@ function fa(Nr, m, He = {}) {
     selectVolume: (index, immediate = false) => {
       if (!D || jt) return { accepted: false, queued: false };
       const targetIdx = We(index, S.length);
+      // Latest user intent wins: cancel any older pending navigation
+      pendingNavigation = null;
+
       if (b !== "hero") {
         pendingNavigation = { type: "select", index: targetIdx };
         if (b === "opening" || b === "detail") {
@@ -2329,6 +2348,9 @@ function fa(Nr, m, He = {}) {
       if (!D || jt) return { accepted: false, queued: false };
       const type = intent.type || "select";
       const targetIdx = intent.index !== undefined ? We(intent.index, S.length) : O;
+      // Latest user intent wins: replace any older pending navigation
+      pendingNavigation = null;
+
       if (b !== "hero") {
         pendingNavigation = { type, index: targetIdx };
         if (b === "opening" || b === "detail") {
@@ -2342,6 +2364,10 @@ function fa(Nr, m, He = {}) {
           return { accepted: false, queued: true };
         }
         He.onOpenBook?.(targetIdx, S[targetIdx]);
+        return { accepted: true, queued: false };
+      }
+      if (type === "open-cover") {
+        He.onOpenCover?.();
         return { accepted: true, queued: false };
       }
       if (type === "close-to-library") {
