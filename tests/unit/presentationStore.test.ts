@@ -134,12 +134,12 @@ describe('PresentationStore Navigation Engine', () => {
     expect(state.viewMode).toBe('library');
     expect(state.chapterIndex).toBe(1);
 
-    // When in library with empty Book selected, next() does not enter chapter mode
-    usePresentationStore.setState({ viewMode: 'library', chapterIndex: 1 });
+    // When in library with Book II selected, next() opens Book II Magazine
+    usePresentationStore.setState({ viewMode: 'library', chapterIndex: 1, selectedBook: 1 });
     usePresentationStore.getState().next();
     state = usePresentationStore.getState();
-    expect(state.viewMode).toBe('library');
-    expect(state.chapterIndex).toBe(1);
+    expect(state.experienceMode).toBe('magazine');
+    expect(state.selectedBook).toBe(1);
   });
 
   it('enforces Part II boundary: at final beat of P1.S7, next returns to library with Book II selected', () => {
