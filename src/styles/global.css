@@ -43,7 +43,8 @@ button {
 /* Local offline typography */
 @font-face {
   font-family: 'MLNBookSans';
-  src: url('/fonts/roboto-regular.woff') format('woff');
+  src: url('/fonts/roboto-vietnamese.woff') format('woff'),
+       url('/fonts/roboto-regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -51,7 +52,8 @@ button {
 
 @font-face {
   font-family: 'MLNBookSans';
-  src: url('/fonts/roboto-bold.woff') format('woff');
+  src: url('/fonts/roboto-vietnamese.woff') format('woff'),
+       url('/fonts/roboto-bold.woff') format('woff');
   font-weight: 700;
   font-style: normal;
   font-display: swap;

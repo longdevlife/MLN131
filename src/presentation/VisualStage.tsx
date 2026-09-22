@@ -38,7 +38,7 @@ export const VisualStage: React.FC = () => {
       <BookshelfScene
         initialIndex={selectedBook ?? chapterIndex}
         onOpenBook={(index) => {
-          openBook(index);
+          openBook(index, true);
         }}
         onSelectBook={(index) => {
           usePresentationStore.setState({ selectedBook: index, chapterIndex: index });

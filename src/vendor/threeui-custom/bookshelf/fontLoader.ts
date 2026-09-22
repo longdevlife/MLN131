@@ -39,10 +39,27 @@ export function ensureBookshelfFonts(): Promise<void> {
         style: 'normal',
       });
 
-      const [loadedRegular, loadedBold] = await Promise.all([regular.load(), bold.load()]);
+      const vietnameseRegular = new FontFace('MLNBookSans', 'url(/fonts/roboto-vietnamese.woff)', {
+        weight: '400',
+        style: 'normal',
+      });
 
-      document.fonts.add(loadedRegular);
-      document.fonts.add(loadedBold);
+      const vietnameseBold = new FontFace('MLNBookSans', 'url(/fonts/roboto-vietnamese.woff)', {
+        weight: '700',
+        style: 'normal',
+      });
+
+      const [loadedRegular, loadedBold, loadedViReg, loadedViBold] = await Promise.all([
+        regular.load().catch(() => null),
+        bold.load().catch(() => null),
+        vietnameseRegular.load().catch(() => null),
+        vietnameseBold.load().catch(() => null),
+      ]);
+
+      if (loadedRegular) document.fonts.add(loadedRegular);
+      if (loadedBold) document.fonts.add(loadedBold);
+      if (loadedViReg) document.fonts.add(loadedViReg);
+      if (loadedViBold) document.fonts.add(loadedViBold);
 
       await Promise.all([
         document.fonts.load('400 64px MLNBookSans'),

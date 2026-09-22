@@ -56,7 +56,7 @@ export interface PresentationState {
   openCover: () => void;
   openLibrary: () => void;
   openChapter: (chapterIndex: number, sceneIndex?: number) => void;
-  openBook: (index: number) => void;
+  openBook: (index: number, fromRenderer?: boolean) => void;
   selectBook: (index: number) => void;
   closeMagazine: () => void;
   setMagazinePage: (page: number) => void;
@@ -160,12 +160,12 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     });
   },
 
-  openBook: (index: number) => {
+  openBook: (index: number, fromRenderer = false) => {
     const state = get();
     const selectedBook = Math.max(0, Math.min(3, index));
     const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
 
-    if (isLibrary && state.qualityTier !== 'safe') {
+    if (!fromRenderer && isLibrary && state.qualityTier !== 'safe') {
       if (state.bookshelfMode !== 'hero' || !state.isShelfSettled) {
         state.requestBookshelfNavigation({ type: 'open-book', index: selectedBook });
         return;

@@ -54,9 +54,9 @@ describe('fontLoader: ensureBookshelfFonts', () => {
 
     await ensureBookshelfFonts();
 
-    // Must have loaded both regular and bold fonts
-    expect(loadMock).toHaveBeenCalledTimes(2);
-    expect(addMock).toHaveBeenCalledTimes(2);
+    // Must have loaded regular, bold, and Vietnamese glyphs fonts
+    expect(loadMock).toHaveBeenCalledTimes(4);
+    expect(addMock).toHaveBeenCalledTimes(4);
     expect(docLoadMock).toHaveBeenCalledWith('400 64px MLNBookSans');
     expect(docLoadMock).toHaveBeenCalledWith('700 64px MLNBookSans');
   });
@@ -86,6 +86,6 @@ describe('fontLoader: ensureBookshelfFonts', () => {
     expect(promise1).toBe(promise2);
     await Promise.all([promise1, promise2]);
 
-    expect(loadMock).toHaveBeenCalledTimes(2);
+    expect(loadMock).toHaveBeenCalledTimes(4);
   });
 });
