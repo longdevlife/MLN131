@@ -364,7 +364,8 @@ describe('PresentationStore Navigation Engine', () => {
     expect(usePresentationStore.getState().pendingBookshelfNavigation).toEqual({ type: 'select', index: 2 });
     expect(usePresentationStore.getState().selectedBook).toBe(2);
 
-    // Shelf settles: select Book III is executed, Magazine does not open
+    // In Codex's handshake model, renderer acknowledges the navigation on settle
+    store.clearPendingBookshelfNavigation();
     store.setShelfSettled(true);
     const state = usePresentationStore.getState();
     expect(state.selectedBook).toBe(2);
@@ -387,8 +388,9 @@ describe('PresentationStore Navigation Engine', () => {
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-cover' });
     expect(state.experienceMode).toBe('library'); // Still library while closing
 
-    // Physical book closes to hero, then renderer resolves the open-cover callback.
+    // Physical book closes to hero, shelf settles, then renderer acknowledges and triggers openCover
     store.setBookshelfMode('hero');
+    store.setShelfSettled(true);
     state = usePresentationStore.getState();
     expect(state.experienceMode).toBe('library');
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-cover' });
