@@ -505,7 +505,15 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   setFullscreen: (value: boolean) => set({ isFullscreen: value }),
   setQualityTier: (tier: QualityTier) => {
     const state = get();
-    if (state.qualityTier === tier) return;
+
+    // Selecting the currently-active tier is also a valid latest intent: it
+    // cancels an older deferred quality switch that has not committed yet.
+    if (state.qualityTier === tier) {
+      if (state.pendingQualityTier && state.pendingQualityTier !== tier) {
+        set({ pendingQualityTier: null });
+      }
+      return;
+    }
 
     const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
     if (

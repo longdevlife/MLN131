@@ -492,6 +492,24 @@ describe('PresentationStore Navigation Engine', () => {
     expect(state.bookshelfMode).toBe('detail');
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'select', index: 3 });
   });
+  it('cancels a deferred Safe Mode switch when the user re-selects the active quality tier', () => {
+    const store = usePresentationStore.getState();
+    store.openLibrary();
+    usePresentationStore.setState({
+      bookshelfMode: 'detail',
+      isShelfSettled: false,
+      qualityTier: 'high',
+    });
+
+    store.setQualityTier('safe');
+    expect(usePresentationStore.getState().pendingQualityTier).toBe('safe');
+
+    // Latest quality intent is to remain on high.
+    store.setQualityTier('high');
+    expect(usePresentationStore.getState().qualityTier).toBe('high');
+    expect(usePresentationStore.getState().pendingQualityTier).toBeNull();
+  });
+
 });
 
 
