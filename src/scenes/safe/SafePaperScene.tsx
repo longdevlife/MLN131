@@ -41,7 +41,7 @@ export const SafePaperScene: React.FC<SafePaperSceneProps> = ({
       <p
         style={{
           fontSize: '1.25rem',
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'var(--font-serif)',
           color: '#3A2118',
           lineHeight: 1.6,
           maxWidth: '700px',

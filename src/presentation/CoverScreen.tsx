@@ -62,11 +62,11 @@ export const CoverScreen: React.FC = () => {
         {/* Main Title */}
         <h1
           style={{
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: 'var(--font-serif)',
             fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)',
             fontWeight: 700,
-            lineHeight: 1.2,
-            letterSpacing: '-0.02em',
+            lineHeight: 1.25,
+            letterSpacing: 'normal',
             color: '#F5F0E8',
             margin: '0 0 1.5rem 0',
             maxWidth: '820px',
@@ -77,7 +77,7 @@ export const CoverScreen: React.FC = () => {
 
         <p
           style={{
-            fontFamily: 'sans-serif',
+            fontFamily: 'var(--font-sans)',
             fontSize: 'clamp(1.1rem, 2vw, 1.35rem)',
             color: '#EDE4D6',
             opacity: 0.85,

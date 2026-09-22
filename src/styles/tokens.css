@@ -7,7 +7,7 @@
   --color-muted-gold: #C8A86A;
   --color-desaturated-blue: #24344A;
 
-  --font-serif: "Newsreader", "Playfair Display", "Iowan Old Style", Georgia, "Times New Roman", serif;
-  --font-sans: "Onest", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Times New Roman", "Iowan Old Style", "Apple Garamond", serif;
+  --font-sans: "MLNBookSans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --font-mono: "Fragment Mono", "SF Mono", Menlo, Consolas, monospace;
 }

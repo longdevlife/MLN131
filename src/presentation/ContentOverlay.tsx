@@ -84,7 +84,7 @@ export const ContentOverlay: React.FC = () => {
               </div>
               <p
                 style={{
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: 'var(--font-serif)',
                   fontSize: 'clamp(1.05rem, 1.8vw, 1.35rem)',
                   lineHeight: 1.45,
                   color: '#F5F0E8',

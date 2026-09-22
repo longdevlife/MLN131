@@ -25,7 +25,7 @@ export const SafeBookshelf: React.FC = () => {
       <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
         <h2
           style={{
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'var(--font-serif)',
             fontSize: '2.4rem',
             color: '#F5F0E8',
             margin: '0 0 0.5rem 0',
@@ -87,7 +87,7 @@ export const SafeBookshelf: React.FC = () => {
               </div>
               <h3
                 style={{
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: 'var(--font-serif)',
                   fontSize: '1.5rem',
                   color: '#F5F0E8',
                   margin: '0 0 0.75rem 0',
