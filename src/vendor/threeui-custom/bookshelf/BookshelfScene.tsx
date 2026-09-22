@@ -77,6 +77,7 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
   desiredIndexRef.current = initialIndex;
 
   const isFirstMount = useRef(true);
+  const dispatchedIntentRef = useRef<object | null>(null);
 
   // Unified pending navigation intent listener from presentationStore
   const pendingNav = usePresentationStore((state) => state.pendingBookshelfNavigation);
@@ -84,7 +85,9 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
   useEffect(() => {
     if (pendingNav && rendererRef.current?.requestNavigation) {
       // Keep the Zustand intent as a mirror until the renderer confirms that
-      // the physical transition has actually resolved.
+      // this exact object has physically resolved. Identity matters: a newer
+      // intent may arrive between the renderer settling and this effect running.
+      dispatchedIntentRef.current = pendingNav;
       rendererRef.current.requestNavigation(pendingNav);
     }
   }, [pendingNav]);
@@ -145,6 +148,7 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
                 const queuedIntent =
                   usePresentationStore.getState().pendingBookshelfNavigation;
                 if (queuedIntent) {
+                  dispatchedIntentRef.current = queuedIntent;
                   rendererRef.current.requestNavigation?.(queuedIntent);
                 }
               }
@@ -181,9 +185,11 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
               if (settled) {
                 const intent = store.pendingBookshelfNavigation;
                 if (
-                  intent?.type === 'select' ||
-                  intent?.type === 'close-to-library'
+                  intent === dispatchedIntentRef.current &&
+                  (intent?.type === 'select' ||
+                    intent?.type === 'close-to-library')
                 ) {
+                  dispatchedIntentRef.current = null;
                   store.clearPendingBookshelfNavigation();
                 }
               }
@@ -198,7 +204,12 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
             if (!disposed && onOpenBookRef.current) {
               const store = usePresentationStore.getState();
               const intent = store.pendingBookshelfNavigation;
-              if (intent?.type === 'open-book' && intent.index === index) {
+              if (
+                intent === dispatchedIntentRef.current &&
+                intent?.type === 'open-book' &&
+                intent.index === index
+              ) {
+                dispatchedIntentRef.current = null;
                 store.clearPendingBookshelfNavigation();
               }
 
@@ -209,9 +220,19 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
           onOpenCover: () => {
             if (!disposed) {
               const store = usePresentationStore.getState();
-              if (store.pendingBookshelfNavigation?.type === 'open-cover') {
+              const intent = store.pendingBookshelfNavigation;
+              if (
+                intent === dispatchedIntentRef.current &&
+                intent?.type === 'open-cover'
+              ) {
+                dispatchedIntentRef.current = null;
                 store.clearPendingBookshelfNavigation();
               }
+
+              // Renderer calls onOpenCover at the physical safe point before it
+              // emits a separate settled=true event. Mark that safe point in the
+              // store first so openCover cannot re-queue itself.
+              usePresentationStore.getState().setShelfSettled(true);
               usePresentationStore.getState().openCover();
               usePresentationStore.getState().flushPendingPresenterSync();
             }

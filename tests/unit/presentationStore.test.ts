@@ -303,6 +303,7 @@ describe('PresentationStore Navigation Engine', () => {
 
     // openCover() during detail
     store.clearPendingBookshelfNavigation();
+    store.setShelfSettled(true);
     store.openCover();
     state = usePresentationStore.getState();
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-cover' });
@@ -374,7 +375,11 @@ describe('PresentationStore Navigation Engine', () => {
   it('B: detail -> openCover -> close -> Cover', () => {
     const store = usePresentationStore.getState();
     store.openLibrary();
-    usePresentationStore.setState({ bookshelfMode: 'detail', selectedBook: 0 });
+    usePresentationStore.setState({
+      bookshelfMode: 'detail',
+      isShelfSettled: false,
+      selectedBook: 0,
+    });
 
     // In detail, user clicks Home / openCover
     store.openCover();
