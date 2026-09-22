@@ -11,6 +11,7 @@ describe('PresentationStore Navigation Engine', () => {
       isShelfSettled: true,
       pendingBookshelfNavigation: null,
       pendingQualityTier: null,
+      pendingPresenterSync: null,
       qualityTier: 'high',
       magazinePage: 0,
       magazineViewMode: 'showcase',
@@ -320,10 +321,17 @@ describe('PresentationStore Navigation Engine', () => {
     expect(state.pendingQualityTier).toBe('safe'); // Queued
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'close-to-library' });
 
-    // Renderer signals book returned to shelf (mode -> hero)
+    // Mode=hero alone is not enough: the mirrored renderer intent is still active.
     store.setBookshelfMode('hero');
     state = usePresentationStore.getState();
-    expect(state.qualityTier).toBe('safe'); // Now safely switched
+    expect(state.qualityTier).toBe('high');
+    expect(state.pendingQualityTier).toBe('safe');
+
+    // Renderer resolves close-to-library, then reports final settled=true.
+    store.clearPendingBookshelfNavigation();
+    store.setShelfSettled(true);
+    state = usePresentationStore.getState();
+    expect(state.qualityTier).toBe('safe');
     expect(state.pendingQualityTier).toBeNull();
   });
 
@@ -374,8 +382,14 @@ describe('PresentationStore Navigation Engine', () => {
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-cover' });
     expect(state.experienceMode).toBe('library'); // Still library while closing
 
-    // Physical book closes, renderer notifies hero mode
+    // Physical book closes to hero, then renderer resolves the open-cover callback.
     store.setBookshelfMode('hero');
+    state = usePresentationStore.getState();
+    expect(state.experienceMode).toBe('library');
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-cover' });
+
+    store.clearPendingBookshelfNavigation();
+    store.openCover();
     state = usePresentationStore.getState();
     expect(state.experienceMode).toBe('cover');
     expect(state.viewMode).toBe('cover');
@@ -399,12 +413,20 @@ describe('PresentationStore Navigation Engine', () => {
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'select', index: 3 });
     expect(state.pendingQualityTier).toBe('safe');
 
-    // Physical shelf finishes closing to hero
+    // Physical shelf reaches hero, but deferred quality must wait for Book IV to settle.
     store.setBookshelfMode('hero');
     state = usePresentationStore.getState();
+    expect(state.qualityTier).toBe('high');
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'select', index: 3 });
+
+    // Renderer completes the latest selection and only then Safe Mode may apply.
+    store.clearPendingBookshelfNavigation();
+    usePresentationStore.setState({ selectedBook: 3, chapterIndex: 3 });
+    store.setShelfSettled(true);
+    state = usePresentationStore.getState();
     expect(state.bookshelfMode).toBe('hero');
-    expect(state.selectedBook).toBe(3); // Book IV selected
-    expect(state.qualityTier).toBe('safe'); // Safe mode applied with Book IV selected
+    expect(state.selectedBook).toBe(3);
+    expect(state.qualityTier).toBe('safe');
     expect(state.pendingQualityTier).toBeNull();
     expect(state.pendingBookshelfNavigation).toBeNull();
   });
@@ -418,9 +440,16 @@ describe('PresentationStore Navigation Engine', () => {
     store.requestBookshelfNavigation({ type: 'select', index: 3 });
     expect(usePresentationStore.getState().pendingBookshelfNavigation).toEqual({ type: 'select', index: 3 });
 
-    // When settled signal arrives, store resolves the pending navigation and updates selectedBook
+    // Store must not consume renderer-owned navigation on a synthetic settled flag.
     store.setShelfSettled(true);
-    const state = usePresentationStore.getState();
+    let state = usePresentationStore.getState();
+    expect(state.pendingBookshelfNavigation).toEqual({ type: 'select', index: 3 });
+
+    // Renderer resolves the intent first, then the final settled state is accepted.
+    store.clearPendingBookshelfNavigation();
+    usePresentationStore.setState({ selectedBook: 3, chapterIndex: 3 });
+    store.setShelfSettled(true);
+    state = usePresentationStore.getState();
     expect(state.selectedBook).toBe(3);
     expect(state.pendingBookshelfNavigation).toBeNull();
     expect(state.isShelfSettled).toBe(true);
@@ -439,10 +468,18 @@ describe('PresentationStore Navigation Engine', () => {
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-cover' });
 
     // Remote presenter sync requests magazine for book 0
-    store.applyPresenterSync({ experienceMode: 'magazine', selectedBook: 0 });
+    store.applyPresenterSync({
+      experienceMode: 'magazine',
+      viewMode: 'chapter',
+      selectedBook: 0,
+      magazinePage: 4,
+      magazineViewMode: 'reading',
+    });
     state = usePresentationStore.getState();
     expect(state.experienceMode).toBe('library');
     expect(state.pendingBookshelfNavigation).toEqual({ type: 'open-book', index: 0 });
+    expect(state.pendingPresenterSync?.magazinePage).toBe(4);
+    expect(state.pendingPresenterSync?.magazineViewMode).toBe('reading');
 
     // Remote presenter sync requests book 3
     store.applyPresenterSync({ selectedBook: 3 });

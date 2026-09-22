@@ -80,14 +80,14 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
 
   // Unified pending navigation intent listener from presentationStore
   const pendingNav = usePresentationStore((state) => state.pendingBookshelfNavigation);
-  const clearPendingNav = usePresentationStore((state) => state.clearPendingBookshelfNavigation);
 
   useEffect(() => {
     if (pendingNav && rendererRef.current?.requestNavigation) {
+      // Keep the Zustand intent as a mirror until the renderer confirms that
+      // the physical transition has actually resolved.
       rendererRef.current.requestNavigation(pendingNav);
-      clearPendingNav();
     }
-  }, [pendingNav, clearPendingNav]);
+  }, [pendingNav]);
 
   // Helper to sync container attributes directly without unnecessary React re-renders
   const updateContainerAttrs = (attrs: {
@@ -139,6 +139,14 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
               if (rendererRef.current && desiredIndexRef.current !== undefined) {
                 rendererRef.current.selectVolume(desiredIndexRef.current, true);
                 setSelectedIndex(desiredIndexRef.current);
+
+                // An intent may have arrived while fonts/WebGL were booting.
+                // Hand the latest one to the renderer after initial placement.
+                const queuedIntent =
+                  usePresentationStore.getState().pendingBookshelfNavigation;
+                if (queuedIntent) {
+                  rendererRef.current.requestNavigation?.(queuedIntent);
+                }
               }
             }
           },
@@ -168,17 +176,44 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
             if (!disposed) {
               setIsSettled(settled);
               updateContainerAttrs({ settled });
+
+              const store = usePresentationStore.getState();
+              if (settled) {
+                const intent = store.pendingBookshelfNavigation;
+                if (
+                  intent?.type === 'select' ||
+                  intent?.type === 'close-to-library'
+                ) {
+                  store.clearPendingBookshelfNavigation();
+                }
+              }
+
               usePresentationStore.getState().setShelfSettled(settled);
+              if (settled) {
+                usePresentationStore.getState().flushPendingPresenterSync();
+              }
             }
           },
           onOpenBook: (index: number, book: any) => {
             if (!disposed && onOpenBookRef.current) {
+              const store = usePresentationStore.getState();
+              const intent = store.pendingBookshelfNavigation;
+              if (intent?.type === 'open-book' && intent.index === index) {
+                store.clearPendingBookshelfNavigation();
+              }
+
               onOpenBookRef.current(index, book);
+              usePresentationStore.getState().flushPendingPresenterSync();
             }
           },
           onOpenCover: () => {
             if (!disposed) {
+              const store = usePresentationStore.getState();
+              if (store.pendingBookshelfNavigation?.type === 'open-cover') {
+                store.clearPendingBookshelfNavigation();
+              }
               usePresentationStore.getState().openCover();
+              usePresentationStore.getState().flushPendingPresenterSync();
             }
           },
         });
@@ -249,6 +284,10 @@ export const BookshelfScene: React.FC<BookshelfSceneProps> = ({
       return;
     }
     if (rendererRef.current?.selectVolume) {
+      // A semantic intent is already owned by the renderer; do not issue a
+      // duplicate prop-sync command that could replace it.
+      if (usePresentationStore.getState().pendingBookshelfNavigation) return;
+
       const currentVol = rendererRef.current.getSelectedVolume?.();
       if (currentVol !== initialIndex) {
         rendererRef.current.selectVolume(initialIndex, false);

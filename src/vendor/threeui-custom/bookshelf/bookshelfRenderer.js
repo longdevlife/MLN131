@@ -2367,10 +2367,18 @@ function fa(Nr, m, He = {}) {
         return { accepted: true, queued: false };
       }
       if (type === "open-cover") {
+        if (!isShelfSettled()) {
+          pendingNavigation = { type, index: targetIdx };
+          return { accepted: false, queued: true };
+        }
         He.onOpenCover?.();
         return { accepted: true, queued: false };
       }
       if (type === "close-to-library") {
+        if (!isShelfSettled()) {
+          pendingNavigation = { type, index: targetIdx };
+          return { accepted: false, queued: true };
+        }
         return { accepted: true, queued: false };
       }
       ar(targetIdx);

@@ -23,6 +23,18 @@ export type BookshelfNavigationIntent =
   | { type: 'open-cover' }
   | null;
 
+export interface PresenterSyncPayload {
+  viewMode?: ViewMode;
+  experienceMode?: ExperienceMode;
+  selectedBook?: number;
+  chapterIndex?: number;
+  sceneIndex?: number;
+  beatIndex?: number;
+  isBlackout?: boolean;
+  magazinePage?: number;
+  magazineViewMode?: MagazineViewMode;
+}
+
 export interface PresentationState {
   viewMode: ViewMode;
   experienceMode: ExperienceMode;
@@ -31,6 +43,7 @@ export interface PresentationState {
   isShelfSettled: boolean;
   pendingBookshelfNavigation: BookshelfNavigationIntent;
   pendingQualityTier: QualityTier | null;
+  pendingPresenterSync: PresenterSyncPayload | null;
   magazinePage: number;
   magazineViewMode: MagazineViewMode;
   chapterIndex: number;
@@ -52,6 +65,7 @@ export interface PresentationState {
   setShelfSettled: (settled: boolean) => void;
   requestBookshelfNavigation: (intent: BookshelfNavigationIntent) => void;
   clearPendingBookshelfNavigation: () => void;
+  flushPendingPresenterSync: () => void;
   // Navigation actions
   startPresentation: () => void;
   openCover: () => void;
@@ -74,17 +88,7 @@ export interface PresentationState {
   setQualityTier: (tier: QualityTier) => void;
   setReducedMotion: (value: boolean) => void;
   setTransitioning: (value: boolean) => void;
-  applyPresenterSync: (msg: {
-    viewMode?: ViewMode;
-    experienceMode?: ExperienceMode;
-    selectedBook?: number;
-    chapterIndex?: number;
-    sceneIndex?: number;
-    beatIndex?: number;
-    isBlackout?: boolean;
-    magazinePage?: number;
-    magazineViewMode?: MagazineViewMode;
-  }) => void;
+  applyPresenterSync: (msg: PresenterSyncPayload) => void;
 }
 
 // Check safe mode from query params
@@ -104,6 +108,7 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   isShelfSettled: true,
   pendingBookshelfNavigation: null,
   pendingQualityTier: null,
+  pendingPresenterSync: null,
   magazinePage: 0,
   magazineViewMode: 'showcase',
   chapterIndex: 0,
@@ -123,92 +128,41 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   openSourceDrawer: () => set({ isSourceDrawerOpen: true }),
   closeSourceDrawer: () => set({ isSourceDrawerOpen: false }),
   toggleSourceDrawer: () => set((state) => ({ isSourceDrawerOpen: !state.isSourceDrawerOpen })),
-  setBookshelfMode: (mode: BookshelfMode) => {
-    const state = get();
-    if (mode === 'hero') {
-      if (state.pendingBookshelfNavigation?.type === 'open-cover') {
-        set({
-          bookshelfMode: 'hero',
-          pendingBookshelfNavigation: null,
-          experienceMode: 'cover',
-          viewMode: 'cover',
-          direction: -1,
-        });
-        return;
-      }
-      if (state.pendingBookshelfNavigation?.type === 'select') {
-        const targetBook = state.pendingBookshelfNavigation.index;
-        const targetTier = state.pendingQualityTier;
-        set({
-          bookshelfMode: 'hero',
-          selectedBook: targetBook,
-          chapterIndex: targetBook,
-          pendingBookshelfNavigation: null,
-          ...(targetTier ? { qualityTier: targetTier, pendingQualityTier: null } : {}),
-        });
-        return;
-      }
-      if (state.pendingQualityTier) {
-        const targetTier = state.pendingQualityTier;
-        set({
-          bookshelfMode: 'hero',
-          qualityTier: targetTier,
-          pendingQualityTier: null,
-        });
-        return;
-      }
-    }
-    set({ bookshelfMode: mode });
-  },
+  setBookshelfMode: (mode: BookshelfMode) => set({ bookshelfMode: mode }),
   setShelfSettled: (settled: boolean) => {
     const state = get();
-    if (settled && state.pendingBookshelfNavigation) {
-      const intent = state.pendingBookshelfNavigation;
-      if (intent.type === 'select') {
-        const targetTier = state.pendingQualityTier;
-        set({
-          selectedBook: intent.index,
-          chapterIndex: intent.index,
-          pendingBookshelfNavigation: null,
-          isShelfSettled: true,
-          ...(targetTier ? { qualityTier: targetTier, pendingQualityTier: null } : {}),
-        });
-        return;
-      }
-      if (intent.type === 'open-cover') {
-        set({
-          pendingBookshelfNavigation: null,
-          experienceMode: 'cover',
-          viewMode: 'cover',
-          direction: -1,
-          isShelfSettled: true,
-        });
-        return;
-      }
-      if (intent.type === 'open-book') {
-        set({
-          pendingBookshelfNavigation: null,
-          isShelfSettled: true,
-        });
-        get().openBook(intent.index);
-        return;
-      }
-      if (intent.type === 'close-to-library') {
-        const targetTier = state.pendingQualityTier;
-        set({
-          pendingBookshelfNavigation: null,
-          isShelfSettled: true,
-          ...(targetTier ? { qualityTier: targetTier, pendingQualityTier: null } : {}),
-        });
-        return;
-      }
+
+    // Renderer is the owner of navigation completion. Deferred quality can only
+    // apply after the mirrored navigation intent has been explicitly resolved.
+    if (
+      settled &&
+      state.pendingBookshelfNavigation === null &&
+      state.pendingQualityTier
+    ) {
+      set({
+        isShelfSettled: true,
+        qualityTier: state.pendingQualityTier,
+        pendingQualityTier: null,
+      });
+      return;
     }
+
     set({ isShelfSettled: settled });
   },
   requestBookshelfNavigation: (intent: BookshelfNavigationIntent) =>
-    set({ pendingBookshelfNavigation: intent }),
+    set({
+      pendingBookshelfNavigation: intent,
+      // A newer local/user intent supersedes an older deferred presenter command.
+      pendingPresenterSync: null,
+    }),
   clearPendingBookshelfNavigation: () =>
     set({ pendingBookshelfNavigation: null }),
+  flushPendingPresenterSync: () => {
+    const deferred = get().pendingPresenterSync;
+    if (!deferred) return;
+    set({ pendingPresenterSync: null });
+    get().applyPresenterSync(deferred);
+  },
 
   startPresentation: () => {
     set({ experienceMode: 'library', viewMode: 'library', bookshelfMode: 'hero', direction: 1 });
@@ -217,7 +171,11 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   openCover: () => {
     const state = get();
     const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
-    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
+    if (
+      isLibrary &&
+      state.qualityTier !== 'safe' &&
+      (state.bookshelfMode !== 'hero' || !state.isShelfSettled)
+    ) {
       state.requestBookshelfNavigation({ type: 'open-cover' });
       return;
     }
@@ -550,7 +508,11 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
     if (state.qualityTier === tier) return;
 
     const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
-    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
+    if (
+      isLibrary &&
+      state.qualityTier !== 'safe' &&
+      (state.bookshelfMode !== 'hero' || !state.isShelfSettled)
+    ) {
       set({ pendingQualityTier: tier });
       state.requestBookshelfNavigation({ type: 'close-to-library' });
       return;
@@ -563,23 +525,40 @@ export const usePresentationStore = create<PresentationState>((set, get) => ({
   setTransitioning: (value: boolean) => set({ isTransitioning: value }),
   applyPresenterSync: (msg) => {
     const state = get();
-    const isLibrary = state.experienceMode === 'library' || state.viewMode === 'library';
-    if (isLibrary && state.qualityTier !== 'safe' && state.bookshelfMode !== 'hero') {
+    const isLibrary =
+      state.experienceMode === 'library' || state.viewMode === 'library';
+    const shelfUnsafe =
+      isLibrary &&
+      state.qualityTier !== 'safe' &&
+      (state.bookshelfMode !== 'hero' || !state.isShelfSettled);
+
+    if (shelfUnsafe) {
+      // Route the physical shelf to a safe boundary first. Persist the complete
+      // presenter payload so page/scene/beat data is not lost while deferring.
       if (msg.experienceMode === 'cover' || msg.viewMode === 'cover') {
         state.openCover();
-        return;
-      }
-      if (msg.experienceMode === 'magazine' && msg.selectedBook !== undefined) {
+      } else if (
+        msg.experienceMode === 'magazine' &&
+        msg.selectedBook !== undefined
+      ) {
         state.openBook(msg.selectedBook);
-        return;
-      }
-      if (msg.selectedBook !== undefined && msg.selectedBook !== state.selectedBook) {
+      } else if (
+        msg.selectedBook !== undefined &&
+        msg.selectedBook !== state.selectedBook
+      ) {
         state.selectBook(msg.selectedBook);
-        return;
+      } else {
+        state.requestBookshelfNavigation({ type: 'close-to-library' });
       }
+
+      // Navigation actions above intentionally clear stale presenter work.
+      // Re-attach this newest remote snapshot after the latest intent is queued.
+      set({ pendingPresenterSync: { ...msg } });
+      return;
     }
 
     set({
+      pendingPresenterSync: null,
       ...(msg.viewMode ? { viewMode: msg.viewMode } : {}),
       ...(msg.experienceMode ? { experienceMode: msg.experienceMode } : {}),
       ...(msg.chapterIndex !== undefined ? { chapterIndex: msg.chapterIndex } : {}),
